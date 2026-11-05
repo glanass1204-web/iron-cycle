@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Железный цикл — программа силы на 13 недель</title>
+<meta name="description" content="Бесплатная программа жима лёжа на 13 недель в телефоне: точные веса на каждый подход, блины на штанге, режим зала, таймер отдыха и график максимума. Работает без интернета.">
+<meta name="theme-color" content="#0b0b0b">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Железный цикл — программа силы на 13 недель">
+<meta property="og:description" content="Точные веса на каждый подход, режим зала, таймер отдыха и график максимума. Бесплатно, без регистрации, работает офлайн.">
+<meta property="og:url" content="https://glanass1204-web.github.io/iron-cycle/about.html">
+<meta property="og:image" content="https://glanass1204-web.github.io/iron-cycle/docs/screenshot.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Oswald:wght@500;600;700&family=Golos+Text:wght@400;500;600&family=JetBrains+Mono:wght@700;800&display=swap">
+<style>
+/* Tokens from DESIGN.md: dark gym poster, gold accent, Anton/Oswald headings, Golos body. */
+:root {
+  --bg: #0b0b0b; --surface: #151515; --raised: #1f1e1c; --line: #34312c;
+  --fg: #f4f1ea; --muted: #b5afa3; --accent: #dca83c; --on-accent: #120f08; --good: #59c27a;
+  --poster: "Anton", "Oswald", Impact, sans-serif; --display: "Oswald", "Arial Narrow", Impact, sans-serif;
+  --body: "Golos Text", "Segoe UI", Roboto, Arial, sans-serif; --mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+  --r: 10px; --ease-out: cubic-bezier(.16, 1, .3, 1);
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; background: var(--bg); color: var(--fg); font: 17px/1.6 var(--body); -webkit-font-smoothing: antialiased; }
+a { color: var(--accent); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+.skip { position: absolute; left: -999px; } .skip:focus { left: 16px; top: 12px; z-index: 5; background: var(--bg); padding: 8px 12px; }
+.wrap { max-width: 1120px; margin: 0 auto; padding-left: max(20px, env(safe-area-inset-left, 0px)); padding-right: max(20px, env(safe-area-inset-right, 0px)); }
+section { padding-block: clamp(56px, 8vw, 112px); border-top: 1px solid var(--line); }
+h1, h2, h3 { margin: 0; text-wrap: balance; }
+h2 { font-family: var(--poster); font-weight: 400; font-size: clamp(40px, 7vw, 72px); line-height: .95; text-transform: uppercase; }
+h2 span, h1 span { color: var(--accent); }
+.eyebrow { font: 600 13px var(--display); letter-spacing: .22em; text-transform: uppercase; color: var(--muted); margin-bottom: 14px; display: flex; align-items: center; gap: 10px; }
+.eyebrow::before { content: ""; width: 28px; height: 2px; background: var(--accent); }
+.lead { color: var(--muted); max-width: 58ch; margin: 16px 0 0; }
+.btn { display: inline-flex; align-items: center; justify-content: center; min-height: 56px; padding: 0 28px; border-radius: var(--r); background: var(--accent); color: var(--on-accent); font: 600 18px var(--display); letter-spacing: .08em; text-transform: uppercase; text-decoration: none; transition: transform 100ms var(--ease-out), background-color 150ms var(--ease-out); }
+.btn:hover { background: #e8b84f; } .btn:active { transform: scale(.98); }
+.btn.ghost { background: transparent; color: var(--fg); border: 1px solid var(--line); }
+.btn.ghost:hover { border-color: var(--accent); }
+
+/* nav */
+.top { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding-block: calc(env(safe-area-inset-top, 0px) + 18px) 18px; }
+.logo { font: 600 24px var(--display); text-transform: uppercase; color: var(--fg); text-decoration: none; letter-spacing: .02em; }
+.logo span { color: var(--accent); }
+.top .btn { min-height: 44px; padding: 0 18px; font-size: 15px; }
+
+/* hero */
+.hero { border-top: 0; padding-top: clamp(24px, 4vw, 56px); display: grid; grid-template-columns: 1.15fr .85fr; gap: clamp(32px, 5vw, 72px); align-items: center; }
+.hero h1 { font-family: var(--poster); font-weight: 400; font-size: clamp(56px, 10vw, 128px); line-height: .9; text-transform: uppercase; }
+.hero .lead { font-size: 19px; }
+.cta { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
+.facts { display: flex; flex-wrap: wrap; gap: 8px 22px; margin: 26px 0 0; padding: 0; list-style: none; color: var(--muted); font-size: 15px; }
+.facts li::before { content: "✓ "; color: var(--good); font-weight: 700; }
+.phone { justify-self: center; width: min(320px, 78vw); aspect-ratio: 585 / 1266; border-radius: 40px; padding: 10px; background: #1b1a18; border: 1px solid var(--line); box-shadow: 0 40px 80px -30px rgba(220, 168, 60, .35); animation: rise 300ms var(--ease-out) both; }
+.phone img { width: 100%; height: 100%; object-fit: cover; border-radius: 30px; display: block; }
+@keyframes rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+
+/* features */
+.feat { display: grid; grid-template-columns: repeat(12, 1fr); gap: 14px; margin-top: 40px; }
+.feat article { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 24px; display: grid; gap: 8px; align-content: start; }
+.feat article:nth-child(1) { grid-column: span 7; } .feat article:nth-child(2) { grid-column: span 5; }
+.feat article:nth-child(3), .feat article:nth-child(4), .feat article:nth-child(5) { grid-column: span 4; }
+.feat h3 { font: 600 24px var(--display); text-transform: uppercase; letter-spacing: .02em; }
+.feat p { margin: 0; color: var(--muted); }
+.feat .num { font: 800 44px/1 var(--mono); color: var(--accent); }
+
+/* weeks chart */
+.weeks { margin-top: 40px; display: grid; grid-template-columns: repeat(13, 1fr); gap: 6px; align-items: end; height: 260px; }
+.wk { display: grid; grid-template-rows: 1fr auto; gap: 8px; height: 100%; text-align: center; }
+.wk i { align-self: end; display: block; height: var(--h); border-radius: 4px 4px 2px 2px; background: var(--raised); border: 1px solid var(--line); }
+.wk.heavy i { background: var(--accent); border-color: var(--accent); }
+.wk.deload i { background: color-mix(in srgb, var(--good) 45%, var(--raised)); border-color: var(--good); }
+.wk.test i { background: repeating-linear-gradient(45deg, var(--accent) 0 6px, #b8862a 6px 12px); border-color: var(--accent); }
+.wk span { font: 700 12px var(--mono); color: var(--muted); }
+.legend { display: flex; flex-wrap: wrap; gap: 8px 20px; margin-top: 18px; font-size: 14px; color: var(--muted); }
+.legend b { display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; background: var(--raised); border: 1px solid var(--line); }
+.legend .h { background: var(--accent); } .legend .d { background: color-mix(in srgb, var(--good) 45%, var(--raised)); border-color: var(--good); }
+.legend .t { background: repeating-linear-gradient(45deg, var(--accent) 0 3px, #b8862a 3px 6px); }
+.steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 32px; padding: 0; list-style: none; counter-reset: s; }
+.steps li { border-top: 2px solid var(--accent); padding-top: 14px; color: var(--muted); }
+.steps li b { display: block; color: var(--fg); font: 600 20px var(--display); text-transform: uppercase; margin-bottom: 4px; }
+
+/* split */
+.split { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(28px, 5vw, 64px); align-items: start; }
+.install { display: grid; gap: 12px; margin: 24px 0 0; padding: 0; list-style: none; }
+.install li { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; color: var(--muted); }
+.install b { color: var(--fg); }
+.sr { background: linear-gradient(160deg, #1f1a10, var(--surface) 55%); border: 1px solid var(--line); border-radius: 18px; padding: 28px; }
+.sr h3 { font: 600 30px var(--display); text-transform: uppercase; } .sr h3 span { color: var(--accent); }
+.sr ul { margin: 14px 0 0; padding-left: 1.1em; color: var(--muted); } .sr li { margin: 6px 0; }
+
+/* faq */
+.faq { margin-top: 32px; display: grid; }
+.faq details { border-top: 1px solid var(--line); padding-block: 18px; }
+.faq details:last-child { border-bottom: 1px solid var(--line); }
+.faq summary { cursor: pointer; font: 600 20px var(--display); text-transform: uppercase; letter-spacing: .02em; list-style: none; display: flex; justify-content: space-between; gap: 16px; min-height: 28px; }
+.faq summary::after { content: "+"; color: var(--accent); font-family: var(--mono); }
+.faq details[open] summary::after { content: "−"; }
+.faq p { color: var(--muted); margin: 10px 0 0; max-width: 70ch; }
+
+.final { text-align: left; }
+.final h2 { font-size: clamp(56px, 11vw, 120px); }
+footer { border-top: 1px solid var(--line); padding-block: 28px calc(28px + env(safe-area-inset-bottom, 0px)); color: var(--muted); font-size: 14px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; }
+
+@media (max-width: 860px) {
+  .hero, .split { grid-template-columns: 1fr; }
+  .phone { order: -1; width: min(260px, 70vw); }
+  .feat article { grid-column: span 12 !important; }
+  .steps { grid-template-columns: 1fr; }
+  .weeks { gap: 3px; height: 200px; }
+  .wk span { font-size: 10px; }
+}
+@media (prefers-reduced-motion: reduce) { *, *::before { animation: none !important; transition: none !important; } html { scroll-behavior: auto; } }
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Перейти к содержанию</a>
+<header class="wrap top">
+  <a class="logo" href="./about.html">Железный <span>цикл</span></a>
+  <a class="btn" href="./">Открыть программу</a>
+</header>
+
+<main id="main">
+  <section class="wrap hero" aria-labelledby="h1">
+    <div>
+      <p class="eyebrow">Программа жима лёжа</p>
+      <h1 id="h1">13 недель <span>к своему рекорду</span></h1>
+      <p class="lead">Программа в телефоне: какие подходы делать сегодня, какие блины вешать на штангу и сколько отдыхать. Недели идут волнами: лёгкая, средняя и тяжёлая. Через 13 недель — проверка нового максимума и следующий цикл. Первые 2 недели бесплатно.</p>
+      <div class="cta"><a class="btn" href="./">Открыть программу</a><a class="btn ghost" href="#how">Как это устроено</a></div>
+      <ul class="facts"><li>Бесплатно</li><li>Без регистрации</li><li>Работает без интернета</li></ul>
+    </div>
+    <div class="phone"><img src="docs/screenshot.jpg" alt="Главный экран приложения: неделя 1, тренировка «Грудь и трицепс», жим штанги лёжа" width="585" height="1266" fetchpriority="high"></div>
+  </section>
+
+  <section class="wrap" aria-labelledby="h-feat">
+    <p class="eyebrow">Что внутри</p>
+    <h2 id="h-feat">Всё для зала <span>в одном экране</span></h2>
+    <div class="feat">
+      <article><div class="num">80 кг × 3 × 5</div><h3>Точные веса на каждый подход</h3><p>Вводишь свой максимум — программа считает вес каждого подхода и показывает раскладку блинов на штанге. Есть блины 2,5 кг — шаг станет 5 кг.</p></article>
+      <article><div class="num">▶</div><h3>Режим зала</h3><p>Один подход на весь экран, большая кнопка «Сделал подход», разминка, отдых запускается сам. Можно включить голосовые подсказки.</p></article>
+      <article><h3>Таймер отдыха</h3><p>Сигналы за 3 секунды до конца, экран не гаснет, пока идёт тренировка.</p></article>
+      <article><h3>График максимума</h3><p>Записываешь последний подход — приложение считает расчётный максимум и отмечает рекорды.</p></article>
+      <article><h3>Календарь и напоминания</h3><p>Серия недель без пропусков и тренировки в календаре телефона с напоминанием за 30 минут.</p></article>
+    </div>
+  </section>
+
+  <section class="wrap" id="how" aria-labelledby="h-how">
+    <p class="eyebrow">Как устроены 13 недель</p>
+    <h2 id="h-how">Тяжело, легко, <span>снова тяжелее</span></h2>
+    <p class="lead">Нагрузка идёт волнами: две-три рабочие недели, потом облегчённая, чтобы восстановиться. Каждые 4 недели — разгрузка. Перед проверкой максимума — подводка. Высота столбика — самый тяжёлый подход жима в процентах от максимума.</p>
+    <div class="weeks" role="img" aria-label="Пиковый процент от максимума по неделям: 75, 77, 80, 75, 80, 85, 85, 75, 87, 80, 95, 82,5, проверка максимума на 13-й неделе">
+      <div class="wk"><i style="--h:30%"></i><span>1</span></div>
+      <div class="wk"><i style="--h:36%"></i><span>2</span></div>
+      <div class="wk"><i style="--h:43%"></i><span>3</span></div>
+      <div class="wk deload"><i style="--h:30%"></i><span>4</span></div>
+      <div class="wk"><i style="--h:43%"></i><span>5</span></div>
+      <div class="wk heavy"><i style="--h:54%"></i><span>6</span></div>
+      <div class="wk heavy"><i style="--h:54%"></i><span>7</span></div>
+      <div class="wk deload"><i style="--h:30%"></i><span>8</span></div>
+      <div class="wk heavy"><i style="--h:59%"></i><span>9</span></div>
+      <div class="wk"><i style="--h:43%"></i><span>10</span></div>
+      <div class="wk heavy"><i style="--h:76%"></i><span>11</span></div>
+      <div class="wk deload"><i style="--h:48%"></i><span>12</span></div>
+      <div class="wk test"><i style="--h:96%"></i><span>13</span></div>
+    </div>
+    <div class="legend"><span><b></b>рабочая неделя</span><span><b class="h"></b>тяжёлая</span><span><b class="d"></b>облегчённая</span><span><b class="t"></b>проверка максимума</span></div>
+    <ol class="steps">
+      <li><b>3 тренировки</b>в неделю в любые дни, с днём отдыха между ними. База дня: жим, становая или присед.</li>
+      <li><b>База — по процентам</b>вес и повторы точные, ровно как написано, без работы до отказа. Подсобка идёт волнами: 15–20, 10–12 и 6–8 повторов.</li>
+      <li><b>Самочувствие решает</b>отметил «Устал» — веса снизятся на 10%. Перерыв больше 10 дней — тоже.</li>
+    </ol>
+  </section>
+
+  <section class="wrap split" aria-labelledby="h-off">
+    <div>
+      <p class="eyebrow">Работает без интернета</p>
+      <h2 id="h-off">Поставь <span>на экран</span></h2>
+      <p class="lead">В подвальном зале нет связи — программа всё равно откроется. Отметки и рекорды хранятся только в твоём телефоне.</p>
+      <ul class="install">
+        <li><b>Android:</b> открой программу и нажми «Установить» в шапке.</li>
+        <li><b>iPhone:</b> в Safari нажми «Поделиться» → «На экран „Домой“».</li>
+      </ul>
+    </div>
+    <div class="sr">
+      <p class="eyebrow">Вторая программа</p>
+      <h3>Сила <span>и рельеф</span></h3>
+      <ul>
+        <li>12 недель: волны 5/3/1 Джима Вендлера и 5×5.</li>
+        <li>Подсобка суперсетами с коротким отдыхом, финишеры и кардио.</li>
+        <li>Калькулятор питания на сушку.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="wrap" aria-labelledby="h-faq">
+    <p class="eyebrow">Вопросы</p>
+    <h2 id="h-faq">Коротко <span>о главном</span></h2>
+    <div class="faq">
+      <details><summary>Подойдёт ли новичку?</summary><p>Да, если ты уже знаешь технику жима, приседа и становой и тренируешься хотя бы несколько месяцев. Если только начинаешь, сначала поставь технику с тренером.</p></details>
+      <details><summary>Насколько вырастет жим за 13 недель?</summary><p>Цель ставишь сам, это ориентир, а не обещание. За один круг сила растёт на несколько процентов. На 13-й неделе находишь новый максимум и проходишь программу заново — старый максимум становится рабочим весом.</p></details>
+      <details><summary>Что нужно в зале?</summary><p>Гриф, блины, скамья (ровная и наклонная), EZ-гриф и гантели. Нет стоек для приседа — у упражнения есть замена с гантелью.</p></details>
+      <details><summary>Где хранятся мои отметки?</summary><p>Только в браузере твоего телефона. Никакой регистрации и серверов. Раз в неделю сохраняй резервную копию во вкладке «Ещё».</p></details>
+      <details><summary>Это бесплатно?</summary><p>Да. Код программы открыт на GitHub.</p></details>
+    </div>
+  </section>
+
+  <section class="wrap final" aria-labelledby="h-go">
+    <h2 id="h-go">Куй <span>свою силу</span></h2>
+    <p class="lead">Открой программу, введи свой максимум — и первая тренировка уже готова.</p>
+    <div class="cta"><a class="btn" href="./">Открыть программу</a></div>
+  </section>
+</main>
+
+<footer class="wrap">
+  <span>Железный цикл · <a href="https://github.com/glanass1204-web/iron-cycle">код на GitHub</a></span>
+  <span>Фото на скриншоте: Madison Square Garden Center, 1974, <a href="https://commons.wikimedia.org/wiki/File:Arnold_Schwarzenegger_1974.jpg">общественное достояние</a></span>
+</footer>
+</body>
+</html>
