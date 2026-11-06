@@ -692,6 +692,7 @@ html.simple #today .icon-row { display: none !important; }
 .simple-row b { display: block; font-size: 15px; }
 .simple-row small { color: var(--muted); font-size: 13px; }
 .goal-edit { margin-left: 8px; font-size: 11px; color: var(--muted); letter-spacing: .08em; }
+.week-type.peak b { color: var(--accent) !important; }
 </style>
 
 <header class="appbar">
@@ -1101,7 +1102,8 @@ html.simple #today .icon-row { display: none !important; }
   // light week 15–20 reps, easy, perfect technique; medium (volume) 10–12 to technical failure; heavy 6–8 with a big weight.
   // Week 12 is a light taper before the max test in week 13.
   if (PROG !== 'sr') {
-    TYPES = ['light', 'volume', 'heavy', 'light', 'volume', 'heavy', 'volume', 'light', 'volume', 'heavy', 'heavy', 'light', 'test'];
+    TYPES = ['light', 'volume', 'heavy', 'light', 'volume', 'heavy', 'volume', 'light', 'volume', 'heavy', 'peak', 'light', 'test'];
+    TYPE_INFO.peak = ['Выход на пик', 'Мало повторов, большой вес: 3 подхода по 3 и одиночные — готовим силу к проверке максимума. Сначала тройки, потом одиночные, не наоборот. Страхующий рядом.'];
     TYPE_INFO.light = ['Лёгкая неделя', 'Всё легко: 15 повторений спокойно, до 20 — только если идёт легко. До отказа не доходить. Техника идеальная — восстанавливаемся. В становой 10–12.'];
     TYPE_INFO.volume = ['Средняя неделя · объём', '10–12 повторений до технического отказа: подход заканчиваешь, когда техника начинает ломаться. Техника правильная. В становой 8–10.'];
     TYPE_INFO.heavy = ['Тяжёлая неделя', '6–8 повторений с большим весом. Техника может быть свободнее, но без рывков и потери контроля. Страхующий рядом. В становой 5–6.'];
@@ -1120,19 +1122,26 @@ html.simple #today .icon-row { display: none !important; }
     WEEKS.forEach(function (wk, wi) {
       var t = TYPES[wi]; if (t === 'test') return;
       seen[t] = seen[t] == null ? 0 : seen[t] + 1;
-      var pct = CLUB_PCT[t][Math.min(seen[t], 3)], rng = RNG[t];
+      var pct = t === 'peak' ? 85 : CLUB_PCT[t][Math.min(seen[t], 3)], rng = RNG[t === 'peak' ? 'heavy' : t];
+      // No two weeks alike: repeats of a week type change the number of sets as well as the weight.
+      var mainSets = { light: [3, 3, 3, 3], volume: [4, 5, 4, 5], heavy: [4, 5, 4, 5], peak: [3] }[t][Math.min(seen[t], 3)];
       wk.days = wk.days.map(function (day, di) {
-        if (t !== 'heavy') day = day.filter(function (e) { return !/негатив/i.test(e.n || ''); }); // negatives only in heavy weeks
+        if (t !== 'heavy' && t !== 'peak') day = day.filter(function (e) { return !/негатив/i.test(e.n || ''); }); // negatives only in heavy weeks
         var mi = mainIndex(day, di), ei = 0;
         day.forEach(function (e) {
           (e.t === 'ss' ? [e.a, e.c] : [e]).forEach(function (x) {
             var isMain = ei === mi; ei++;
             (x.t === 'or' ? [x.a, x.c] : [x]).forEach(function (it) {
               if (it.t !== 'b') return;
-              var pc = isMain ? pct : Math.round(pct * varK(it.n));
-              var sets = isMain ? (it.lift === D && t === 'light' ? 2 : t === 'light' ? 3 : 4) : (t === 'light' ? 2 : 3);
-              var rg = it.lift === D ? RNG_D[t] : rng;
-              it.s = pc + 'x' + rg[0] + 'x' + sets; it.rng = rg; it.wt = t;
+              if (t === 'peak' && isMain) {
+                it.s = it.lift === D ? '85x2x3; 90x1x1' : '85x3x3; 90x1x2'; it.rng = null; it.wt = 'peak';
+                it.note = 'Выход на пик: сначала ' + (it.lift === D ? '3 подхода по 2' : '3 подхода по 3') + ', потом одиночные. Без отказа и без рывков.';
+                return;
+              }
+              var tt = t === 'peak' ? 'heavy' : t, pc = isMain ? pct : Math.round((t === 'peak' ? 80 : pct) * varK(it.n));
+              var sets = isMain ? (it.lift === D && t === 'light' ? 2 : mainSets) : (t === 'light' ? 2 : 3);
+              var rg = it.lift === D ? RNG_D[tt] : RNG[tt];
+              it.s = pc + 'x' + rg[0] + 'x' + sets; it.rng = rg; it.wt = tt;
               if (isMain || /скоростной/i.test(it.n)) it.note = '';
             });
           });
@@ -1143,12 +1152,12 @@ html.simple #today .icon-row { display: none !important; }
   })();
   // Weekly load of the % lifts: Σ(% × reps × sets) / 100, and the heaviest % of the week.
   function weekLoad(wk) {
-    var load = 0, peak = 0;
+    var load = 0, peak = 0, lifts = 0;
     wk.days.forEach(function (day) { items(day).forEach(function (e) {
       var it = e.t === 'or' ? e.a : e; if (it.t !== 'b' || !it.s) return;
-      parseSets(it.s).forEach(function (p) { load += p[0] * p[1] * p[2] / 100; if (p[0] > peak) peak = p[0]; });
+      parseSets(it.s).forEach(function (p) { load += p[0] * p[1] * p[2] / 100; lifts += p[1] * p[2]; if (p[0] > peak) peak = p[0]; });
     }); });
-    return { load: Math.round(load), peak: peak };
+    return { load: Math.round(load), peak: peak, lifts: lifts, avg: lifts ? Math.round(load * 100 / lifts) : 0 };
   }
   var LOADS = WEEKS.map(weekLoad);
   var MAXLOAD = Math.max.apply(null, LOADS.map(function (l) { return l.load; }));
@@ -1421,6 +1430,8 @@ html.simple #today .icon-row { display: none !important; }
     if (up && up * f > kg) kg = loadable(up * f);
     // Never above what the max allows for the low end of the range (Epley): with 10 kg steps the nearest weight can overshoot.
     if (e.rng) { var lim = mx * f / (1 + e.rng[0] / 30); if (kg > lim) kg = Math.max(BAR, loadable(lim, true)); }
+    // Peak week: nearest weight to the %, but never above what the max allows for these reps.
+    if (e.wt === 'peak') { kg = loadable(mx * p[0] / 100 * f); var l2 = mx * f / (1 + p[1] / 30); if (kg > l2) kg = Math.max(BAR, loadable(l2, true)); }
     return kg;
   }
   // Double progression on barbell ranges: the last week of the same type ended at the top of the range
@@ -1697,7 +1708,7 @@ html.simple #today .icon-row { display: none !important; }
   // Progressive overload: all planned reps done last time → next step of weight.
   // Periodized «подбор»: light 15–20 reps (≈70% of the medium weight), medium 10–12, heavy 6–8 (≈+15%).
   var NO_WAVE = /финишер|Скручивания|опускание/;
-  function waveOf(wk) { var t = TYPES[wk - 1]; return t === 'test' ? null : LIGHT[t] ? 'light' : t === 'heavy' ? 'heavy' : 'medium'; }
+  function waveOf(wk) { var t = TYPES[wk - 1]; return t === 'test' ? null : LIGHT[t] ? 'light' : t === 'heavy' ? 'heavy' : 'medium'; } // peak week: «подбор» stays medium
   var WAVE = { light: { r: [15, 20], f: 0.7, txt: 'лёгкая: 15–20 повт.' }, medium: { r: [10, 12], f: 1, txt: 'средняя: 10–12 повт.' }, heavy: { r: [6, 8], f: 1.15, txt: 'тяжёлая: 6–8 повт.' } };
   // A guide note «легко» on an exercise always means the light wave.
   function waveFor(e, wk) { if (e.t !== 'k' || NO_WAVE.test(e.n)) return null; var w = waveOf(wk); return w && /легко/i.test(e.note || '') ? 'light' : w; }
@@ -2054,7 +2065,7 @@ html.simple #today .icon-row { display: none !important; }
       : '<div class="week-done"><div><b>Неделя в работе</b><small>Сделано ' + ws.got + ' из ' + ws.n + ' упр. Неделя закроется сама, когда отметишь всё.</small></div><button class="btn primary" type="button" data-wclose>Завершить неделю</button></div>';
     var ti = TYPE_INFO[TYPES[wk - 1]];
     var LW = LOADS[wk - 1];
-    h += '<div class="week-type ' + TYPES[wk - 1] + '"><b>' + ti[0] + '</b><span>' + ti[1] + '</span><div class="load-meter"><span>Нагрузка</span><div class="lm"><i style="width:' + Math.round(LW.load / MAXLOAD * 100) + '%"></i></div><span>' + Math.round(LW.load / MAXLOAD * 100) + '% · пик ' + fmtN(LW.peak) + '%</span></div></div>';
+    h += '<div class="week-type ' + TYPES[wk - 1] + '"><b>' + ti[0] + '</b><span>' + ti[1] + '</span><div class="load-meter"><span>Нагрузка</span><div class="lm"><i style="width:' + Math.round(LW.load / MAXLOAD * 100) + '%"></i></div><span>' + Math.round(LW.load / MAXLOAD * 100) + '% · пик ' + fmtN(LW.peak) + '% · подъёмов ' + LW.lifts + ' · средний ' + LW.avg + '%</span></div></div>';
     h += volumeHtml(wk);
     wd.days.forEach(function (day, di) {
       var st = dayStats(wk, di), mi = mainIndex(day, di), ei = 0, ok = 'w' + wk + 'd' + di;
