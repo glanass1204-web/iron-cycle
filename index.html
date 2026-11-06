@@ -693,6 +693,9 @@ html.simple #today .icon-row { display: none !important; }
 .simple-row small { color: var(--muted); font-size: 13px; }
 .goal-edit { margin-left: 8px; font-size: 11px; color: var(--muted); letter-spacing: .08em; }
 .week-type.peak b { color: var(--accent) !important; }
+.wl-chart svg { width: 100%; height: auto; display: block; }
+.wl-legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 12px; color: var(--muted); }
+.wl-legend i { display: inline-block; width: 10px; height: 10px; margin-right: 5px; vertical-align: -1px; }
 </style>
 
 <header class="appbar">
@@ -714,6 +717,7 @@ html.simple #today .icon-row { display: none !important; }
   <section class="wrap block" id="signals" hidden></section>
   <section class="wrap" id="progress"></section>
   <section class="wrap block" id="level"></section>
+  <section class="wrap block" id="wload"></section>
   <section class="wrap block" id="calendar"></section>
   <section class="wrap week" id="week"></section>
 
@@ -1108,12 +1112,20 @@ html.simple #today .icon-row { display: none !important; }
     TYPE_INFO.volume = ['Средняя неделя · объём', '10–12 повторений до технического отказа: подход заканчиваешь, когда техника начинает ломаться. Техника правильная. В становой 8–10.'];
     TYPE_INFO.heavy = ['Тяжёлая неделя', '6–8 повторений с большим весом. Техника может быть свободнее, но без рывков и потери контроля. Страхующий рядом. В становой 5–6.'];
   }
-  var RNG = { light: [15, 20], volume: [10, 12], heavy: [6, 8] };
+  // Focus of the cycle, chosen when a new cycle starts: «Объём» (default) or «Сила» (Golovinsky's strength period: fewer reps, more weight).
+  var FOCUS = (function () { try { return localStorage.getItem('club150:' + (PROFILE !== 'main' ? PROFILE + ':' : '') + 'focus') === 'strength' ? 'strength' : 'volume'; } catch (e) { return 'volume'; } })();
+  var RNG = FOCUS === 'strength' ? { light: [10, 12], volume: [6, 8], heavy: [4, 6] } : { light: [15, 20], volume: [10, 12], heavy: [6, 8] };
   // Deadlift family: 10–12 / 8–10 / 5–6 — on 15–20 the lower back tires first and the technique breaks.
-  var RNG_D = { light: [10, 12], volume: [8, 10], heavy: [5, 6] };
+  var RNG_D = FOCUS === 'strength' ? { light: [6, 8], volume: [5, 6], heavy: [3, 4] } : { light: [10, 12], volume: [8, 10], heavy: [5, 6] };
   // % of the lift's max for each repeat of the week type: the weight grows through the cycle.
   // Checked against rep-max tables (Epley/Brzycki): 15–20 reps ≈ 60–67% of max, 10–12 ≈ 71–75%, 6–8 ≈ 79–83%.
-  var CLUB_PCT = { light: [55, 55, 57, 50], volume: [68, 70, 70, 72], heavy: [78, 80, 80, 82] };
+  var CLUB_PCT = FOCUS === 'strength' ? { light: [58, 60, 60, 55], volume: [74, 76, 76, 78], heavy: [80, 82, 84, 85] } : { light: [55, 55, 57, 50], volume: [68, 70, 70, 72], heavy: [78, 80, 80, 82] };
+  if (PROG !== 'sr') {
+    var rt = function (r) { return r[0] + '–' + r[1]; };
+    TYPE_INFO.light = ['Лёгкая неделя', 'Всё легко: ' + RNG.light[0] + ' повторений спокойно, до ' + RNG.light[1] + ' — только если идёт легко. До отказа не доходить. Техника идеальная — восстанавливаемся. В становой ' + rt(RNG_D.light) + '.'];
+    TYPE_INFO.volume = [FOCUS === 'strength' ? 'Средняя неделя · сила' : 'Средняя неделя · объём', rt(RNG.volume) + ' повторений до технического отказа: подход заканчиваешь, когда техника начинает ломаться. Техника правильная. В становой ' + rt(RNG_D.volume) + '.'];
+    TYPE_INFO.heavy = ['Тяжёлая неделя', rt(RNG.heavy) + ' повторений с большим весом. Техника может быть свободнее, но без рывков и потери контроля. Страхующий рядом. В становой ' + rt(RNG_D.heavy) + '.'];
+  }
   // Barbell variations take a share of the main lift's %: standing press ×0.5, stiff-leg / Romanian ×0.7, board press ×0.95, grip variations ×0.85.
   function varK(n) { return /стоя/i.test(n) ? 0.5 : /прямых ногах|Мёртвая|Румынская/i.test(n) ? 0.7 : /бруска/i.test(n) ? 0.95 : 0.85; }
   function repTxt(e, p) { return e.rng ? e.rng[0] + '–' + e.rng[1] : p[1]; }
@@ -1150,6 +1162,12 @@ html.simple #today .icon-row { display: none !important; }
       });
     });
   })();
+  // Second, light bench of the week on the deadlift day: fast up, no failure. Added from week 3 so finished weeks stay finished.
+  if (PROG !== 'sr') WEEKS.forEach(function (wk, wi) {
+    var t = TYPES[wi]; if (wi < 2 || t === 'test') return;
+    var sp = { light: '50x3x4', volume: '55x3x5', heavy: '55x3x5', peak: '50x3x3' }[t];
+    wk.days[1].push(b('Скоростной жим лёжа', P, sp, 'Второй жим недели — лёгкий: опускаешь подконтрольно и выжимаешь максимально быстро. Без отказа, отдых 1–1,5 минуты.'));
+  });
   // Weekly load of the % lifts: Σ(% × reps × sets) / 100, and the heaviest % of the week.
   function weekLoad(wk) {
     var load = 0, peak = 0, lifts = 0;
@@ -1428,11 +1446,27 @@ html.simple #today .icon-row { display: none !important; }
     var c = ctx.split('|'), mx = +maxes[e.lift]; if (!(mx > 0)) return null;
     var f = dayFactor(c[0], c[1]), kg = loadable(mx * p[0] / 100 * f, p[0] >= 85), up = barUp(e, ctx);
     if (up && up * f > kg) kg = loadable(up * f);
+    var dn = up ? 0 : barDown(e, ctx);
+    if (dn && dn * f < kg) kg = Math.max(BAR, loadable(dn * f, true));
     // Never above what the max allows for the low end of the range (Epley): with 10 kg steps the nearest weight can overshoot.
     if (e.rng) { var lim = mx * f / (1 + e.rng[0] / 30); if (kg > lim) kg = Math.max(BAR, loadable(lim, true)); }
     // Peak week: nearest weight to the %, but never above what the max allows for these reps.
     if (e.wt === 'peak') { kg = loadable(mx * p[0] / 100 * f); var l2 = mx * f / (1 + p[1] / 30); if (kg > l2) kg = Math.max(BAR, loadable(l2, true)); }
     return kg;
+  }
+  // Two records in a row of the same week type below the low end of the range → this week one step lighter than the last one.
+  function barDown(e, ctx) {
+    if (!e.rng || !results) return 0;
+    var wk = +ctx.split('|')[0], t = TYPES[wk - 1], list = [];
+    Object.keys(results).forEach(function (k2) {
+      var w = +k2.split('|')[0], r = results[k2];
+      if (w >= wk || TYPES[w - 1] !== t || !r || !r.kg || !r.reps) return;
+      var f2; try { f2 = findEx(k2); } catch (er) { return; }
+      if (f2 && f2.e && f2.e.n === e.n) list.push({ w: w, kg: r.kg, reps: r.reps });
+    });
+    list.sort(function (a, b2) { return a.w - b2.w; });
+    var a1 = list[list.length - 2], a2 = list[list.length - 1];
+    return a1 && a2 && a1.reps < e.rng[0] && a2.reps < e.rng[0] ? Math.max(BAR, a2.kg - barStep()) : 0;
   }
   // Double progression on barbell ranges: the last week of the same type ended at the top of the range
   // (12 of 10–12, 8 of 6–8, 20 of 15–20) → this week +10 kg on top of that weight.
@@ -1629,7 +1663,7 @@ html.simple #today .icon-row { display: none !important; }
       if (e.t === 'b') {
         var kg = setKg(e, ctx, si, p), ov = !!overrides[ctx + '|' + si];
         if (!kg) return '<span class="set plain">' + p[0] + '% × ' + repTxt(e, p) + ' × ' + p[2] + '</span>';
-        return '<button type="button" class="set' + (ov ? ' edited' : '') + setCls(ctx + '|' + si, p[2]) + '" data-set="' + ctx + '|' + si + '"><span class="kg">' + kg + ' кг × ' + repTxt(e, p) + ' × ' + p[2] + setMark(ctx + '|' + si, p[2]) + '</span><span class="sub">' + (ov ? 'свой вес · ' : barUp(e, ctx) ? 'вес прибавлен · ' : fmtN(p[0]) + '% · ') + 'сторона ' + platesText(kg) + '</span></button>';
+        return '<button type="button" class="set' + (ov ? ' edited' : '') + setCls(ctx + '|' + si, p[2]) + '" data-set="' + ctx + '|' + si + '"><span class="kg">' + kg + ' кг × ' + repTxt(e, p) + ' × ' + p[2] + setMark(ctx + '|' + si, p[2]) + '</span><span class="sub">' + (ov ? 'свой вес · ' : barUp(e, ctx) ? 'вес прибавлен · ' : barDown(e, ctx) ? 'вес снижен — 2 раза не добрал · ' : fmtN(p[0]) + '% · ') + 'сторона ' + platesText(kg) + '</span></button>';
       }
       if (e.t === 'k') {
         var wn = waveFor(e, +ctx.split('|')[0]), reps = wn ? WAVE[wn].r.join('–') : p[0], nk = wn ? nextKg(e.n, ctx) : null;
@@ -1743,7 +1777,7 @@ html.simple #today .icon-row { display: none !important; }
     var from = r.wave || 'medium', reps = r.reps || 0, kg, up = false;
     if (from === wn) {
       up = reps >= WAVE[wn].r[1];
-      kg = r.kg + (up ? st : 0);
+      kg = r.kg + (up ? st : reps && reps < WAVE[wn].r[0] ? -st : 0);
     } else {
       var have = reps || (WAVE[from].r[0] + WAVE[from].r[1]) / 2, want = (WAVE[wn].r[0] + WAVE[wn].r[1]) / 2;
       kg = r.kg * (1 + have / 30) / (1 + want / 30);
@@ -1905,9 +1939,9 @@ html.simple #today .icon-row { display: none !important; }
   var chartSel = store.get('chart', '');
   function renderCharts() {
     var names = exNames();
-    if (!names.length) { renderSignals(); renderLevel(); renderCycle(); $('charts-body').innerHTML = '<div class="progress-card"><p class="empty">Пока нет записей. Отметь вес и повторы последнего подхода хотя бы в одном упражнении.</p></div>'; return; }
+    if (!names.length) { renderSignals(); renderLevel(); renderCycle(); renderWload(); $('charts-body').innerHTML = '<div class="progress-card"><p class="empty">Пока нет записей. Отметь вес и повторы последнего подхода хотя бы в одном упражнении.</p></div>'; return; }
     if (names.indexOf(chartSel) < 0) chartSel = names.indexOf(BENCH_NAME) >= 0 ? BENCH_NAME : names[0];
-    renderSignals(); renderLevel(); renderCycle();
+    renderSignals(); renderLevel(); renderCycle(); renderWload();
     $('charts-body').innerHTML = '<select class="field-select" id="chart-sel" aria-label="Упражнение">' + names.map(function (n) { return '<option' + (n === chartSel ? ' selected' : '') + '>' + esc(n) + '</option>'; }).join('') + '</select><div class="progress-card">' + exChartHtml(chartSel) + '</div>';
   }
   var BENCH_NAME = 'Жим штанги лёжа';
@@ -2199,7 +2233,13 @@ html.simple #today .icon-row { display: none !important; }
     if (all && box && !box.checked) { box.checked = true; box.dispatchEvent(new Event('change', { bubbles: true })); }
   }
   function closeSheet() { $('sheet-root').innerHTML = ''; }
-  function restFor(f, e) { return e.t !== 'b' ? 90 : f.main ? 180 : 150; }
+  // Rest by week type: light 1:30, medium 2:00, heavy 3:00, peak and test 4:00 for the base; other barbell work 30 s less; «подбор» shorter.
+  function restBy(wk, isMain, isBar) {
+    var t = TYPES[wk - 1], base = { light: 90, volume: 120, heavy: 180, peak: 240, test: 240 }[t] || (t === 'deload' || t === 'intro' ? 90 : 150);
+    if (!isBar) return { light: 60, volume: 90, heavy: 120 }[t] || 90;
+    return isMain ? base : Math.max(60, base - 30);
+  }
+  function restFor(f, e) { return restBy(current, f.main, e.t === 'b'); }
   function doneRow(ref, total, rest) {
     var n = setsDone[ref] || 0;
     return '<button class="btn primary" type="button" data-done="' + ref + '" data-total="' + total + '" data-rest-after="' + rest + '"' + (n >= total ? ' disabled' : '') + '>' + (n >= total ? 'Все подходы сделаны' : 'Подход ' + (n + 1) + ' из ' + total + ' сделан · отдых ' + fmtT(rest)) + '</button>' +
@@ -2309,7 +2349,7 @@ html.simple #today .icon-row { display: none !important; }
       if (e.s && e.t === 'b') parseSets(e.s).forEach(function (p, si) { var kg = setKg(e, ctx, si, p); if (kg) sets.push({ ref: ctx + '|' + si, kg: kg, reps: repTxt(e, p), total: p[2], bar: true }); });
       else if (e.s && e.t === 'k') { var wn = waveFor(e, wk); if (wn) { var nk = nextKg(e.n, ctx); parseSets(e.s).forEach(function (p, si) { sets.push({ ref: ctx + '|' + si, kg: nk ? nk.kg : null, reps: WAVE[wn].r.join('–'), total: p[1], wave: WAVE[wn].txt + (nk && nk.est ? ' · стартовый вес: легко или тяжело — поменяй' : '') }); }); } }
       if (mi === ei && e.t === 'b' && sets.length) warm = warmList(e, ctx).map(function (w, i) { return { ref: 'w|' + ctx + '|' + i, kg: w[0], reps: w[1], total: 1, bar: true, warm: true }; });
-      out.push({ e: e, kk: key(wk, di, ei), ctx: ctx, sets: sets, warm: warm, main: mi === ei, rest: e.t !== 'b' ? 90 : mi === ei ? 180 : 150,
+      out.push({ e: e, kk: key(wk, di, ei), ctx: ctx, sets: sets, warm: warm, main: mi === ei, rest: restBy(wk, mi === ei, e.t === 'b'),
         log: (e.t === 'b' && sets.length > 0) || (e.t === 'k' && !!e.s) });
     });
     return out;
@@ -2850,6 +2890,7 @@ html.simple #today .icon-row { display: none !important; }
     h += '<p class="hint">Пройдено недель: <b>' + wd + ' из ' + NW + '</b>. ' + (wd >= NW - 1 ? 'Цикл почти пройден — пора поднять максимумы и начать заново.' : 'Новый цикл начинают после проверки максимума в последней неделе.') + '</p>';
     h += '<div class="cyc-list">' + LIFTS.map(function (L) { var sg = suggestMax(L[0], L[1]); return '<div><b>' + L[2] + '</b><span>' + sg.old + ' → <b class="' + (sg.nv > sg.old ? 'up' : '') + '">' + sg.nv + ' кг</b>' + (sg.nv > sg.old ? ' (+' + (sg.nv - sg.old) + ')' : '') + '</span></div>'; }).join('') + '</div>';
     h += '<p class="hint">Новый максимум считается по лучшему подходу из твоих записей, но не больше +5 кг в жиме и +10 кг в приседе и становой за цикл — так рост идёт без срывов.</p>';
+    if (PROG !== 'sr') h += '<p class="hint">Направление этого цикла:</p>' + focusChips('data-focus-now', FOCUS) + '<p class="hint">«Объём» — больше повторов, мышцы и выносливость. «Сила» — меньше повторов, больше вес: хорошо после цикла на объём.</p>';
     h += '<button class="btn primary" type="button" data-cycle>Начать цикл ' + (CYCLE + 1) + '</button></div>';
     if (cycles.length) h += '<div class="card" style="margin-top:12px"><h3><i class="ph ph-ranking" aria-hidden="true"></i>Прошлые циклы</h3><div class="cyc-list">' + cycles.map(function (c) { return '<div><b>Цикл ' + c.c + ' · ' + fmtDate(c.end) + '</b><span>жим ' + c.from.bench + ' → <b class="' + (c.to.bench > c.from.bench ? 'up' : '') + '">' + c.to.bench + '</b></span></div>'; }).join('') + '</div></div>';
     $('cycle').innerHTML = h;
@@ -2860,11 +2901,13 @@ html.simple #today .icon-row { display: none !important; }
     $('sheet-root').innerHTML = '<div class="scrim" data-close></div><div class="sheet tall" role="dialog" aria-label="Новый цикл"><div class="grab"></div><div class="what">Цикл ' + (CYCLE + 1) + ' · новые максимумы</div><div class="maxes">' +
       LIFTS.map(function (L) { var sg = suggestMax(L[0], L[1]); return '<div class="field"><label for="nc-' + L[0] + '">' + L[2] + ', кг</label><input id="nc-' + L[0] + '" type="number" inputmode="numeric" min="20" value="' + sg.nv + '"></div>'; }).join('') + '</div>' +
       '<p class="hint">Отметки и записи этого цикла уйдут в историю: неделя снова станет первой, графики начнутся заново, а лучшие результаты прошлых циклов останутся для сравнения.' + (wd < NW ? ' <b>Пройдено ' + wd + ' из ' + NW + ' недель.</b>' : '') + '</p>' +
+      (PROG !== 'sr' ? '<p class="hint">Направление нового цикла (обычно чередуют: объём → сила → объём):</p>' + focusChips('data-focus-next', FOCUS === 'volume' ? 'strength' : 'volume') : '') +
       '<button class="btn primary" type="button" data-cycle-go>Начать цикл ' + (CYCLE + 1) + '</button><button class="btn" type="button" data-close>Отмена</button></div>';
   });
   $('sheet-root').addEventListener('click', function (ev) {
     if (!ev.target.closest('[data-cycle-go]')) return;
-    var from = {}, to = {};
+    var from = {}, to = {}, fsel = document.querySelector('#sheet-root [data-focus-next].on');
+    if (fsel) setFocus(fsel.getAttribute('data-focus-next'));
     LIFTS.forEach(function (L) { from[L[0]] = +maxes[L[0]] || 0; var v = parseInt($('nc-' + L[0]).value, 10); to[L[0]] = v > 0 ? v : from[L[0]]; });
     Object.keys(results).forEach(function (ctx) {
       var f; try { f = findEx(ctx); } catch (er) { return; }
@@ -2976,6 +3019,56 @@ html.simple #today .icon-row { display: none !important; }
     });
     paintGoal();
   })();
+
+  // ---------- weekly barbell load: plan vs done ----------
+  function weekTon(wk) {
+    var plan = 0, done = 0, lifts = 0, liftsDone = 0;
+    WEEKS[wk - 1].days.forEach(function (day, di) {
+      items(day).forEach(function (e, ei) {
+        var it = e.t === 'or' ? e.a : e; if (it.t !== 'b' || !it.s) return;
+        var ctx = wk + '|' + di + '|' + ei + '|a';
+        parseSets(it.s).forEach(function (p2, si) {
+          var kg = setKg(it, ctx, si, p2) || 0, n = setsDone[ctx + '|' + si] || 0;
+          plan += kg * p2[1] * p2[2]; lifts += p2[1] * p2[2];
+          done += kg * p2[1] * Math.min(n, p2[2]); liftsDone += p2[1] * Math.min(n, p2[2]);
+        });
+      });
+    });
+    return { plan: plan, done: done, lifts: lifts, liftsDone: liftsDone };
+  }
+  function renderWload() {
+    var el = $('wload'); if (!el || PROG === 'sr' && !WEEKS.length) return;
+    var data = []; for (var w = 1; w <= NW; w++) data.push(weekTon(w));
+    var mx = Math.max.apply(null, data.map(function (d) { return Math.max(d.plan, d.done); })) || 1;
+    var W = 320, H = 150, L = 6, B = 20, T = 8, bw = (W - L * 2) / NW;
+    var col = { light: '#a9c79c', volume: 'var(--fg)', heavy: 'var(--accent)', peak: 'var(--accent)', test: '#ff8a65', deload: '#a9c79c', intro: '#a9c79c', moderate: 'var(--fg)' };
+    var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Нагрузка штанги по неделям">';
+    data.forEach(function (d, i) {
+      var x = L + i * bw + 3, w2 = bw - 6, hp = (H - B - T) * d.plan / mx, hd = (H - B - T) * d.done / mx, c = col[TYPES[i]] || 'var(--fg)';
+      svg += '<rect x="' + x.toFixed(1) + '" y="' + (H - B - hp).toFixed(1) + '" width="' + w2.toFixed(1) + '" height="' + hp.toFixed(1) + '" fill="none" stroke="' + c + '" stroke-width="1.5" opacity=".7"/>';
+      if (hd > 0) svg += '<rect x="' + x.toFixed(1) + '" y="' + (H - B - hd).toFixed(1) + '" width="' + w2.toFixed(1) + '" height="' + hd.toFixed(1) + '" fill="' + c + '"/>';
+      svg += '<text x="' + (x + w2 / 2).toFixed(1) + '" y="' + (H - 6) + '" text-anchor="middle" font-size="10" fill="' + (i + 1 === current ? 'var(--accent)' : 'var(--muted)') + '" font-family="var(--mono)">' + (i + 1) + '</text>';
+    });
+    svg += '</svg>';
+    var cw = data[current - 1];
+    el.innerHTML = '<h2>Нагрузка по неделям</h2><div class="card wl-chart">' + svg +
+      '<div class="wl-legend"><span><i style="background:#a9c79c"></i>лёгкая</span><span><i style="background:var(--fg)"></i>средняя</span><span><i style="background:var(--accent)"></i>тяжёлая и пик</span><span><i style="border:1.5px solid var(--muted)"></i>план</span></div>' +
+      '<p class="hint">Тоннаж штанги: контур — план, заливка — сделанные подходы. Нагрузка должна идти волной: лёгкая неделя ниже, тяжёлая выше. Неделя ' + current + ': сделано ' + fmtN(Math.round(cw.done / 100) / 10) + ' т из ' + fmtN(Math.round(cw.plan / 100) / 10) + ' т, подъёмов ' + cw.liftsDone + ' из ' + cw.lifts + '.</p></div>';
+  }
+  // cycle focus switch (cycle card + new-cycle sheet)
+  function focusKey() { return 'club150:' + (PROFILE !== 'main' ? PROFILE + ':' : '') + 'focus'; }
+  function setFocus(f2) { try { if (f2 === 'strength') localStorage.setItem(focusKey(), 'strength'); else localStorage.removeItem(focusKey()); } catch (er) {} }
+  function focusChips(attr, cur) {
+    return '<div class="ready-row" role="group" aria-label="Направление цикла">' + [['volume', 'Объём · 15–20 / 10–12 / 6–8'], ['strength', 'Сила · 10–12 / 6–8 / 4–6']].map(function (o) {
+      return '<button type="button" class="chip-btn' + (cur === o[0] ? ' on' : '') + '" ' + attr + '="' + o[0] + '" aria-pressed="' + (cur === o[0]) + '">' + o[1] + '</button>';
+    }).join('') + '</div>';
+  }
+  document.addEventListener('click', function (ev) {
+    var fn = ev.target.closest('[data-focus-now]');
+    if (fn) { var v = fn.getAttribute('data-focus-now'); if (v === FOCUS) return; if (confirm('Сменить направление этого цикла на «' + (v === 'strength' ? 'Сила' : 'Объём') + '»? Повторы и проценты штанги пересчитаются, записи останутся.')) { setFocus(v); location.reload(); } return; }
+    var fx = ev.target.closest('[data-focus-next]');
+    if (fx) { fx.parentNode.querySelectorAll('[data-focus-next]').forEach(function (b3) { var on = b3 === fx; b3.classList.toggle('on', on); b3.setAttribute('aria-pressed', String(on)); }); }
+  });
   renderLicense();
   renderAll(); renderBody();
   prBest = bestBench();
@@ -2984,7 +3077,7 @@ html.simple #today .icon-row { display: none !important; }
 
 <script>
 (function () {
-  var MAP = { today: ['today'], week: ['week'], stats: ['signals', 'progress', 'level', 'calendar', 'charts', 'body', 'cycle'], club: ['license', 'look', 'remind', 'sr-info', 'plates', 'backup', 'maxes', 'rules', 'hall', 'principles', 'codex', 'final'] };
+  var MAP = { today: ['today'], week: ['week'], stats: ['signals', 'progress', 'level', 'wload', 'calendar', 'charts', 'body', 'cycle'], club: ['license', 'look', 'remind', 'sr-info', 'plates', 'backup', 'maxes', 'rules', 'hall', 'principles', 'codex', 'final'] };
   var secs = document.querySelectorAll('main > section');
   secs.forEach(function (s) {
     var key = s.id || (s.classList.contains('final') ? 'final' : '');
