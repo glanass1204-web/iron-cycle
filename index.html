@@ -1101,7 +1101,7 @@ html.simple #today .icon-row { display: none !important; }
   // Week 12 is a light taper before the max test in week 13.
   if (PROG !== 'sr') {
     TYPES = ['light', 'volume', 'heavy', 'light', 'volume', 'heavy', 'volume', 'light', 'volume', 'heavy', 'heavy', 'light', 'test'];
-    TYPE_INFO.light = ['Лёгкая неделя', 'Всё легко: 15–20 повторений небольшим весом, до отказа не доходить. Техника идеальная — восстанавливаемся. В становой 10–12.'];
+    TYPE_INFO.light = ['Лёгкая неделя', 'Всё легко: 15 повторений спокойно, до 20 — только если идёт легко. До отказа не доходить. Техника идеальная — восстанавливаемся. В становой 10–12.'];
     TYPE_INFO.volume = ['Средняя неделя · объём', '10–12 повторений до технического отказа: подход заканчиваешь, когда техника начинает ломаться. Техника правильная. В становой 8–10.'];
     TYPE_INFO.heavy = ['Тяжёлая неделя', '6–8 повторений с большим весом. Техника может быть свободнее, но без рывков и потери контроля. Страхующий рядом. В становой 5–6.'];
   }
@@ -1109,7 +1109,8 @@ html.simple #today .icon-row { display: none !important; }
   // Deadlift family: 10–12 / 8–10 / 5–6 — on 15–20 the lower back tires first and the technique breaks.
   var RNG_D = { light: [10, 12], volume: [8, 10], heavy: [5, 6] };
   // % of the lift's max for each repeat of the week type: the weight grows through the cycle.
-  var CLUB_PCT = { light: [55, 57, 58, 50], volume: [70, 72, 74, 75], heavy: [80, 82, 84, 85] };
+  // Checked against rep-max tables (Epley/Brzycki): 15–20 reps ≈ 60–67% of max, 10–12 ≈ 71–75%, 6–8 ≈ 79–83%.
+  var CLUB_PCT = { light: [55, 55, 57, 50], volume: [68, 70, 70, 72], heavy: [78, 80, 80, 82] };
   // Barbell variations take a share of the main lift's %: standing press ×0.5, stiff-leg / Romanian ×0.7, board press ×0.95, grip variations ×0.85.
   function varK(n) { return /стоя/i.test(n) ? 0.5 : /прямых ногах|Мёртвая|Румынская/i.test(n) ? 0.7 : /бруска/i.test(n) ? 0.95 : 0.85; }
   function repTxt(e, p) { return e.rng ? e.rng[0] + '–' + e.rng[1] : p[1]; }
@@ -1413,14 +1414,18 @@ html.simple #today .icon-row { display: none !important; }
   function setKg(e, ctx, si, p) {
     var o = overrides[ctx + '|' + si]; if (o) return o;
     var c = ctx.split('|'), mx = +maxes[e.lift]; if (!(mx > 0)) return null;
-    var kg = loadable(mx * p[0] / 100 * dayFactor(c[0], c[1]), p[0] >= 85), up = barUp(e, ctx);
-    return up && up * dayFactor(c[0], c[1]) > kg ? loadable(up * dayFactor(c[0], c[1])) : kg;
+    var f = dayFactor(c[0], c[1]), kg = loadable(mx * p[0] / 100 * f, p[0] >= 85), up = barUp(e, ctx);
+    if (up && up * f > kg) kg = loadable(up * f);
+    // Never above what the max allows for the low end of the range (Epley): with 10 kg steps the nearest weight can overshoot.
+    if (e.rng) { var lim = mx * f / (1 + e.rng[0] / 30); if (kg > lim) kg = Math.max(BAR, loadable(lim, true)); }
+    return kg;
   }
   // Double progression on barbell ranges: the last week of the same type ended at the top of the range
   // (12 of 10–12, 8 of 6–8, 20 of 15–20) → this week +10 kg on top of that weight.
   function barUp(e, ctx) {
     if (!e.rng || !results) return 0;
     var wk = +ctx.split('|')[0], t = TYPES[wk - 1], best = null, bestW = 0;
+    if (t === 'light') return 0; // light weeks stay light: no weight added from them
     Object.keys(results).forEach(function (k2) {
       var w = +k2.split('|')[0], r = results[k2];
       if (w >= wk || w < bestW || TYPES[w - 1] !== t || !r || !r.kg || !r.reps) return;
