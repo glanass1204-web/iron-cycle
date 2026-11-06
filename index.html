@@ -1646,7 +1646,7 @@ html.simple #today .icon-row { display: none !important; }
         (rv === 'tired' ? '<p class="ready-note">Веса этой тренировки снижены на 10%. Лучше сделать чисто и восстановиться, чем сорвать прогресс.</p>' : rv === 'bad' ? '<p class="ready-note warn">Лучше перенести тренировку на завтра. Если идёшь — веса снижены на 20%, подход «+» не делай.</p>' : '<p class="ready-note">Спал меньше 6 часов — выбирай «Устал».</p>') + '</div>';
       if (ts) {
         var tsi = parseSets(main.s).map(String).indexOf(String(ts)), kg = setKg(main, wk + '|' + di + '|' + mi + '|a', tsi, ts);
-        h += '<div class="topset"><div class="topset-row"><div class="big">' + kg + ' <small>кг</small></div><div class="what">самый тяжёлый подход · ' + fmtN(ts[0]) + '% × ' + repTxt(main, ts) + ' × ' + ts[2] + '</div></div>' + barbellHtml(kg) + legendHtml(kg) + '</div>';
+        h += '<div class="topset"><div class="topset-row"><div class="big">' + kg + ' <small>кг</small></div><div class="what">самый тяжёлый подход · ' + fmtN(ts[0]) + '% от ' + (+maxes[main.lift] || '—') + ' кг × ' + repTxt(main, ts) + ' × ' + ts[2] + '</div></div>' + barbellHtml(kg) + legendHtml(kg) + '</div>';
       }
       h += '<div class="cta"><button class="btn primary gym-cta" type="button" data-gym="' + di + '"><i class="ph ph-play-circle" aria-hidden="true"></i> Начать в зале</button><button class="btn" type="button" data-goday="' + di + '">Открыть тренировку</button></div>';
       var sg = stalls();
@@ -2271,7 +2271,7 @@ html.simple #today .icon-row { display: none !important; }
     var kg = setKg(e, ctx, si, p), plan = barKg(p[0], e.lift), ov = !!overrides[ref];
     var restDefault = f.main ? 180 : 120;
     $('sheet-root').innerHTML = '<div class="scrim" data-close></div><div class="sheet" role="dialog" aria-label="Подход"><div class="grab"></div>' +
-      '<div class="what">' + esc(e.n) + ' · ' + fmtN(p[0]) + '% ' + LIFT_NAME[e.lift] + '</div>' +
+      '<div class="what">' + esc(e.n) + ' · ' + fmtN(p[0]) + '% ' + LIFT_NAME[e.lift] + ' (1ПМ ' + (+maxes[e.lift] || '—') + ' кг)' + '</div>' +
       '<div class="big">' + kg + ' <small>кг × ' + repTxt(e, p) + ' × ' + p[2] + '</small></div>' + barbellHtml(kg) + legendHtml(kg) +
       '<div class="side">На каждую сторону: <b>' + platesText(kg) + '</b> · гриф 20 кг</div>' +
       '<div class="adj"><button class="btn" type="button" data-adj="-' + barStep() + '" data-ref="' + ref + '" aria-label="Минус ' + barStep() + ' кг">−' + barStep() + ' кг</button><span>' + (ov ? 'по программе ' + plan + ' кг' : 'вес по программе') + '</span><button class="btn" type="button" data-adj="' + barStep() + '" data-ref="' + ref + '" aria-label="Плюс ' + barStep() + ' кг">+' + barStep() + ' кг</button></div>' +
