@@ -2981,7 +2981,7 @@ html.simple #today .icon-row { display: none !important; }
     WEEKS[current - 1].days.forEach(function (_, di) { var s2 = dayStats(current, di), rk = current + '-' + di; if (s2.got < s2.n && ready[rk] !== 'tired' && ready[rk] !== 'bad') canLight = true; });
     el.innerHTML = '<div class="card"><h3><i class="ph ph-warning" aria-hidden="true" style="color:#ff8a65"></i>Застой — что делать</h3>' + sg.map(function (x) {
       var alt = altFor(x.n);
-      var adv = x.main ? 'Тело не успевает восстановиться. Облегчи эту неделю: веса −10%, техника идеальная — и прогресс пойдёт снова.' : alt ? 'Замени на 3–4 недели на «' + esc(alt) + '» или сбрось вес на 10% и набирай заново.' : 'Сбрось вес на 10% и набирай заново или поменяй на похожее упражнение на 3–4 недели.';
+      var adv = x.main ? 'Тело не успевает восстановиться. Облегчи эту неделю: веса −10%, техника идеальная — и прогресс пойдёт снова.' + (PROG !== 'sr' ? ' Если застой вернётся — смени направление цикла на «' + (FOCUS === 'strength' ? 'Объём' : 'Сила') + '» (карточка «Цикл» ниже): организм привыкает к одному режиму за 6–12 недель.' : '') : alt ? 'Замени на 3–4 недели на «' + esc(alt) + '» или сбрось вес на 10% и набирай заново.' : 'Сбрось вес на 10% и набирай заново или поменяй на похожее упражнение на 3–4 недели.';
       return '<div class="signal"><b>' + esc(x.n) + '</b><p>' + x.why + '</p><p>' + adv + '</p></div>';
     }).join('') + (canLight ? '<button class="btn primary" type="button" data-lighten>Облегчить неделю ' + current + ' (−10%)</button>' : '<p class="hint">Неделя ' + current + ' уже облегчена.</p>') + '</div>';
     el.hidden = false;
