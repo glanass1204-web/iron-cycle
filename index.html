@@ -981,7 +981,7 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
     ]},
     { motto: 'Первые успехи', days: [
       [b(BENCH, P, '80x3x6'), b('Жим средним хватом', P, '55x5x4'), k(FLY, '10x4'), side(), k(ABS, '30x3')],
-      [b(DL, D, '55x8x4'), k('Тяга гантелей в наклоне к груди, локти в стороны', '8x4'), k(LAT, '10x3'), k('Пуловер с гантелью, опускание за 4 секунды', '4x3', 'Вес тяжелее обычного пуловера, вниз медленно.'), k(CURL, '6x6'), k(REV, '8x5')],
+      [b(DL, D, '55x8x4'), k('Тяга гантелей в наклоне к груди, локти в стороны', '8x4'), k(LAT, '10x3'), k(ROW, '10x3', 'Вместо второго пуловера: тяга даёт спине больше. Тянешь локтем к поясу, без рывка.'), k(CURL, '6x6'), k(REV, '8x5')],
       [or(b(SQ, S, '60x12x3'), k(LEGEXT, '20x5')), b(SLDL, D, '45x10x3', 'Ноги чуть согнуты, гриф скользит по бёдрам, таз назад — работает задняя поверхность бедра.'), b(OHP, P, '40x5x5'), side('12x4'), delts(), k(ABS, '30x3')]
     ]},
     { motto: 'Уверенность набирает обороты!', days: [
@@ -1758,7 +1758,7 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
   function waveOf(wk) { var t = TYPES[wk - 1]; return t === 'test' ? null : LIGHT[t] ? 'light' : t === 'heavy' ? 'heavy' : 'medium'; } // peak week: «подбор» stays medium
   var WAVE = { light: { r: [15, 20], f: 0.7, txt: 'лёгкая: 15–20 повт.' }, medium: { r: [10, 12], f: 1, txt: 'средняя: 10–12 повт.' }, heavy: { r: [6, 8], f: 1.15, txt: 'тяжёлая: 6–8 повт.' } };
   // A guide note «легко» on an exercise always means the light wave.
-  function waveFor(e, wk) { if (e.t !== 'k' || NO_WAVE.test(e.n)) return null; var w = waveOf(wk); return w && /легко/i.test(e.note || '') ? 'light' : w; }
+  function waveFor(e, wk) { if (e.t !== 'k' || NO_WAVE.test(e.n)) return null; var w = waveOf(wk); if (w === 'heavy' && /Пуловер/.test(e.n)) w = 'medium'; return w && /легко/i.test(e.note || '') ? 'light' : w; } // pullover never goes heavy: shoulders
   // Two dumbbells (жим гантелей, разводка, махи…): the weight is both together, 60 = 2 × 30. One dumbbell: its own weight.
   function pairDb(name) { return /гантелей|гантелями/i.test(name) && !/одной рукой/i.test(name); }
   function dbNote(name, kg) { return pairDb(name) && kg ? '2 гантели по ' + fmtN(kg / 2) + ' кг' : ''; }
