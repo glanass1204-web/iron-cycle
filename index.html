@@ -696,6 +696,16 @@ html.simple #today .icon-row { display: none !important; }
 .wl-chart svg { width: 100%; height: auto; display: block; }
 .wl-legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 12px; color: var(--muted); }
 .wl-legend i { display: inline-block; width: 10px; height: 10px; margin-right: 5px; vertical-align: -1px; }
+/* narrow phones: the header fits in one row; names with Ё/Й in the hall of fame don't touch */
+@media (max-width: 400px) {
+  .brand { font-size: 19px !important; letter-spacing: .03em !important; }
+  .install { font-size: 10px !important; padding: 6px 7px !important; letter-spacing: .04em !important; }
+  .maxchip, .prof-btn { padding: 6px 6px !important; }
+  .bar-actions { gap: 4px !important; }
+}
+@media (max-width: 340px) { .brand { font-size: 16px !important; } .install { display: none !important; } }
+.legend b { line-height: 1.15 !important; }
+.block h2, .tab-title, .week-head h2, .win h2, .final h2, .card h3 { line-height: 1.12 !important; }
 </style>
 
 <header class="appbar">
