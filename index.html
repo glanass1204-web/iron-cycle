@@ -707,6 +707,7 @@ html.simple #today .icon-row { display: none !important; }
 .legend b { line-height: 1.15 !important; }
 .block h2, .tab-title, .week-head h2, .win h2, .final h2, .card h3 { line-height: 1.12 !important; }
 html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited .sub { display: block !important; color: var(--accent); }
+#nutrition .food-in { grid-template-columns: repeat(2, minmax(0, 1fr)); margin-bottom: 12px; }
 </style>
 
 <header class="appbar">
@@ -761,21 +762,12 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
     <p class="hint">Наша программа собрана из лучшего, что проверено временем и исследованиями. База — волны <b>5/3/1 Джима Вендлера</b>: самая популярная силовая система для натуралов, медленный, но стабильный рост. Рельеф — плотная подсобка и питание по рекомендациям для натуральных атлетов на сушке (Helms и соавт., 2014).</p>
     <ol class="rules">
       <li><div><b>Рабочий максимум.</b> Проценты считаются от 90% твоего 1ПМ, в блоке 2 — от 92,5%, в блоке 3 — от 95%. Приложение уже пересчитало всё в килограммы и блины.</div></li>
-      <li><div><b>Волна из 4 недель:</b> 5-5-5 → 3-3-3 → 5-3-1 → разгрузка. 3-й подход базы — <b>«+»</b>: максимум повторов до отказа со страхующим (кроме разгрузки). Запиши результат — график покажет рост.</div></li>
+      <li><div><b>Волна из 4 недель:</b> 5-5-5 → 3-3-3 → 5-3-1 → разгрузка. 3-й подход базы — <b>«+»</b>: максимум повторов, но 1 повтор оставь в запасе — без отказа, как советует Вендлер (кроме разгрузки). Запиши результат — график покажет рост.</div></li>
       <li><div><b>5×5 с первым весом</b> после базы (First Set Last) — объём для силы и мышц без лишней усталости.</div></li>
       <li><div><b>Подсобка суперсетами</b>, отдых 45–60 секунд: пульс высокий, тратится больше энергии, мышцы в тонусе. Финишер в конце — на максимум.</div></li>
       <li><div><b>Кардио:</b> 2–3 раза в неделю по 30–40 минут быстрой ходьбы или велосипеда в дни отдыха, или 8–10 тысяч шагов каждый день.</div></li>
-      <li><div><b>Питание для рельефа:</b> калорий на 15–20% меньше, чем тратишь; худеть по 0,5–1% веса в неделю — так сохраняются мышцы и сила. Белок — 2–2,5 г на кг веса, сон 7–9 часов.</div></li>
+      <li><div><b>Питание для рельефа:</b> калорий на 15–20% меньше, чем тратишь; худеть по 0,5–1% веса в неделю — так сохраняются мышцы и сила. Белок — 1,8–2,2 г на кг веса (на сушке ближе к 2,2), сон 7–9 часов.</div></li>
     </ol>
-    <div class="calc">
-      <div class="eyebrow">Калькулятор питания на сушку</div>
-      <div class="calc-row">
-        <div class="field"><label for="bw">Вес тела, кг</label><input id="bw" inputmode="numeric" type="number" min="40" max="200" value="90"></div>
-        <div class="field"><label for="act">Активность</label><select id="act" class="field-select"><option value="30">Сидячая работа</option><option value="33" selected>Средняя</option><option value="36">Физическая работа</option></select></div>
-      </div>
-      <div class="pct-table" id="food"></div>
-      <p class="hint">Ориентир, не медицинский расчёт. Следи за весом утром натощак: если за 2 недели не меняется — убери ещё 150–200 ккал.</p>
-    </div>
   </section>
   <section class="wrap block" id="license"></section>
 
@@ -819,6 +811,22 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
       <label class="btn" for="backup-load">Загрузить копию</label><input type="file" id="backup-load" accept="application/json,.json" hidden>
     </div>
     <p class="toast" id="backup-msg" aria-live="polite"></p>
+  </section>
+
+  <section class="wrap block" id="nutrition">
+    <h2>Питание</h2>
+    <p class="hint">Калории и БЖУ под твою цель. Формула Миффлина — Сан Жеора: учитывает пол, возраст, рост и вес.</p>
+    <div class="maxes food-in">
+      <div class="field"><label for="f-sex">Пол</label><select id="f-sex" class="field-select"><option value="m">Мужской</option><option value="f">Женский</option></select></div>
+      <div class="field"><label for="f-age">Возраст</label><input id="f-age" type="number" inputmode="numeric" min="14" max="90" value="30"></div>
+      <div class="field"><label for="f-h">Рост, см</label><input id="f-h" type="number" inputmode="numeric" min="130" max="230" value="178"></div>
+      <div class="field"><label for="bw">Вес, кг</label><input id="bw" type="number" inputmode="decimal" min="40" max="250" value="90"></div>
+      <div class="field"><label for="act">Активность</label><select id="act" class="field-select"><option value="1.375">Сидячая работа + 3 трен.</option><option value="1.55" selected>Средняя</option><option value="1.725">Физическая работа</option></select></div>
+      <div class="field"><label for="f-goal">Цель</label><select id="f-goal" class="field-select"><option value="cut">Сушка</option><option value="keep">Держать вес</option><option value="gain">Набор</option></select></div>
+      <div class="field"><label for="f-pace">Темп сушки</label><select id="f-pace" class="field-select"><option value="0.5">0,5% веса в неделю</option><option value="0.75" selected>0,75% в неделю</option><option value="1">1% в неделю</option></select></div>
+    </div>
+    <div class="pct-table" id="food"></div>
+    <p class="hint">Ориентир, не медицинский расчёт. Взвешивайся утром натощак раз в неделю: если за 2 недели вес не идёт к цели — поправь калории на 150–200 ккал. Вес подставляется из «Вес и замеры».</p>
   </section>
 
   <section class="wrap block" id="maxes">
@@ -891,7 +899,7 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
       <li><div><b>Периодизация.</b> Тяжёлые, умеренные и облегчённые недели чередуются: 4-я и 8-я — облегчённые (−10% веса, вдвое меньше подходов), перед проверкой максимума — подводка. Тип недели считается из реальной нагрузки (проценты × повторы × подходы) и написан в её начале вместе со шкалой нагрузки.</div></li>
       <li><div><b>Тяжёлые дни — на свежую голову.</b> Перед тренировкой отмечаешь самочувствие. «Устал» — веса −10%, «Плохо» — лучше перенести или −20%. Тяжёлую неделю планируй на время, когда высыпаешься.</div></li>
       <li><div><b>Береги плечи.</b> В жиме лопатки сведены, небольшой мост, хват средний: слишком широкий хват чаще всего травмирует плечо. Больно — меняй хват; не помогло — жми с пола или со стоек-ограничителей, чтобы локти не уходили ниже параллели. Болит и так — замени упражнение другим на ту же мышцу. Через боль не жми. После тренировки — растяжка груди, плеч и спины по минуте; раз-два в неделю — вис на турнике 3×30 секунд и вращения плеча с резиной 2–3×20.</div></li>
-      <li><div><b>Сон и еда.</b> Без них программа не работает: спи 7–8 часов, меньше 6 — уже «Устал». Ешь регулярно, белка около 1,5 г на кг своего веса (при 80 кг — 120 г: мясо, рыба, яйца, творог).</div></li>
+      <li><div><b>Сон и еда.</b> Без них программа не работает: спи 7–8 часов, меньше 6 — уже «Устал». Ешь регулярно, белка 1,6–2,2 г на кг своего веса (при 80 кг — 130–175 г: мясо, рыба, яйца, творог).</div></li>
       <li><div><b>Со страхующим — больше и безопаснее.</b> Тяжёлые недели и проверку максимума делай с напарником: он подстрахует и поможет дожать.</div></li>
       <li><div><b>Контроль прогресса.</b> Смотри не только на вес: график расчётного максимума, качество техники и самочувствие. Растёт максимум, техника чистая, восстанавливаешься — всё идёт правильно.</div></li>
     </ol>
@@ -1059,7 +1067,7 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
       ]});
       continue;
     }
-    var plusNote = deload ? 'Разгрузка: легко и чисто, без отказа.' : (sw % 4 === 2 ? '3-й подход — «+»: тяжёлая неделя, максимум повторов до отказа со страхующим.' : '3-й подход — «+»: максимум повторов, пока техника ровная, без отказа.') + ' Потом 5×5 с весом первого подхода, отдых 90 секунд.';
+    var plusNote = deload ? 'Разгрузка: легко и чисто, без отказа.' : (sw % 4 === 2 ? '3-й подход — «+»: тяжёлая неделя, максимум повторов, 1 повтор в запасе, страхующий рядом.' : '3-й подход — «+»: максимум повторов, пока техника ровная, без отказа.') + ' Потом 5×5 с весом первого подхода, отдых 90 секунд.';
     function srLift(name, lift, fslSets) {
       var e = b(name, lift, srMain(sw) + (deload ? '' : '; ' + srFirst(sw, fslSets)), plusNote);
       if (!deload) e.amrap = 2;
@@ -1643,6 +1651,8 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
       h += '<div class="eyebrow">Тренировка ' + (di + 1) + ' из 3</div><h1>' + twoTone(DAYS[di]) + '</h1><div class="sub">' + (main ? esc(main.n) : esc(items(day)[0].n)) + '</div></div>';
       var rk = wk + '-' + di;
       if (ago !== null && ago >= 10 && !ready[rk]) { ready[rk] = 'tired'; store.set('ready2', ready); }
+      var lb = (function () { try { return localStorage.getItem('club150:lastBackup'); } catch (er) { return null; } })(), nW = Object.keys(dates).length;
+      if (nW >= 3 && (!lb || daysSince(lb) >= 7)) h += '<a class="signal-pill" href="#backup" style="border-color:var(--accent)"><i class="ph ph-warning" aria-hidden="true" style="color:var(--accent)"></i><span>Записи хранятся только в этом телефоне. ' + (lb ? 'Копия была ' + daysSince(lb) + ' дн. назад' : 'Копии ещё нет') + ' — сохрани её →</span></a>';
       if (ago !== null) h += '<div class="rest-note' + (ago < 1 || ago >= 10 ? ' warn' : '') + '">' + (ago === 0 ? 'Сегодня уже была тренировка. Следующую — после дня отдыха.' : ago === 1 ? 'Прошлая тренировка вчера. Если мышцы ещё забиты — отдохни ещё день.' : ago >= 10 ? 'Перерыв ' + ago + ' дн. Пропущенное не наверстывай: продолжай с этой тренировки, веса на неё снижены на 10%.' : 'Прошлая тренировка ' + ago + ' дн. назад — можно в зал.') + '</div>';
       var rv = ready[rk] || 'ok';
       h += '<div class="ready"><span>Самочувствие сегодня</span><div class="ready-row">' + [['ok', 'Отлично'], ['tired', 'Устал · −10%'], ['bad', 'Плохо · −20%']].map(function (o) { return '<button type="button" class="chip-btn' + (rv === o[0] ? ' on' : '') + '" data-ready="' + o[0] + '" data-rk="' + rk + '">' + o[1] + '</button>'; }).join('') + '</div>' +
@@ -2813,6 +2823,7 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
   // ---------- backup: every club150:* key into one JSON file ----------
   $('backup-save').addEventListener('click', function () {
     var data = {};
+    try { localStorage.setItem('club150:lastBackup', dayISO(new Date())); } catch (er) {}
     try { for (var i = 0; i < localStorage.length; i++) { var k3 = localStorage.key(i); if (k3.indexOf('club150:') === 0) data[k3] = localStorage.getItem(k3); } } catch (er) {}
     var blob = new Blob([JSON.stringify({ app: 'club150', saved: new Date().toISOString(), data: data })], { type: 'application/json' });
     var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'club150-' + dayISO(new Date()) + '.json';
@@ -2844,9 +2855,23 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
   });
   $('sr-info').hidden = PROG !== 'sr';
   function renderFood() {
-    var bw = parseFloat($('bw').value) || 0, act = +$('act').value, keep = Math.round(bw * act / 10) * 10, cut = Math.round(keep * 0.82 / 10) * 10;
-    $('food').innerHTML = bw ? ['<div><span>Поддержка веса</span><b>≈ ' + keep + ' ккал</b></div>', '<div><span>Для рельефа (−18%)</span><b>≈ ' + cut + ' ккал</b></div>', '<div><span>Белок</span><b>' + Math.round(bw * 2) + '–' + Math.round(bw * 2.5) + ' г</b></div>', '<div><span>Жиры</span><b>' + Math.round(bw * 0.8) + ' г</b></div>', '<div><span>Углеводы</span><b>≈ ' + Math.max(0, Math.round((cut - bw * 2.2 * 4 - bw * 0.8 * 9) / 4)) + ' г</b></div>', '<div><span>Темп похудения</span><b>' + (bw * 0.005).toFixed(1).replace('.', ',') + '–' + (bw * 0.01).toFixed(1).replace('.', ',') + ' кг/нед</b></div>'].join('') : '';
+    var cfg = {}; ['f-sex', 'f-age', 'f-h', 'act', 'f-goal', 'f-pace'].forEach(function (id) { cfg[id] = $(id).value; });
+    try { localStorage.setItem(store.k('food'), JSON.stringify(cfg)); } catch (er) {}
+    var bw = parseFloat(String($('bw').value).replace(',', '.')) || 0, age = +$('f-age').value || 30, h = +$('f-h').value || 178, act = +$('act').value || 1.55;
+    var goal = $('f-goal').value; $('f-pace').parentNode.hidden = goal !== 'cut';
+    if (!bw) { $('food').innerHTML = ''; return; }
+    var bmr = 10 * bw + 6.25 * h - 5 * age + ($('f-sex').value === 'f' ? -161 : 5), keep = Math.round(bmr * act / 10) * 10;
+    var pace = +$('f-pace').value || 0.75, deficit = Math.min(Math.round(bw * pace / 100 * 7700 / 7), Math.round(keep * 0.25));
+    var kcal = goal === 'cut' ? keep - deficit : goal === 'gain' ? keep + 250 : keep; kcal = Math.round(kcal / 10) * 10;
+    var pLo = goal === 'cut' ? 2 : 1.6, pHi = goal === 'cut' ? 2.2 : 2, prot = Math.round(bw * (pLo + pHi) / 2), fat = Math.round(bw * 0.9), carb = Math.max(0, Math.round((kcal - prot * 4 - fat * 9) / 4));
+    $('food').innerHTML = ['<div><span>Поддержка веса</span><b>≈ ' + keep + ' ккал</b></div>',
+      '<div><span>' + (goal === 'cut' ? 'Сушка' : goal === 'gain' ? 'Набор' : 'Твоя норма') + '</span><b>≈ ' + kcal + ' ккал</b></div>',
+      '<div><span>Белок</span><b>' + Math.round(bw * pLo) + '–' + Math.round(bw * pHi) + ' г</b></div>', '<div><span>Жиры</span><b>≈ ' + fat + ' г</b></div>',
+      '<div><span>Углеводы</span><b>≈ ' + carb + ' г</b></div>',
+      '<div><span>' + (goal === 'cut' ? 'Минус в неделю' : goal === 'gain' ? 'Плюс в неделю' : 'Вес') + '</span><b>' + (goal === 'cut' ? '≈ ' + fmtN(Math.round(bw * pace) / 100) + ' кг' : goal === 'gain' ? '≈ 0,2–0,3 кг' : 'держится') + '</b></div>'].join('');
   }
+  (function () { try { var c = JSON.parse(localStorage.getItem(store.k('food'))); if (c) Object.keys(c).forEach(function (id) { if ($(id) && c[id]) $(id).value = c[id]; }); } catch (er) {} })();
+  ['f-sex', 'f-age', 'f-h', 'f-goal', 'f-pace'].forEach(function (id) { $(id).addEventListener('change', renderFood); });
   $('bw').addEventListener('input', renderFood); $('act').addEventListener('change', renderFood); renderFood();
 
   renderCalc();
@@ -3090,7 +3115,7 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
 
 <script>
 (function () {
-  var MAP = { today: ['today'], week: ['week'], stats: ['signals', 'progress', 'level', 'wload', 'calendar', 'charts', 'body', 'cycle'], club: ['license', 'look', 'remind', 'sr-info', 'plates', 'backup', 'maxes', 'rules', 'hall', 'principles', 'codex', 'final'] };
+  var MAP = { today: ['today'], week: ['week'], stats: ['signals', 'progress', 'level', 'wload', 'calendar', 'charts', 'body', 'cycle'], club: ['license', 'look', 'remind', 'sr-info', 'plates', 'backup', 'nutrition', 'maxes', 'rules', 'hall', 'principles', 'codex', 'final'] };
   var secs = document.querySelectorAll('main > section');
   secs.forEach(function (s) {
     var key = s.id || (s.classList.contains('final') ? 'final' : '');
