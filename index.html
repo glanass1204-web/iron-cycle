@@ -791,6 +791,7 @@ html.simple #today .icon-row { display: none !important; }
       <div class="field"><label for="pl-5">5 кг, пар</label><input id="pl-5" inputmode="numeric" type="number" min="0" max="10" placeholder="много"></div>
       <div class="field"><label for="pl-2.5">2,5 кг, пар</label><input id="pl-2.5" inputmode="numeric" type="number" min="0" max="10" placeholder="нет"></div>
     </div>
+    <p class="hint">Есть хотя бы пара блинов по 2,5 кг — впиши её: шаг штанги станет 5 кг вместо 10, веса будут точнее (особенно если максимум меньше 100 кг).</p>
     <p class="toast" id="pl-max" aria-live="polite"></p>
   </section>
 
@@ -1230,6 +1231,8 @@ html.simple #today .icon-row { display: none !important; }
 
   // Gym kit: 20 kg bar, plates 20/15/10/5 kg. Smallest step: a 5 kg plate per side = 10 kg on the bar.
   var BAR = 20, PLATES = [20, 15, 10, 5, 2.5], STEP = 10;
+  // Smallest change of the bar: 5 kg with a pair of 2.5 kg plates, otherwise 10 kg (a 5 kg plate per side).
+  function barStep() { return (+plateCounts()[2.5] || 0) > 0 ? 5 : 10; }
   // Plates the gym owns, in pairs: {20: 4, 15: 1, …}. Nothing saved = plenty. Every bar weight snaps to what can be loaded.
   var plateMap = null;
   function plateCounts() { try { var v = JSON.parse(localStorage.getItem('club150:plates')); if (v) return v; } catch (e) {} return { 20: 10, 15: 10, 10: 10, 5: 10, 2.5: 0 }; }
@@ -1432,7 +1435,7 @@ html.simple #today .icon-row { display: none !important; }
       var f; try { f = findEx(k2); } catch (er) { return; }
       if (f && f.e && f.e.n === e.n) { best = r; bestW = w; }
     });
-    return best && best.reps >= e.rng[1] ? best.kg + STEP : 0;
+    return best && best.reps >= e.rng[1] ? best.kg + barStep() : 0;
   }
 
   // ---------- muscles ----------
@@ -1750,7 +1753,7 @@ html.simple #today .icon-row { display: none !important; }
     var wn = ctx ? waveFor(e, +ctx.split('|')[0]) : null;
     if (!wn && e.t === 'b' && e.rng) {
       var rb = e.rng, o1 = r.kg ? '≈ 1ПМ <b>' + e1rm(r.kg, r.reps) + ' кг</b> · ' : '';
-      return o1 + (r.reps >= rb[1] ? '<span class="up">' + rb[1] + '+ — в следующую такую неделю +10 кг</span>' : r.reps < rb[0] ? '<span class="down">ниже ' + rb[0] + ' — вес великоват</span>' : '<span class="up">в диапазоне ' + rb.join('–') + '</span>');
+      return o1 + (r.reps >= rb[1] ? '<span class="up">' + rb[1] + '+ — в следующую такую неделю +' + barStep() + ' кг</span>' : r.reps < rb[0] ? '<span class="down">ниже ' + rb[0] + ' — вес великоват</span>' : '<span class="up">в диапазоне ' + rb.join('–') + '</span>');
     }
     if (wn) { var rg = WAVE[wn].r; return r.reps > rg[1] ? '<span class="up">выше диапазона — в следующий раз вес больше</span>' : r.reps < rg[0] ? '<span class="down">ниже ' + rg[0] + ' — вес великоват</span>' : '<span class="up">в диапазоне ' + rg.join('–') + '</span>'; }
     var plan = e.t === 'b' || e.t === 'g' ? lastPart(e)[1] : lastPart(e)[0], diff = r.reps - plan, o = '';
@@ -2210,7 +2213,7 @@ html.simple #today .icon-row { display: none !important; }
       '<div class="what">' + esc(e.n) + ' · ' + fmtN(p[0]) + '% ' + LIFT_NAME[e.lift] + '</div>' +
       '<div class="big">' + kg + ' <small>кг × ' + repTxt(e, p) + ' × ' + p[2] + '</small></div>' + barbellHtml(kg) + legendHtml(kg) +
       '<div class="side">На каждую сторону: <b>' + platesText(kg) + '</b> · гриф 20 кг</div>' +
-      '<div class="adj"><button class="btn" type="button" data-adj="-10" data-ref="' + ref + '" aria-label="Минус 10 кг">−10 кг</button><span>' + (ov ? 'по программе ' + plan + ' кг' : 'вес по программе') + '</span><button class="btn" type="button" data-adj="10" data-ref="' + ref + '" aria-label="Плюс 10 кг">+10 кг</button></div>' +
+      '<div class="adj"><button class="btn" type="button" data-adj="-' + barStep() + '" data-ref="' + ref + '" aria-label="Минус ' + barStep() + ' кг">−' + barStep() + ' кг</button><span>' + (ov ? 'по программе ' + plan + ' кг' : 'вес по программе') + '</span><button class="btn" type="button" data-adj="' + barStep() + '" data-ref="' + ref + '" aria-label="Плюс ' + barStep() + ' кг">+' + barStep() + ' кг</button></div>' +
       (ov ? '<button class="btn" type="button" data-adj="0" data-ref="' + ref + '">Вернуть вес программы</button>' : '') +
       doneRow(ref, p[2], restFor(f, e)) +
       '<div class="rest-row"><button class="btn" type="button" data-rest="90">Отдых 1:30</button><button class="btn' + (restDefault === 120 ? ' primary' : '') + '" type="button" data-rest="120">2:00</button><button class="btn' + (restDefault === 180 ? ' primary' : '') + '" type="button" data-rest="180">3:00</button></div>' +
