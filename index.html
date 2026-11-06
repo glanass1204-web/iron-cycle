@@ -1596,8 +1596,8 @@ html.simple #today .icon-row { display: none !important; }
     [-1, 1].forEach(function (sg) {
       var x = sg < 0 ? cx - shaft - collar : cx + shaft + collar;
       list.forEach(function (p, i) {
-        var pl = PLATE[p], px = sg < 0 ? x - pl.t - gap * (i + 1) : x + gap * (i + 1), y = cy - pl.h / 2;
-        g += '<g class="pl" style="--dx:' + (sg * 46) + 'px;--d:' + (120 + i * 110) + 'ms">' +
+        var pl = PLATE[p], px = sg < 0 ? x - pl.t - gap : x + gap, y = cy - pl.h / 2; // plates sit tight: one gap each, up to 300 kg fits the sleeve
+        g += '<g class="pl" style="--dx:' + (sg * 46) + 'px;--d:' + (120 + i * Math.max(60, 110 - list.length * 6)) + 'ms">' +
           '<rect x="' + px + '" y="' + y + '" width="' + pl.t + '" height="' + pl.h + '" rx="4" fill="url(#' + id + 'p' + p + ')" stroke="rgba(0,0,0,.6)" stroke-width="1"/>' +
           '<rect x="' + (px + 2) + '" y="' + (y + 3) + '" width="' + (pl.t - 4) + '" height="3" rx="1.5" fill="rgba(255,255,255,.25)"/>' +
           '<rect x="' + (px + 1) + '" y="' + (cy - 11) + '" width="' + (pl.t - 2) + '" height="22" rx="2" fill="url(#' + id + 'c)" opacity=".9"/>' +
@@ -1607,7 +1607,7 @@ html.simple #today .icon-row { display: none !important; }
       });
       // spring lock outside the plates
       var lx = sg < 0 ? x - gap - 7 : x + gap;
-      g += '<g class="pl" style="--dx:' + (sg * 46) + 'px;--d:' + (180 + list.length * 110) + 'ms"><rect x="' + lx + '" y="' + (cy - 13) + '" width="7" height="26" rx="2" fill="#1a1a1a" stroke="var(--accent)" stroke-width="1.5"/></g>';
+      g += '<g class="pl" style="--dx:' + (sg * 46) + 'px;--d:' + (180 + list.length * Math.max(60, 110 - list.length * 6)) + 'ms"><rect x="' + lx + '" y="' + (cy - 13) + '" width="7" height="26" rx="2" fill="#1a1a1a" stroke="var(--accent)" stroke-width="1.5"/></g>';
     });
     return '<svg class="barbell-svg" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Штанга ' + kg + ' кг">' + d + g + '</svg>';
   }
