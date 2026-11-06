@@ -706,6 +706,7 @@ html.simple #today .icon-row { display: none !important; }
 @media (max-width: 340px) { .brand { font-size: 16px !important; } .install { display: none !important; } }
 .legend b { line-height: 1.15 !important; }
 .block h2, .tab-title, .week-head h2, .win h2, .final h2, .card h3 { line-height: 1.12 !important; }
+html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited .sub { display: block !important; color: var(--accent); }
 </style>
 
 <header class="appbar">
@@ -1446,6 +1447,8 @@ html.simple #today .icon-row { display: none !important; }
   function setMark(ref, total) { var n = setsDone[ref] || 0; return n ? ' <b class="sd">✓ ' + n + '/' + total + '</b>' : ''; }
   function setCls(ref, total) { return (setsDone[ref] || 0) >= total ? ' sdone' : ''; }
   // Weight changed by hand for one set line: key "wk|di|ei|a|si" → kg.
+  // One-time cleanup: weights changed by hand under the old program don't match the new rep ranges and % — drop them.
+  try { if (!localStorage.getItem('club150:mig-w2')) { Object.keys(localStorage).forEach(function (k5) { if (/weights2(@sr)?$/.test(k5)) localStorage.removeItem(k5); }); localStorage.setItem('club150:mig-w2', '1'); } } catch (er) {}
   var overrides = store.get('weights2', {});
   // Readiness before a workout: tired → −10%, bad → −20% on % lifts of that workout.
   var ready = store.get('ready2', {});
@@ -1646,7 +1649,7 @@ html.simple #today .icon-row { display: none !important; }
         (rv === 'tired' ? '<p class="ready-note">Веса этой тренировки снижены на 10%. Лучше сделать чисто и восстановиться, чем сорвать прогресс.</p>' : rv === 'bad' ? '<p class="ready-note warn">Лучше перенести тренировку на завтра. Если идёшь — веса снижены на 20%, подход «+» не делай.</p>' : '<p class="ready-note">Спал меньше 6 часов — выбирай «Устал».</p>') + '</div>';
       if (ts) {
         var tsi = parseSets(main.s).map(String).indexOf(String(ts)), kg = setKg(main, wk + '|' + di + '|' + mi + '|a', tsi, ts);
-        h += '<div class="topset"><div class="topset-row"><div class="big">' + kg + ' <small>кг</small></div><div class="what">самый тяжёлый подход · ' + fmtN(ts[0]) + '% от ' + (+maxes[main.lift] || '—') + ' кг × ' + repTxt(main, ts) + ' × ' + ts[2] + '</div></div>' + barbellHtml(kg) + legendHtml(kg) + '</div>';
+        h += '<div class="topset"><div class="topset-row"><div class="big">' + kg + ' <small>кг</small></div><div class="what">' + (overrides[wk + '|' + di + '|' + mi + '|a|' + tsi] ? 'вес изменён вручную · ' : '') + 'самый тяжёлый подход · ' + fmtN(ts[0]) + '% от ' + (+maxes[main.lift] || '—') + ' кг × ' + repTxt(main, ts) + ' × ' + ts[2] + '</div></div>' + barbellHtml(kg) + legendHtml(kg) + '</div>';
       }
       h += '<div class="cta"><button class="btn primary gym-cta" type="button" data-gym="' + di + '"><i class="ph ph-play-circle" aria-hidden="true"></i> Начать в зале</button><button class="btn" type="button" data-goday="' + di + '">Открыть тренировку</button></div>';
       var sg = stalls();
