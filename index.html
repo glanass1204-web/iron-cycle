@@ -35,7 +35,8 @@
 <meta name="apple-mobile-web-app-title" content="Железный цикл">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Oswald:wght@500;600;700&family=Golos+Text:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700;800&display=swap">
+<link rel="stylesheet" media="print" onload="this.media='all'" href="https://fonts.googleapis.com/css2?family=Anton&family=Oswald:wght@500;600;700&family=Golos+Text:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700;800&display=swap">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Oswald:wght@500;600;700&family=Golos+Text:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700;800&display=swap"></noscript>
 <style>
 /* Layout: phone-first gym app. Sticky week rail, "today" plate up top, days as stacked iron slabs. One dark world on purpose: it is used in a gym. */
 :root {
@@ -834,6 +835,8 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
       <button class="btn primary" type="button" id="backup-save">Сохранить копию</button>
       <label class="btn" for="backup-load">Загрузить копию</label><input type="file" id="backup-load" accept="application/json,.json" hidden>
     </div>
+    <button class="btn" type="button" id="move-copy" data-move-copy hidden>Скопировать данные для приложения на экране «Домой»</button>
+    <button class="btn" type="button" id="move-open" data-move-open hidden>Перенести данные из Safari</button>
     <button class="btn" type="button" id="backup-undo" hidden>Вернуть как было до загрузки копии</button>
     <p class="toast" id="backup-msg" aria-live="polite"></p>
   </section>
@@ -2739,7 +2742,7 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
       '<div class="field"><label for="onb-dead">Становая, кг <small>можно потом</small></label><input id="onb-dead" type="number" inputmode="numeric" min="0"></div>' +
       '<p class="onb-err" id="onb-err" role="alert"></p></div><button class="btn primary" type="button" data-onb="2">Дальше</button>';
     else h = '<div class="onb-hero"><h2 id="onb-title">Как <span>тренироваться</span></h2><ol><li>Во вкладке <b>Сегодня</b> нажми <b>Начать в зале</b>.</li><li>Делай подход и жми <b>Сделал подход</b> — отдых запустится сам.</li><li>Последний подход жима записывай: так растёт твой максимум.</li></ol></div><button class="btn primary" type="button" data-onb="done">Поехали</button>';
-    $('onb').innerHTML = dots + h + (step < 2 ? '<button class="onb-skip" type="button" data-onb="skip">Пропустить</button>' : '');
+    $('onb').innerHTML = dots + h + (step === 0 && iosApp() ? '<button class="onb-skip" type="button" data-move-open style="color:var(--accent)">Уже занимался в Safari? Перенести данные и код</button>' : '') + (step < 2 ? '<button class="onb-skip" type="button" data-onb="skip">Пропустить</button>' : '');
     $('onb').hidden = false; document.body.classList.add('onb-on');
     var f = $('onb').querySelector('input, .btn.primary'); if (f) f.focus();
     if (step === 1) {
@@ -2828,7 +2831,62 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
     var steps = isIOS
       ? '<h3>Установить на iPhone</h3><ol class="ios-steps"><li>Открой эту страницу в <b>Safari</b>.</li><li>Нажми «Поделиться» — квадрат со стрелкой вверх.</li><li>Выбери «На экран „Домой“» и нажми «Добавить».</li></ol>'
       : '<h3>Установить на Android</h3><ol class="ios-steps"><li>Открой ссылку в <b>Chrome</b>: если страница открыта внутри другого приложения (Claude, Telegram, ВК), нажми ⋮ → «Открыть в браузере».</li><li>В Chrome: ⋮ → <b>«Установить приложение»</b> или <b>«Добавить на главный экран»</b>.</li><li>Яндекс Браузер: ⋮ → «Добавить ярлык». Samsung Internet: ≡ → «Добавить страницу на» → «Главный экран».</li></ol>';
-    $('sheet-root').innerHTML = '<div class="scrim" data-close></div><div class="sheet" role="dialog" aria-label="Установка"><div class="grab"></div>' + steps + '<p class="hint">Иконка «Железный цикл» появится на рабочем столе, программа будет открываться без браузера и работать без интернета.</p><button class="btn" type="button" data-close>Понятно</button></div>';
+    $('sheet-root').innerHTML = '<div class="scrim" data-close></div><div class="sheet" role="dialog" aria-label="Установка"><div class="grab"></div>' + steps + '<p class="hint">Иконка «Железный цикл» появится на рабочем столе, программа будет открываться без браузера и работать без интернета.</p>' + (isIOS ? '<p class="hint" style="color:var(--accent)">Важно для iPhone: приложение на экране «Домой» не видит данные Safari — отметки, максимумы и код. Чтобы перенести: нажми кнопку ниже, затем открой приложение и нажми «Перенести данные из Safari» → «Вставить».</p><button class="btn primary" type="button" data-move-copy>Скопировать данные для приложения</button>' : '') + '<button class="btn" type="button" data-close>Понятно</button></div>';
+  });
+  // ---------- iPhone: Safari → app on the home screen ----------
+  // iOS keeps the home-screen app's storage apart from Safari, so the app starts empty with a new phone number.
+  // Safari copies everything (with the code and the phone number) as one text; the app pastes it. Valid 30 minutes.
+  function iosApp() { return (/iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)) && ((window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true); }
+  var MOVE_SKIP = { 'club150:admin': 1, 'club150:undo': 1 };
+  function moveText() {
+    var d = {}; for (var i = 0; i < localStorage.length; i++) { var k3 = localStorage.key(i); if (k3.indexOf('club150:') === 0 && !MOVE_SKIP[k3]) d[k3] = localStorage.getItem(k3); }
+    var js = JSON.stringify({ app: 'club150', at: Date.now(), data: d });
+    return 'IRON1:' + btoa(unescape(encodeURIComponent(js))) + ':' + b32(cyrb53(js + '|' + LIC_SALT, 11), 8);
+  }
+  function readMove(t) {
+    var m = /IRON1:([A-Za-z0-9+\/=]+):([A-Z0-9]{8})/.exec(String(t || '').replace(/\s+/g, ''));
+    if (!m) return { err: 'Это не данные «Железного цикла». В Safari нажми «Скопировать данные для приложения» и вставь сюда.' };
+    var js; try { js = decodeURIComponent(escape(atob(m[1]))); } catch (er) { return { err: 'Текст скопировался не полностью. Скопируй заново.' }; }
+    if (b32(cyrb53(js + '|' + LIC_SALT, 11), 8) !== m[2]) return { err: 'Текст повреждён. Скопируй заново.' };
+    var j; try { j = JSON.parse(js); } catch (er) { return { err: 'Текст повреждён. Скопируй заново.' }; }
+    if (!j || j.app !== 'club150' || !j.data) return { err: 'Это не данные «Железного цикла».' };
+    if (!(Date.now() - j.at < 30 * 60 * 1000 && j.at - Date.now() < 5 * 60 * 1000)) return { err: 'Этот текст устарел (действует 30 минут). В Safari скопируй данные заново.' };
+    return { data: j.data };
+  }
+  (function () {
+    var ios = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    if (!ios) return; if (iosApp()) $('move-open').hidden = false; else $('move-copy').hidden = false;
+  })();
+  document.addEventListener('click', function (ev) {
+    var c = ev.target.closest('[data-move-copy]');
+    if (c) {
+      var t = moveText(), done = function () { c.textContent = 'Скопировано ✓ Теперь открой приложение и нажми «Перенести данные из Safari»'; };
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(done, function () { prompt('Скопируй этот текст:', t); });
+      else prompt('Скопируй этот текст:', t);
+      return;
+    }
+    if (ev.target.closest('[data-move-open]')) {
+      $('sheet-root').innerHTML = '<div class="scrim" data-close></div><div class="sheet" role="dialog" aria-label="Перенос из Safari"><div class="grab"></div><h3>Перенести из Safari</h3>' +
+        '<ol class="ios-steps"><li>Открой сайт в <b>Safari</b> → вкладка <b>Ещё</b> → «Скопировать данные для приложения».</li><li>Вернись сюда и нажми «Вставить».</li></ol>' +
+        '<textarea id="move-in" rows="3" style="width:100%;font:500 13px var(--mono);background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:10px;padding:10px" placeholder="IRON1:…" aria-label="Скопированные данные"></textarea>' +
+        '<p class="toast" id="move-msg" role="alert"></p><button class="btn" type="button" data-move-paste>Вставить</button><button class="btn primary" type="button" data-move-go>Перенести</button><button class="btn" type="button" data-close>Отмена</button></div>';
+      return;
+    }
+    if (ev.target.closest('[data-move-paste]')) {
+      if (navigator.clipboard && navigator.clipboard.readText) navigator.clipboard.readText().then(function (t) { $('move-in').value = t; }, function () { $('move-msg').textContent = 'Нажми в поле, подержи и выбери «Вставить».'; $('move-in').focus(); });
+      else { $('move-msg').textContent = 'Нажми в поле, подержи и выбери «Вставить».'; $('move-in').focus(); }
+      return;
+    }
+    if (ev.target.closest('[data-move-go]')) {
+      var r = readMove($('move-in').value); if (r.err) { $('move-msg').textContent = r.err; return; }
+      try {
+        var del = []; for (var i = 0; i < localStorage.length; i++) { var k3 = localStorage.key(i); if (k3.indexOf('club150:') === 0 && !MOVE_SKIP[k3]) del.push(k3); }
+        del.forEach(function (k3) { localStorage.removeItem(k3); });
+        Object.keys(r.data).forEach(function (k3) { if (k3.indexOf('club150:') === 0 && !MOVE_SKIP[k3]) localStorage.setItem(k3, String(r.data[k3])); });
+        localStorage.setItem('club150:onb', '1');
+      } catch (er) { $('move-msg').textContent = 'Не хватило памяти. Попробуй ещё раз.'; return; }
+      $('move-msg').textContent = 'Готово! Перезапускаю…'; setTimeout(function () { location.reload(); }, 700);
+    }
   });
   function netState() { $('offline').hidden = navigator.onLine !== false; }
   window.addEventListener('online', netState); window.addEventListener('offline', netState); netState();
