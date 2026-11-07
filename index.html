@@ -11,6 +11,19 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="claude:viewport-fit-sides" content="cover">
 <meta name="theme-color" content="#0b0b0b">
+<script>
+  // Android with gestures/buttons: Chrome may draw the page under the navigation bar while reporting a zero bottom safe area.
+  (function () {
+    try {
+      if (!/Android/i.test(navigator.userAgent)) return;
+      var standalone = matchMedia('(display-mode: standalone)').matches || matchMedia('(display-mode: fullscreen)').matches || /tgWebAppData/.test(location.hash);
+      if (!standalone) return;
+      var d = document.createElement('div'); d.style.cssText = 'position:fixed;bottom:0;height:env(safe-area-inset-bottom,0px);visibility:hidden';
+      document.documentElement.appendChild(d); var gap = d.getBoundingClientRect().height; d.remove();
+      if (!gap) document.documentElement.classList.add('nav-gap');
+    } catch (e) {}
+  })();
+</script>
 <script>try{document.documentElement.setAttribute("data-theme",localStorage.getItem("club150:theme")||"dark");if(localStorage.getItem("club150:simple")!=="0")document.documentElement.classList.add("simple")}catch(e){document.documentElement.classList.add("simple")}</script>
 <script>try{if(/tgWebApp/.test(location.hash+location.search))sessionStorage.setItem("c150tg","1");if(sessionStorage.getItem("c150tg"))document.write('<script src="https://telegram.org/js/telegram-web-app.js"><\/script>')}catch(e){}</script>
 <link rel="manifest" href="manifest.webmanifest">
@@ -704,6 +717,10 @@ html.simple #today .icon-row { display: none !important; }
   .bar-actions { gap: 4px !important; }
 }
 @media (max-width: 340px) { .brand { font-size: 16px !important; } .install { display: none !important; } }
+/* Android: when the system navigation bar covers the bottom of the page and the phone reports no safe area, lift the tab bar above it */
+html.nav-gap .tabbar { padding-bottom: calc(22px + env(safe-area-inset-bottom, 0px)); }
+html.nav-gap body { padding-bottom: 92px; }
+.tabbar { background: color-mix(in srgb, var(--bg) 97%, transparent); }
 /* Android: invisible tap area around small controls (at least ~44 px for a finger) */
 .ex input[type="checkbox"], .more-btn, .goal-edit, .chart-btn, .install { position: relative; touch-action: manipulation; }
 .ex input[type="checkbox"]::before, .more-btn::before, .goal-edit::before, .chart-btn::before, .install::before { content: ""; position: absolute; inset: -9px -6px; }
