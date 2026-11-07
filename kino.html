@@ -1,0 +1,164 @@
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="robots" content="noindex"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}</style></head><body>
+<title>Железный цикл · Кино</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500&family=JetBrains+Mono:wght@700&family=Oswald:wght@500;600;700&display=swap">
+<style>
+/* Layout: one pinned scroll scene with three photographs that cross-fade and slowly push in, captions change per chapter,
+   the last chapter ends on the call to action. Dark only, by design: an old gym at night, gold and iron. */
+:root {
+  --bg: #070707; --fg: #f4f1ea; --muted: #c2bcb0; --line: #34312c;
+  --accent: #dca83c; --on-accent: #120f08;
+  --display: "Oswald", "Arial Narrow", Impact, sans-serif;
+  --body: "Golos Text", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font: 16px/1.55 var(--body); }
+
+.scene { position: relative; height: 600vh; }
+.stage { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; isolation: isolate; }
+.shot { position: absolute; inset: 0; opacity: 0; will-change: transform, opacity; }
+.shot img { width: 100%; height: 100%; object-fit: cover; display: block; }
+@media (max-aspect-ratio: 1/1) {
+  /* Phones: show the whole frame, upper part of the screen, and fade its edges into black. */
+  .shot img { object-fit: contain; object-position: 50% 28%;
+    -webkit-mask-image: linear-gradient(180deg, transparent 6%, #000 18%, #000 50%, transparent 66%);
+            mask-image: linear-gradient(180deg, transparent 6%, #000 18%, #000 50%, transparent 66%); }
+}
+.shade { position: absolute; inset: 0; z-index: 1; pointer-events: none;
+  background: linear-gradient(0deg, rgb(7 7 7 / .92) 0%, rgb(7 7 7 / .55) 30%, transparent 58%),
+              radial-gradient(130% 90% at 50% 40%, transparent 55%, rgb(0 0 0 / .7) 100%); }
+.grain { position: absolute; inset: -50%; z-index: 2; pointer-events: none; opacity: .08;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
+
+.top { position: absolute; z-index: 3; left: 0; right: 0; top: 0; display: flex; justify-content: space-between; align-items: center;
+  padding: 18px max(16px, env(safe-area-inset-right, 0px)) 0 max(16px, env(safe-area-inset-left, 0px)); }
+.brand { font: 700 20px/1 var(--display); letter-spacing: .04em; text-transform: uppercase; }
+.brand span { color: var(--accent); }
+.dots { display: flex; gap: 6px; }
+.dots i { width: 22px; height: 3px; border-radius: 2px; background: rgb(244 241 234 / .25); transition: background 200ms ease-out; }
+.dots i.on { background: var(--accent); }
+
+.copy { position: absolute; z-index: 3; left: 0; right: 0; bottom: 0;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 max(32px, env(safe-area-inset-bottom, 0px)); }
+.chap { position: absolute; z-index: 3; left: 0; right: 0; bottom: 0; display: grid; gap: 12px; max-width: 760px; margin: 0 auto;
+  padding: 0 max(16px, env(safe-area-inset-right, 0px)) max(32px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+  opacity: 0; transform: translateY(16px); transition: opacity 300ms ease-out, transform 300ms ease-out; pointer-events: none; }
+.chap.on { opacity: 1; transform: none; pointer-events: auto; }
+.eyebrow { font: 600 12px var(--display); letter-spacing: .22em; text-transform: uppercase; color: var(--accent); }
+.chap h1, .chap h2 { margin: 0; font: 700 clamp(40px, 10.5vw, 96px)/.92 var(--display); text-transform: uppercase; letter-spacing: -.005em; text-wrap: balance; }
+.chap h1 span, .chap h2 span { color: var(--accent); }
+.chap p { margin: 0; max-width: 42ch; color: var(--muted); font-size: clamp(15px, 3.8vw, 18px); }
+.num { font: 700 13px var(--mono); color: var(--muted); letter-spacing: .04em; }
+.num b { color: var(--fg); }
+.hint { font: 600 12px var(--display); letter-spacing: .2em; text-transform: uppercase; color: var(--muted); }
+.hint i { display: inline-block; margin-left: 6px; font-style: normal; animation: nudge 1.6s ease-in-out infinite; }
+@keyframes nudge { 50% { transform: translateY(4px); } }
+.cta { justify-self: start; display: inline-flex; align-items: center; min-height: 52px; padding: 0 28px; border-radius: 10px;
+  background: var(--accent); color: var(--on-accent); text-decoration: none; font: 600 16px var(--display); letter-spacing: .14em; text-transform: uppercase;
+  transition: transform 150ms ease-out; }
+.cta:hover { transform: translateY(-2px); }
+.cta:focus-visible { outline: 3px solid var(--fg); outline-offset: 3px; }
+.credit { font-size: 11px; color: rgb(194 188 176 / .6); }
+
+@media (prefers-reduced-motion: reduce) { .hint i { animation: none; } .chap { transition: none; } }
+</style>
+
+<section class="scene" id="scene" aria-label="Железный цикл: программа силы на 13 недель">
+  <div class="stage">
+    <div class="shot" data-shot="0"><img src="img/hero-bar.jpg" alt="Штанга с блинами на стойках скамьи для жима в тёмном зале под лампой" width="1536" height="1024"></div>
+    <div class="shot" data-shot="1"><img src="img/hero-plate.jpg" alt="Синий блин 20 кг надевают на гриф" width="1536" height="1024"></div>
+    <div class="shot" data-shot="2"><img src="img/hero-hands.jpg" alt="Руки в магнезии на грифе перед жимом" width="1536" height="1024"></div>
+    <div class="shade"></div>
+    <div class="grain"></div>
+
+    <div class="top">
+      <div class="brand">Железный <span>цикл</span></div>
+      <div class="dots" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+    </div>
+
+    <div class="chap" data-chap="0">
+      <div class="eyebrow">Программа силы · 13 недель</div>
+      <h1>Сила <span>по волнам</span></h1>
+      <p>Лёгкие, средние и тяжёлые недели. Точные веса на каждый подход, блины на штанге и таймер отдыха. В зале работает без интернета.</p>
+      <div class="hint">Листай вниз <i aria-hidden="true">↓</i></div>
+    </div>
+    <div class="chap" data-chap="1">
+      <div class="eyebrow">Точный вес</div>
+      <h2>Каждый блин <span>посчитан</span></h2>
+      <p>Приложение берёт проценты от твоего максимума и показывает, что вешать на гриф. Тяжёлые подходы округляет только вниз.</p>
+      <div class="num">82,5% от 111 кг → <b>90 кг</b> · на сторону 20 + 15</div>
+    </div>
+    <div class="chap" data-chap="2">
+      <div class="eyebrow">Режим зала</div>
+      <h2>Мел. Хват. <span>Подход.</span></h2>
+      <p>Нажал «Сделал подход» — таймер отдыха запустился сам. Голос подскажет следующий вес, экран не погаснет.</p>
+    </div>
+    <div class="chap" data-chap="3">
+      <div class="eyebrow">Недели 1–2 бесплатно</div>
+      <h2>Начни <span>цикл</span></h2>
+      <p>Введи свой максимум, и программа рассчитает каждую тренировку до проверки нового рекорда. Потом новый максимум и следующий цикл.</p>
+      <a class="cta" href="./" target="_blank" rel="noopener">Открыть приложение</a>
+      <div class="credit">Фото созданы нейросетью для демо.</div>
+    </div>
+  </div>
+</section>
+
+<script>
+(function () {
+  var scene = document.getElementById('scene');
+  var shots = [].slice.call(document.querySelectorAll('.shot'));
+  var chaps = [].slice.call(document.querySelectorAll('.chap'));
+  var dots = [].slice.call(document.querySelectorAll('.dots i'));
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // Chapter → photo: bar (wide), plate, hands, bar again pushed in close.
+  var MAP = [0, 1, 2, 0];
+  var current = -1;
+  function clamp(v) { return Math.max(0, Math.min(1, v)); }
+
+  function render(p) {
+    var n = MAP.length, pos = p * n, ch = Math.min(n - 1, Math.floor(pos)), local = pos - ch;
+    // cross-fade over the last 18% of each chapter
+    var fade = clamp((local - 0.82) / 0.18), next = Math.min(n - 1, ch + 1);
+    shots.forEach(function (s, i) {
+      var o = 0;
+      if (MAP[ch] === i) o = ch === n - 1 ? 1 : 1 - fade;
+      if (MAP[next] === i && next !== ch) o = Math.max(o, fade);
+      s.style.opacity = o.toFixed(3);
+    });
+    if (!reduce) {
+      // slow push-in per chapter; the last chapter pushes the wide bar shot in further
+      MAP.forEach(function (img, c) {
+        if (c !== ch && c !== next) return;
+        var t = c === ch ? local : 0;
+        var base = c === n - 1 ? 1.18 : 1.0, gain = c === n - 1 ? 0.12 : 0.1;
+        var drift = c === 1 ? (-3 + t * 6) : 0; // the plate shot slides sideways
+        shots[img].style.transform = 'translate3d(' + drift + '%,0,0) scale(' + (base + t * gain).toFixed(4) + ')';
+      });
+    }
+    if (ch !== current) {
+      current = ch;
+      chaps.forEach(function (c, i) { c.classList.toggle('on', i === ch); });
+      dots.forEach(function (d, i) { d.classList.toggle('on', i <= ch); });
+    }
+  }
+
+  var ticking = false;
+  function onScroll() {
+    if (ticking) return; ticking = true;
+    requestAnimationFrame(function () {
+      ticking = false;
+      var r = scene.getBoundingClientRect(), total = scene.offsetHeight - window.innerHeight;
+      render(clamp(-r.top / total));
+    });
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', onScroll);
+  render(0); onScroll();
+})();
+</script>
+</body></html>
