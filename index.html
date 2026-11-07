@@ -814,6 +814,7 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
       <button class="btn primary" type="button" id="backup-save">Сохранить копию</button>
       <label class="btn" for="backup-load">Загрузить копию</label><input type="file" id="backup-load" accept="application/json,.json" hidden>
     </div>
+    <button class="btn" type="button" id="backup-undo" hidden>Вернуть как было до загрузки копии</button>
     <p class="toast" id="backup-msg" aria-live="polite"></p>
   </section>
 
@@ -876,7 +877,7 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
       <li><div><b>Работаешь строго по программе.</b> В упражнениях по % вес и повторения точные: делаешь ровно столько, сколько написано. Нагрузка уже распределена по неделям в самой программе: тяжёлые недели сменяются более лёгкими, в конце — проверка максимума.</div></li>
       <li><div><b>Записывай последний подход.</b> Под каждым упражнением — поле «Последний подход»: впиши повторы (в подсобке — ещё и вес). По жиму лёжа приложение считает расчётный максимум и рисует график роста.</div></li>
       <li><div><b>Подбор — тоже точный вес.</b> В первый раз возьми вес, с которым сделаешь все подходы и повторения с запасом в пару повторов (так в гайде), и впиши его в поле под упражнением. Дальше программа сама подставляет его: «16 кг — как в прошлый раз». Все повторы прошли легко — в следующий раз прибавь.</div></li>
-      <li><div>13-я неделя — проверка максимума: жмёшь по одному повтору, увеличивая вес, до потолка.</div></li>
+      <li><div>13-я неделя — проверка максимума: после разминки по одному повтору, не больше 3 тяжёлых попыток. Повтор пошёл медленно или техника поплыла — стоп, последний чистый вес и есть максимум. Только со страхующим.</div></li>
       <li><div>Значения через точку с запятой <code>60×5×1; 70×3×1</code> выполняются все, по порядку.</div></li>
       <li><div>Отдых: главное упражнение 3–5 минут, вспомогательные по % — 2–3 минуты. Суперсет — два упражнения подряд без отдыха.</div></li>
       <li><div><b>Разминка.</b> Сначала 5 минут суставной разминки, как на физкультуре: вращения в плечах, локтях, кистях, наклоны, приседания без веса. Перед первым рабочим подходом — разминочные: пустой гриф и 2–3 лёгких веса по нарастающей, с каждым шагом повторов меньше. В рабочие подходы они не входят. Тренировка — не дольше полутора часов.</div></li>
@@ -1044,7 +1045,7 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
       [or(b(SQ, S, '70x5x4'), k(LEGEXT, '30x3')), b(SLDL, D, '50x8x3', 'Ноги чуть согнуты, гриф скользит по бёдрам, таз назад — работает задняя поверхность бедра.'), delts(), k(ABS, '30x3'), { t: 'x', n: 'Медитация в зале', note: 'Это тренировка духа. Тренировка воли. Через несколько дней — проверка максимума.' }]
     ]},
     { motto: 'Добро пожаловать в Железный цикл!', days: [
-      [b(BENCH, P, '50x6x1; 60x5x1; 70x3x1; 80x2x1; 90x1x1; 100x1x1; 102x1x1', 'И так до потолка: жмём на 1 раз, увеличивая вес.')]
+      [b(BENCH, P, '50x6x1; 60x5x1; 70x3x1; 80x2x1; 90x1x1; 100x1x1; 102x1x1', 'После разминки — не больше 3 тяжёлых попыток, прибавка 2,5–5 кг. Каждый повтор чистый: без отказа, без «дожима» с потерей техники. Повтор шёл медленно или техника поплыла — стоп, последний чистый вес и есть максимум. Жим — только со страхующим.')]
     ]}
   ];
 
@@ -1067,9 +1068,9 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
     var deload = sw % 4 === 3, test = sw === 11, n = deload ? 2 : sw < 4 ? 3 : 4, blk = Math.floor(sw / 4);
         if (test) {
       SR_WEEKS.push({ motto: SR_MOTTO[sw], days: [
-        [b(BENCH, P, SR_TEST, 'И дальше по 1 разу, прибавляя вес, до потолка. Это твой новый максимум.'), k('Махи гантелей в стороны', '15x2')],
-        [b(DL, D, SR_TEST, 'И дальше по 1 разу до потолка. Спина ровная — техника важнее килограммов.'), k('Сгибания EZ-грифа на бицепс', '12x2')],
-        [or(b(SQ, S, SR_TEST, 'И дальше по 1 разу до потолка, только со стойками и страхующим.'), k('Болгарские выпады с гантелями', '10x2')), k('Скручивания на наклонной скамье (пресс)', '20x2')]
+        [b(BENCH, P, SR_TEST, 'После разминки — не больше 3 тяжёлых попыток, прибавка 2,5–5 кг. Каждый повтор чистый: без отказа, без «дожима» с потерей техники. Повтор шёл медленно или техника поплыла — стоп, последний чистый вес и есть максимум. Жим — только со страхующим.'), k('Махи гантелей в стороны', '15x2')],
+        [b(DL, D, SR_TEST, 'После разминки — не больше 3 тяжёлых попыток, прибавка 2,5–5 кг. Каждый повтор чистый: без отказа, без «дожима» с потерей техники. Повтор шёл медленно или техника поплыла — стоп, последний чистый вес и есть максимум. Спина округлилась — попытка не засчитывается, тест закончен.'), k('Сгибания EZ-грифа на бицепс', '12x2')],
+        [or(b(SQ, S, SR_TEST, 'После разминки — не больше 3 тяжёлых попыток, прибавка 2,5–5 кг. Каждый повтор чистый: без отказа, без «дожима» с потерей техники. Повтор шёл медленно или техника поплыла — стоп, последний чистый вес и есть максимум. Присед — только в силовой раме со страховочными упорами на нужной высоте и со страхующим.'), k('Болгарские выпады с гантелями', '10x2')), k('Скручивания на наклонной скамье (пресс)', '20x2')]
       ]});
       continue;
     }
@@ -1125,7 +1126,7 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
     heavy: ['Тяжёлая неделя', 'В «подборе» 6–8 повторений с максимальным для них весом. Техника может быть свободнее, но без рывков и потери контроля.'],
     deload: ['Облегчённая неделя', 'Всё легко: база −10%, подходов вдвое меньше, в «подборе» 15–20 повторений. Техника — идеальная. Даже если сил много — не добавляй: эта неделя для восстановления.'],
     light: ['Облегчённая неделя · подводка', 'Всё легко перед проверкой максимума: в «подборе» 15–20 повторений, техника идеальная. Сил много — не добавляй, береги их на проверку.'],
-    test: ['Проверка максимума', 'Разминка и подходы по одному повтору до потолка.']
+    test: ['Проверка максимума', 'Разминка, затем по одному повтору: не больше 3 тяжёлых попыток, без отказа. Техника поплыла — стоп. Жим и присед — только со страхующим.']
   };
   // Club 150 periodization — our main rule, for the barbell and for «подбор» alike:
   // light week 15–20 reps, easy, perfect technique; medium (volume) 10–12 to technical failure; heavy 6–8 with a big weight.
@@ -2480,7 +2481,7 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
         '<div class="gym-reps">× ' + cur.reps + ' повт.' + (isWarm ? '' : ' · подход <b>' + kn + '</b> из ' + cur.total + (st.sets.length > 1 ? ' · строка ' + (line + 1) + '/' + st.sets.length : '')) + '</div>' +
         (cur.bar ? '<div class="gym-bb">' + barbellHtml(cur.kg) + '</div><div class="gym-side">' + (cur.kg === BAR ? 'Пустой гриф' : 'На сторону: <b>' + platesText(cur.kg) + '</b> · гриф 20 кг') + '</div>' : cur.wave ? '<div class="gym-side">' + esc(cur.wave) + '</div>' : '') +
         (isWarm && line === 0 ? '<div class="gym-side">Перед этим — 5 минут суставной разминки: плечи, локти, кисти.</div>' : '') +
-        (!isWarm && st.main && (TYPES[gym.wk - 1] === 'heavy' || TYPES[gym.wk - 1] === 'test') ? '<div class="gym-side gym-tip">Тяжёлая неделя — работай со страхующим.</div>' : '') +
+        (!isWarm && st.main && TYPES[gym.wk - 1] === 'test' ? '<div class="gym-side gym-tip">Проверка: не больше 3 тяжёлых попыток, без отказа. Техника поплыла — стоп. Только со страхующим.</div>' : !isWarm && st.main && TYPES[gym.wk - 1] === 'heavy' ? '<div class="gym-side gym-tip">Тяжёлая неделя — работай со страхующим.</div>' : '') +
         (!isWarm && kn >= 2 ? '<div class="gym-side gym-tip">Не идут повторы — отдохни на 1–2 минуты дольше (+30), вес не снижай.</div>' : '');
       act = isWarm
         ? '<button class="btn primary gym-go" type="button" data-gx="warm" data-ref="' + cur.ref + '">Сделал разминку</button><button class="btn" type="button" data-gx="nowarm">Без разминки</button>'
@@ -2859,7 +2860,7 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
 
   // ---------- backup: every club150:* key into one JSON file ----------
   // Never copied between phones: the phone number for codes, the code itself and coach mode stay on this phone.
-  var NO_COPY = { 'club150:dev': 1, 'club150:lic': 1, 'club150:admin': 1 };
+  var NO_COPY = { 'club150:dev': 1, 'club150:lic': 1, 'club150:admin': 1, 'club150:undo': 1 };
   $('backup-save').addEventListener('click', function () {
     var data = {};
     try { localStorage.setItem('club150:lastBackup', dayISO(new Date())); } catch (er) {}
@@ -2869,19 +2870,76 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
     document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
     $('backup-msg').textContent = 'Копия сохранена в «Загрузки»: ' + a.download + '. Отправь её себе в Telegram или облако.';
   });
+  // Check the file before touching anything: right app, an object of club150:* keys with string values, sane size.
+  function checkBackup(j) {
+    if (!j || j.app !== 'club150' || !j.data || typeof j.data !== 'object' || Array.isArray(j.data)) return 'Это не файл копии «Железного цикла». Выбери файл club150-….json.';
+    var keys = Object.keys(j.data);
+    if (!keys.length) return 'Копия пустая — в ней нет ни одной записи.';
+    for (var i = 0; i < keys.length; i++) {
+      if (keys[i].indexOf('club150:') !== 0) return 'В файле чужие данные (' + esc(keys[i].slice(0, 30)) + '). Загружать не буду.';
+      if (typeof j.data[keys[i]] !== 'string') return 'Файл копии повреждён. Загружать не буду.';
+      if (/(results2|done2|sets2|dates2|maxes|profiles|body|hist|cycles)(@sr)?$/.test(keys[i])) { try { JSON.parse(j.data[keys[i]]); } catch (er) { return 'Файл копии повреждён (' + esc(keys[i].replace('club150:', '')) + '). Загружать не буду.'; } }
+    }
+    return '';
+  }
+  function backupSummary(data) {
+    var nRes = 0, nDone = 0, names = ['Основной'], mx = null;
+    Object.keys(data).forEach(function (k3) {
+      try {
+        if (/results2(@sr)?$/.test(k3)) nRes += Object.keys(JSON.parse(data[k3]) || {}).length;
+        if (/done2(@sr)?$/.test(k3)) nDone += Object.keys(JSON.parse(data[k3]) || {}).length;
+        if (k3 === 'club150:profiles') (JSON.parse(data[k3]) || []).forEach(function (p) { if (p && p.name && names.indexOf(p.name) < 0) names.push(p.name); });
+        if (k3 === 'club150:maxes') mx = JSON.parse(data[k3]);
+      } catch (er) {}
+    });
+    return { nRes: nRes, nDone: nDone, names: names, mx: mx };
+  }
+  function snapshot() { var d = {}; for (var i = 0; i < localStorage.length; i++) { var k3 = localStorage.key(i); if (k3.indexOf('club150:') === 0 && !NO_COPY[k3]) d[k3] = localStorage.getItem(k3); } return d; }
+  // Full restore: everything of this app on the phone becomes exactly the copy (code, phone id and coach mode stay).
+  function replaceAll(data) {
+    var del = [];
+    for (var i = 0; i < localStorage.length; i++) { var k3 = localStorage.key(i); if (k3.indexOf('club150:') === 0 && !NO_COPY[k3]) del.push(k3); }
+    del.forEach(function (k3) { localStorage.removeItem(k3); });
+    Object.keys(data).forEach(function (k3) { if (k3.indexOf('club150:') === 0 && !NO_COPY[k3]) localStorage.setItem(k3, String(data[k3])); });
+  }
+  var pendingBackup = null;
   $('backup-load').addEventListener('change', function (ev) {
-    var file = ev.target.files && ev.target.files[0]; if (!file) return;
+    var file = ev.target.files && ev.target.files[0]; ev.target.value = ''; if (!file) return;
+    if (file.size > 4.5e6) { $('backup-msg').textContent = 'Файл слишком большой для копии «Железного цикла».'; return; }
     var rd = new FileReader();
     rd.onload = function () {
-      try {
-        var j = JSON.parse(rd.result); if (j.app !== 'club150' || !j.data) throw new Error('bad');
-        Object.keys(j.data).forEach(function (k3) { if (k3.indexOf('club150:') === 0 && !NO_COPY[k3]) localStorage.setItem(k3, String(j.data[k3])); });
-        $('backup-msg').textContent = 'Копия от ' + (j.saved || '').slice(0, 10) + ' загружена. Перезапускаю…';
-        setTimeout(function () { location.reload(); }, 900);
-      } catch (er) { $('backup-msg').textContent = 'Это не файл копии «Железного цикла». Выбери файл club150-….json.'; }
+      var j = null; try { j = JSON.parse(rd.result); } catch (er) {}
+      var bad = checkBackup(j); if (bad) { $('backup-msg').textContent = bad; return; }
+      pendingBackup = j; var sm = backupSummary(j.data), cur = backupSummary(snapshot());
+      var mxTxt = sm.mx ? 'жим ' + (sm.mx.bench || '—') + ' · присед ' + (sm.mx.squat || '—') + ' · становая ' + (sm.mx.dead || '—') + ' кг' : 'не указаны';
+      $('sheet-root').innerHTML = '<div class="scrim" data-close></div><div class="sheet" role="dialog" aria-label="Восстановление"><div class="grab"></div><h3>Загрузить копию от ' + esc((j.saved || '').slice(0, 10) || '?') + '?</h3>' +
+        '<p class="hint">В копии: результатов — ' + sm.nRes + ', отметок — ' + sm.nDone + ', профили — ' + esc(sm.names.join(', ')) + '. Максимумы: ' + mxTxt + '.</p>' +
+        '<p class="hint" style="color:#ff8a65">Сейчас на телефоне: результатов — ' + cur.nRes + ', отметок — ' + cur.nDone + '. Всё это заменится данными копии полностью. Если передумаешь — сразу после загрузки можно вернуть как было.</p>' +
+        '<button class="btn primary" type="button" data-restore-go>Заменить всё данными копии</button><button class="btn" type="button" data-close>Отмена</button></div>';
     };
     rd.readAsText(file);
   });
+  $('sheet-root').addEventListener('click', function (ev) {
+    if (!ev.target.closest('[data-restore-go]') || !pendingBackup) return;
+    var j = pendingBackup; pendingBackup = null;
+    var undoOk = true; try { localStorage.setItem('club150:undo', JSON.stringify({ saved: new Date().toISOString(), data: snapshot() })); } catch (er) { undoOk = false; }
+    if (!undoOk && !confirm('Не хватает памяти, чтобы сохранить текущие данные для отмены. Сначала нажми «Сохранить копию». Всё равно заменить без возможности вернуть?')) { closeSheet(); return; }
+    try { replaceAll(j.data); } catch (er) { $('backup-msg').textContent = 'Не хватило места в памяти браузера, копия загрузилась не полностью.' + (undoOk ? ' Нажми «Вернуть как было».' : ''); closeSheet(); renderUndo(); return; }
+    closeSheet(); $('backup-msg').textContent = 'Копия от ' + (j.saved || '').slice(0, 10) + ' загружена. Перезапускаю…';
+    setTimeout(function () { location.reload(); }, 900);
+  });
+  function renderUndo() {
+    var u = null; try { u = JSON.parse(localStorage.getItem('club150:undo')); } catch (er) {}
+    var b = $('backup-undo'); if (!b) return; b.hidden = !(u && u.data);
+  }
+  $('backup-undo').addEventListener('click', function () {
+    var u = null; try { u = JSON.parse(localStorage.getItem('club150:undo')); } catch (er) {}
+    if (!u || !u.data) return renderUndo();
+    if (!confirm('Вернуть данные, которые были на телефоне до загрузки копии?')) return;
+    try { replaceAll(u.data); localStorage.removeItem('club150:undo'); } catch (er) {}
+    $('backup-msg').textContent = 'Вернул как было. Перезапускаю…'; setTimeout(function () { location.reload(); }, 900);
+  });
+  renderUndo();
 
   // ---------- program switch & cutting calculator ----------
   ['club', 'sr'].forEach(function (id) {
@@ -2902,6 +2960,8 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
     var bmr = 10 * bw + 6.25 * h - 5 * age + ($('f-sex').value === 'f' ? -161 : 5), keep = Math.round(bmr * act / 10) * 10;
     var pace = +$('f-pace').value || 0.75, deficit = Math.min(Math.round(bw * pace / 100 * 7700 / 7), Math.round(keep * 0.25));
     var kcal = goal === 'cut' ? keep - deficit : goal === 'gain' ? keep + 250 : keep; kcal = Math.round(kcal / 10) * 10;
+    // Never below basal metabolism and the usual safe minimum (1500 men / 1200 women).
+    var floorK = Math.round(Math.max($('f-sex').value === 'f' ? 1200 : 1500, bmr) / 10) * 10, floored = kcal < floorK; if (floored) kcal = floorK;
     var fatp = parseFloat(String($('f-fatp').value).replace(',', '.')), target = parseFloat(String($('f-target').value).replace(',', '.')), bmi = bw / Math.pow(h / 100, 2);
     var ref = bw, refTxt = 'по твоему весу';
     if (fatp >= 4 && fatp <= 60) { ref = bw * (1 - fatp / 100); refTxt = 'по безжировой массе ' + fmtN(Math.round(ref)) + ' кг'; }
@@ -2909,12 +2969,14 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
     else if (bmi > 27) { ref = 25 * Math.pow(h / 100, 2); refTxt = 'по весу при нормальном ИМТ ' + fmtN(Math.round(ref)) + ' кг (у тебя ИМТ ' + fmtN(Math.round(bmi * 10) / 10) + ')'; }
     var lean = fatp >= 4 && fatp <= 60;
     var pLo = lean ? (goal === 'cut' ? 2.3 : 2) : (goal === 'cut' ? 2 : 1.6), pHi = lean ? (goal === 'cut' ? 2.6 : 2.4) : (goal === 'cut' ? 2.2 : 2);
-    var prot = Math.round(ref * (pLo + pHi) / 2), fat = Math.round(lean ? ref * 1.1 : ref * 0.9), carb = Math.max(0, Math.round((kcal - prot * 4 - fat * 9) / 4));
+    var prot = Math.round(ref * (pLo + pHi) / 2), fat = Math.round(lean ? ref * 1.1 : ref * 0.9);
+    var fatMin = Math.round(ref * 0.7); if ((kcal - prot * 4 - fat * 9) / 4 < 100) fat = Math.max(fatMin, Math.round((kcal - prot * 4 - 400) / 9));
+    var carb = Math.max(0, Math.round((kcal - prot * 4 - fat * 9) / 4)), tight = carb < 100;
     $('food').innerHTML = ['<div><span>Поддержка веса</span><b>≈ ' + keep + ' ккал</b></div>',
       '<div><span>' + (goal === 'cut' ? 'Сушка' : goal === 'gain' ? 'Набор' : 'Твоя норма') + '</span><b>≈ ' + kcal + ' ккал</b></div>',
       '<div><span>Белок</span><b>' + Math.round(ref * pLo) + '–' + Math.round(ref * pHi) + ' г</b></div>', '<div><span>Жиры</span><b>≈ ' + fat + ' г</b></div>',
       '<div><span>Углеводы</span><b>≈ ' + carb + ' г</b></div>',
-      '<div><span>Белок и жиры</span><b style="font-size:12px;font-weight:600">' + refTxt + '</b></div>', '<div><span>' + (goal === 'cut' ? 'Минус в неделю' : goal === 'gain' ? 'Плюс в неделю' : 'Вес') + '</span><b>' + (goal === 'cut' ? '≈ ' + fmtN(Math.round(bw * pace) / 100) + ' кг' : goal === 'gain' ? '≈ 0,2–0,3 кг' : 'держится') + '</b></div>'].join('');
+      '<div><span>Белок и жиры</span><b style="font-size:12px;font-weight:600">' + refTxt + '</b></div>', (floored ? '<div><span>Ниже нельзя</span><b style="font-size:12px;font-weight:600;color:#ff8a65">поднял до ' + floorK + ' ккал — меньше обмена веществ не ешь. Выбери темп поменьше.</b></div>' : '') + (tight ? '<div><span>Мало углеводов</span><b style="font-size:12px;font-weight:600;color:#ff8a65">белок и жиры почти не оставляют места углеводам — на тренировке может не хватить сил. Выбери темп поменьше.</b></div>' : '') + '<div><span>' + (goal === 'cut' ? 'Минус в неделю' : goal === 'gain' ? 'Плюс в неделю' : 'Вес') + '</span><b>' + (goal === 'cut' ? '≈ ' + fmtN(Math.round(bw * pace) / 100) + ' кг' : goal === 'gain' ? '≈ 0,2–0,3 кг' : 'держится') + '</b></div>'].join('');
   }
   (function () { try { var c = JSON.parse(localStorage.getItem(store.k('food'))); if (c) Object.keys(c).forEach(function (id) { if ($(id) && c[id]) $(id).value = c[id]; }); } catch (er) {} })();
   ['f-sex', 'f-age', 'f-h', 'f-goal', 'f-pace', 'f-fatp', 'f-target'].forEach(function (id) { $(id).addEventListener('change', renderFood); });

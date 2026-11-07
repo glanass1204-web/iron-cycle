@@ -1,10 +1,16 @@
 // Offline support for «Железный цикл». Bump VERSION on every release so phones pick up the new page.
-var VERSION = 'iron-v15';
-var CORE = ['./', './index.html', './about.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './icon-512-maskable.png', './icon-180.png', './fonts/Phosphor.woff2'];
+var VERSION = 'iron-v16';
+var MUST = ['./', './index.html'];
+var CORE = ['./about.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './icon-512-maskable.png', './icon-180.png', './fonts/Phosphor.woff2'];
 var PHOTOS = ['./img/arnold.jpg', './img/haney.jpg', './img/yates.png', './img/coleman.jpg', './img/cutler.jpg', './img/heath.jpg', './img/zane.jpg', './img/jackson.jpg', './img/rhoden.jpg', './img/levrone.jpg', './img/wheeler.jpg', './img/bigramy.jpg', './img/choopan.jpg', './img/lunsford.jpg', './img/bumstead.jpg', './img/ferrigno.jpg', './img/maddox.jpg', './img/kazmaier.jpg', './img/malanichev.jpg', './img/pudzianowski.jpg', './img/savickas.jpg', './img/shaw.jpg', './img/hall.jpg', './img/bjornsson.jpg', './img/vlasov.jpg', './img/alekseyev.jpg'];
 
 self.addEventListener('install', function (e) {
-  e.waitUntil(caches.open(VERSION).then(function (c) { return c.addAll(CORE).then(function () { return c.addAll(PHOTOS).catch(function () {}); }); }).then(function () { return self.skipWaiting(); }));
+  // Only the page itself is required; any other file that fails to load is skipped instead of breaking the install.
+  e.waitUntil(caches.open(VERSION).then(function (c) {
+    return c.addAll(MUST).then(function () {
+      return Promise.all(CORE.concat(PHOTOS).map(function (u) { return c.add(u).catch(function () {}); }));
+    });
+  }).then(function () { return self.skipWaiting(); }));
 });
 
 self.addEventListener('activate', function (e) {
