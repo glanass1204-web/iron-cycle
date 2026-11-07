@@ -704,6 +704,10 @@ html.simple #today .icon-row { display: none !important; }
   .bar-actions { gap: 4px !important; }
 }
 @media (max-width: 340px) { .brand { font-size: 16px !important; } .install { display: none !important; } }
+/* Android: invisible tap area around small controls (at least ~44 px for a finger) */
+.ex input[type="checkbox"], .more-btn, .goal-edit, .chart-btn, .install { position: relative; touch-action: manipulation; }
+.ex input[type="checkbox"]::before, .more-btn::before, .goal-edit::before, .chart-btn::before, .install::before { content: ""; position: absolute; inset: -9px -6px; }
+.goal-edit { display: inline-block; padding: 6px 0; }
 .legend b { line-height: 1.15 !important; }
 .block h2, .tab-title, .week-head h2, .win h2, .final h2, .card h3 { line-height: 1.12 !important; }
 html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited .sub { display: block !important; color: var(--accent); }
@@ -2561,6 +2565,31 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
     }
   });
   document.addEventListener('keydown', function (ev) { if (ev.key === 'Escape' && gymOpen && !$('sheet-root').innerHTML) closeGym(); });
+  // Android «назад» (и кнопка «Назад» в Telegram): закрывает открытое окно, а не выходит из программы.
+  (function () {
+    var backPending = false;
+    function sheetOpen() { return !!$('sheet-root').innerHTML; }
+    function anyOpen() { return sheetOpen() || gymOpen; }
+    function ovState() { return !!(history.state && history.state.ov); }
+    function sync() {
+      var open = anyOpen();
+      try {
+        if (open && !ovState() && !backPending) history.pushState({ ov: 1 }, '');
+        else if (!open && ovState() && !backPending) { backPending = true; history.back(); }
+      } catch (er) {}
+      if (TG && TG.BackButton) { try { open ? TG.BackButton.show() : TG.BackButton.hide(); } catch (er) {} }
+    }
+    function closeTop() { if (sheetOpen()) closeSheet(); else if (gymOpen) closeGym(); }
+    try { if (ovState()) history.replaceState(null, ''); } catch (er) {}
+    window.addEventListener('popstate', function () {
+      if (backPending) { backPending = false; sync(); return; }
+      closeTop(); setTimeout(sync, 0);
+    });
+    if (TG && TG.BackButton && TG.BackButton.onClick) { try { TG.BackButton.onClick(function () { if (ovState()) history.back(); else closeTop(); }); } catch (er) {} }
+    var mo = new MutationObserver(function () { setTimeout(sync, 0); });
+    mo.observe($('sheet-root'), { childList: true });
+    mo.observe($('gym'), { attributes: true, attributeFilter: ['hidden'] });
+  })();
 
   // ---------- workout calendar (Progress tab) ----------
   function renderCal() {
