@@ -1310,7 +1310,7 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
 
   // ---------- storage ----------
   // A new cycle starts with clean marks; results of past cycles live on in 'hist'.
-  var CYC_KEYS = { done2: 1, sets2: 1, dates2: 1, ready2: 1, wclosed: 1, weights2: 1, open2: 1, results2: 1, week: 1 }, CYCLE = 1;
+  var CYC_KEYS = { alt2: 1, done2: 1, sets2: 1, dates2: 1, ready2: 1, wclosed: 1, weights2: 1, open2: 1, results2: 1, week: 1 }, CYCLE = 1;
   var store = {
     // Each program keeps its own marks and results; maxes, photo and the program choice are shared.
     // Profiles: the first athlete keeps the plain keys, others get "p…:" prefixes. Plates are shared by everyone in the gym.
@@ -1385,7 +1385,7 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
     var url = BOT_LINK || location.origin + location.pathname, text = 'Железный цикл — программа на силу: лёгкие, средние и тяжёлые недели. Первые 2 недели бесплатно:';
     if (TG && TG.openTelegramLink) { TG.openTelegramLink('https://t.me/share/url?url=' + encodeURIComponent(url) + '&text=' + encodeURIComponent(text)); return; }
     if (navigator.share) navigator.share({ title: 'Железный цикл', text: text, url: url }).catch(function () {});
-    else if (navigator.clipboard) navigator.clipboard.writeText(text + ' ' + url).then(function () { var m = document.querySelector('#license .share-msg'); if (m) m.textContent = 'Ссылка скопирована — отправь её в мессенджер.'; });
+    else if (navigator.clipboard) navigator.clipboard.writeText(text + ' ' + url).then(function () { var m = document.querySelector('#license .share-msg'); if (m) m.textContent = 'Ссылка скопирована — отправь её в мессенджер.'; }, function () { var m = document.querySelector('#license .share-msg'); if (m) m.textContent = 'Скопируй ссылку вручную: ' + url; });
   }
   function renderLicense() {
     var h = '<h2>Полная версия</h2><div class="card' + (licensed() ? '' : ' paywall') + '">';
@@ -1432,7 +1432,7 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
       $('adm-out').innerHTML = /^[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(d) ? '<p class="hint">Код для ' + esc(d) + ':</p><div class="lic-code">' + codeFor(d) + '</div><button class="btn" type="button" data-adm-copy="' + codeFor(d) + '">Скопировать код</button>' : '<p class="hint">Номер — 8 знаков, как XXXX-XXXX.</p>';
       return;
     }
-    var ac = t.closest('[data-adm-copy]'); if (ac) { var cc = ac.getAttribute('data-adm-copy'); if (navigator.clipboard) navigator.clipboard.writeText(cc).then(function () { ac.textContent = 'Скопировано'; }); return; }
+    var ac = t.closest('[data-adm-copy]'); if (ac) { var cc = ac.getAttribute('data-adm-copy'); if (navigator.clipboard) navigator.clipboard.writeText(cc).then(function () { ac.textContent = 'Скопировано'; }, function () { ac.textContent = 'Код: ' + cc + ' — скопируй вручную'; }); return; }
     if (t.closest('[data-adm-self]')) { try { localStorage.setItem('club150:lic', codeFor(DEV)); } catch (er) {} renderLicense(); renderAll(); return; }
     if (t.closest('[data-adm-off]')) { try { localStorage.removeItem('club150:admin'); } catch (er) {} renderLicense(); }
   });
@@ -1845,6 +1845,9 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
     h += '<span class="out">' + logOut(e, r, ctx) + '</span><button type="button" class="chart-btn" data-chart="' + esc(e.n) + '"><i class="ph ph-chart-line-up" aria-hidden="true"></i>График</button></div>';
     return h;
   }
+  // Redraw charts once typing pauses, not on every digit.
+  var lrT = {};
+  function laterRender(fn) { var k = fn.name || 'f'; clearTimeout(lrT[k]); lrT[k] = setTimeout(fn, 350); }
   function saveLog(box) {
     var ctx = box.getAttribute('data-log'), f = findEx(ctx), e = f.e, r = results[ctx] || {};
     var kIn = box.querySelector('[data-f=kg]'), rIn = box.querySelector('[data-f=reps]');
@@ -1854,9 +1857,9 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
     if (!r.reps && !r.kg) delete results[ctx]; else results[ctx] = r;
     store.set('results2', results);
     box.querySelector('.out').innerHTML = logOut(e, r, ctx);
-    if (e.t !== 'b') renderCharts();
+    if (e.t !== 'b') laterRender(renderCharts);
     if (e.t === 'b') {
-      var before = prBest; renderProgress();
+      var before = prBest; laterRender(renderProgress);
       clearTimeout(prTimer);
       prTimer = setTimeout(function () {
         var now = bestBench();
@@ -2367,12 +2370,14 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
   var gym = null, gymTick = null;
   function gymSteps(wk, di) {
     var day = WEEKS[wk - 1].days[di], mi = mainIndex(day, di), out = [];
+    var altPick = store.get('alt2', {});
     items(day).forEach(function (e0, ei) {
-      var e = e0.t === 'or' ? e0.a : e0, ctx = wk + '|' + di + '|' + ei + '|a', sets = [], warm = [];
+      var ak = wk + '|' + di + '|' + ei, useC = e0.t === 'or' && !!altPick[ak];
+      var e = e0.t === 'or' ? (useC ? e0.c : e0.a) : e0, ctx = ak + '|' + (useC ? 'c' : 'a'), sets = [], warm = [];
       if (e.s && e.t === 'b') parseSets(e.s).forEach(function (p, si) { var kg = setKg(e, ctx, si, p); if (kg) sets.push({ ref: ctx + '|' + si, kg: kg, reps: repTxt(e, p), total: p[2], bar: true }); });
       else if (e.s && e.t === 'k') { var wn = waveFor(e, wk); if (wn) { var nk = nextKg(e.n, ctx); parseSets(e.s).forEach(function (p, si) { sets.push({ ref: ctx + '|' + si, kg: nk ? nk.kg : null, reps: WAVE[wn].r.join('–'), total: p[1], wave: WAVE[wn].txt + (nk && nk.est ? ' · стартовый вес: легко или тяжело — поменяй' : '') }); }); } }
       if (mi === ei && e.t === 'b' && sets.length) warm = warmList(e, ctx).map(function (w, i) { return { ref: 'w|' + ctx + '|' + i, kg: w[0], reps: w[1], total: 1, bar: true, warm: true }; });
-      out.push({ e: e, kk: key(wk, di, ei), ctx: ctx, sets: sets, warm: warm, main: mi === ei, rest: restBy(wk, mi === ei, e.t === 'b'),
+      out.push({ e: e, alt: e0.t === 'or' ? (useC ? e0.a.n : e0.c.n) : null, ak: ak, kk: key(wk, di, ei), ctx: ctx, sets: sets, warm: warm, main: mi === ei && !useC, rest: restBy(wk, mi === ei, e.t === 'b'),
         log: (e.t === 'b' && sets.length > 0) || (e.t === 'k' && !!e.s) });
     });
     return out;
@@ -2442,7 +2447,7 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
       $('gym').innerHTML = h; paintGymRest(); return;
     }
     var st = steps[gym.idx], e = st.e;
-    var head = '<div class="gym-ex">' + (st.main ? '<span class="gym-tag">Главное</span>' : '') + '<h2 id="gym-title">' + esc(e.n) + '</h2>' + howLinks(e.n) + '</div>';
+    var head = '<div class="gym-ex">' + (st.main ? '<span class="gym-tag">Главное</span>' : '') + '<h2 id="gym-title">' + esc(e.n) + '</h2>' + howLinks(e.n) + (st.alt ? '<button type="button" class="chip-btn" data-gx="alt" data-k="' + st.ak + '">Заменить на «' + esc(st.alt) + '»</button>' : '') + '</div>';
     var mid, act;
     if (gym.log) {
       var r0 = results[st.ctx] || {}, plan = e.t === 'b' ? lastPart(e)[1] : lastPart(e)[0];
@@ -2507,6 +2512,7 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
     var b2 = ev.target.closest('[data-gx]'); if (!b2 || !gym) return;
     var a = b2.getAttribute('data-gx'), steps = gymSteps(gym.wk, gym.di), st = steps[gym.idx];
     if (a === 'close') return closeGym();
+    if (a === 'alt') { var ap = store.get('alt2', {}), k6 = b2.getAttribute('data-k'); if (ap[k6]) delete ap[k6]; else ap[k6] = 1; store.set('alt2', ap); gym.spoken = ''; renderGym(); return; }
     if (a === 'voice') { var on = !voiceOn(); try { localStorage.setItem('club150:voice', on ? '1' : '0'); } catch (er) {} b2.setAttribute('aria-pressed', String(on)); if (on) { gym.spoken = ''; renderGym(); } else try { speechSynthesis.cancel(); } catch (er) {} return; }
     if (a === 'plus') return $('timer-plus').click();
     if (a === 'minus') return $('timer-minus').click();
@@ -2528,7 +2534,7 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
       if (e.t === 'b' && gym.lt) r.tech = gym.lt;
       if (r.reps || r.kg) results[st.ctx] = r;
       store.set('results2', results);
-      var before = prBest; renderProgress(); renderWeek();
+      var before = prBest; laterRender(renderProgress); renderWeek();
       tickEx(st.kk);
       if (e.t === 'b' && e.n === 'Жим штанги лёжа') { var now = bestBench(); if (now > before && r.tech !== 'bad') { prBest = now; celebrate('Новый <span>рекорд</span>', 'Расчётный максимум в жиме — ' + now + ' кг. Было ' + before + ' кг.', 'ph-trophy'); say('Новый рекорд!'); } }
       return gymNext();
@@ -2821,10 +2827,12 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
   });
 
   // ---------- backup: every club150:* key into one JSON file ----------
+  // Never copied between phones: the phone number for codes, the code itself and coach mode stay on this phone.
+  var NO_COPY = { 'club150:dev': 1, 'club150:lic': 1, 'club150:admin': 1 };
   $('backup-save').addEventListener('click', function () {
     var data = {};
     try { localStorage.setItem('club150:lastBackup', dayISO(new Date())); } catch (er) {}
-    try { for (var i = 0; i < localStorage.length; i++) { var k3 = localStorage.key(i); if (k3.indexOf('club150:') === 0) data[k3] = localStorage.getItem(k3); } } catch (er) {}
+    try { for (var i = 0; i < localStorage.length; i++) { var k3 = localStorage.key(i); if (k3.indexOf('club150:') === 0 && !NO_COPY[k3]) data[k3] = localStorage.getItem(k3); } } catch (er) {}
     var blob = new Blob([JSON.stringify({ app: 'club150', saved: new Date().toISOString(), data: data })], { type: 'application/json' });
     var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'club150-' + dayISO(new Date()) + '.json';
     document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
@@ -2836,7 +2844,7 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
     rd.onload = function () {
       try {
         var j = JSON.parse(rd.result); if (j.app !== 'club150' || !j.data) throw new Error('bad');
-        Object.keys(j.data).forEach(function (k3) { if (k3.indexOf('club150:') === 0) localStorage.setItem(k3, j.data[k3]); });
+        Object.keys(j.data).forEach(function (k3) { if (k3.indexOf('club150:') === 0 && !NO_COPY[k3]) localStorage.setItem(k3, String(j.data[k3])); });
         $('backup-msg').textContent = 'Копия от ' + (j.saved || '').slice(0, 10) + ' загружена. Перезапускаю…';
         setTimeout(function () { location.reload(); }, 900);
       } catch (er) { $('backup-msg').textContent = 'Это не файл копии «Железного цикла». Выбери файл club150-….json.'; }
@@ -3059,7 +3067,7 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
   })();
 
   // ---------- weekly barbell load: plan vs done ----------
-  function weekTon(wk) {
+  function weekLoadData(wk) {
     var plan = 0, done = 0, lifts = 0, liftsDone = 0;
     WEEKS[wk - 1].days.forEach(function (day, di) {
       items(day).forEach(function (e, ei) {
@@ -3076,7 +3084,7 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
   }
   function renderWload() {
     var el = $('wload'); if (!el || PROG === 'sr' && !WEEKS.length) return;
-    var data = []; for (var w = 1; w <= NW; w++) data.push(weekTon(w));
+    var data = []; for (var w = 1; w <= NW; w++) data.push(weekLoadData(w));
     var mx = Math.max.apply(null, data.map(function (d) { return Math.max(d.plan, d.done); })) || 1;
     var W = 320, H = 150, L = 6, B = 20, T = 8, bw = (W - L * 2) / NW;
     var col = { light: '#a9c79c', volume: 'var(--fg)', heavy: 'var(--accent)', peak: 'var(--accent)', test: '#ff8a65', deload: '#a9c79c', intro: '#a9c79c', moderate: 'var(--fg)' };
