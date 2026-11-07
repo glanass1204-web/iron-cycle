@@ -26,6 +26,72 @@
 </script>
 <script>try{document.documentElement.setAttribute("data-theme",localStorage.getItem("club150:theme")||"dark");if(localStorage.getItem("club150:simple")!=="0")document.documentElement.classList.add("simple")}catch(e){document.documentElement.classList.add("simple")}</script>
 <script>try{if(/tgWebApp/.test(location.hash+location.search))sessionStorage.setItem("c150tg","1");if(sessionStorage.getItem("c150tg"))document.write('<script src="https://telegram.org/js/telegram-web-app.js"><\/script>')}catch(e){}</script>
+<script>try{var c150L=localStorage.getItem("club150:lang");if(/^(uk|en)$/.test(c150L))document.write('<script src="i18n/'+c150L+'.js"><\/script>')}catch(e){}</script>
+<script>
+// Interface languages. The program itself keeps working with Russian names (history, swaps and formulas use them);
+// only what is shown is translated: text, button labels, hints, share pictures, dialogs and the voice in the gym.
+(function () {
+  var L = 'ru'; try { L = localStorage.getItem('club150:lang') || 'ru'; } catch (e) {}
+  var D = window.I18N;
+  window.LANG = D ? L : 'ru';
+  window.tr = function (x) { return x; };
+  if (!D || L === 'ru') return;
+  document.documentElement.lang = L;
+  var NUM = /\d+(?:[.,]\d+)?/g, CYR = /[А-Яа-яЁё]/;
+  function tr(x) {
+    if (!x || !CYR.test(x)) return x;
+    var lead = x.match(/^\s*/)[0], trail = x.match(/\s*$/)[0], core = x.trim().replace(/\s+/g, ' '), v = D[core];
+    if (v == null) {
+      var nums = core.match(NUM) || [], i = 0; v = D[core.replace(NUM, '{n}')];
+      if (v != null) v = v.replace(/\{(n|\d)\}/g, function (m, g) { return g === 'n' ? (nums[i++] || '') : (nums[+g - 1] || ''); });
+      else v = byRule(core);
+      // «Exercise · medium: 10–12 reps», «Week 3, done»: translate the parts separately.
+      if (v == null && /( · |, )/.test(core)) { var sep = core.indexOf(' · ') >= 0 ? ' · ' : ', ', ps = core.split(sep), ch = false; ps = ps.map(function (q) { var t2 = tr(q); if (t2 !== q) ch = true; return t2; }); if (ch) v = ps.join(sep); }
+      if (v == null) return x;
+    }
+    return lead + v + trail;
+  }
+  // Phrases with an exercise or another name inside: «Сделано: {s}», «Заменить на «{s}»»… The inner part is translated on its own.
+  var RULES = Object.keys(D).filter(function (k) { return k.indexOf('{s}') >= 0; }).map(function (k) {
+    return { re: new RegExp('^' + k.replace(/[.*+?^$()|[\]\\]/g, '\\$&').replace(/\{s\}/g, '(.+?)').replace(/\{n\}/g, '(\\d+(?:[.,]\\d+)?)') + '$'), k: k };
+  });
+  function byRule(core) {
+    for (var r = 0; r < RULES.length; r++) {
+      var m = RULES[r].re.exec(core); if (!m) continue;
+      var parts = m.slice(1), slots = (RULES[r].k.match(/\{[sn]\}/g) || []), j = 0;
+      return D[RULES[r].k].replace(/\{[sn]\}/g, function (t) { var p = parts[j++] || ''; return t === '{s}' ? tr(p) : p; });
+    }
+    return null;
+  }
+  window.tr = tr;
+  var ATTR = ['aria-label', 'placeholder', 'title', 'alt'];
+  function skip(el) { return !el || /^(SCRIPT|STYLE|NOSCRIPT|TEXTAREA)$/.test(el.tagName) || (el.closest && el.closest('[data-notr]')); }
+  function doText(n) { if (skip(n.parentElement)) return; var v = tr(n.nodeValue); if (v !== n.nodeValue) n.nodeValue = v; }
+  function doAttrs(el) { if (!el || /^(SCRIPT|STYLE)$/.test(el.tagName)) return; for (var i = 0; i < ATTR.length; i++) { var a = el.getAttribute(ATTR[i]); if (a) { var v = tr(a); if (v !== a) el.setAttribute(ATTR[i], v); } } }
+  function walk(root) {
+    if (root.nodeType === 3) return doText(root);
+    if (root.nodeType !== 1) return;
+    doAttrs(root);
+    var w = document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT), n;
+    while ((n = w.nextNode())) { if (n.nodeType === 3) doText(n); else doAttrs(n); }
+  }
+  new MutationObserver(function (ms) {
+    for (var i = 0; i < ms.length; i++) {
+      var m = ms[i];
+      if (m.type === 'childList') { for (var j = 0; j < m.addedNodes.length; j++) walk(m.addedNodes[j]); }
+      else if (m.type === 'characterData') doText(m.target);
+      else doAttrs(m.target);
+    }
+    var t = tr(document.title); if (t !== document.title) document.title = t;
+  }).observe(document.documentElement, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ATTR });
+  document.addEventListener('DOMContentLoaded', function () { walk(document.documentElement); document.title = tr(document.title); });
+  // Pictures for stories and system dialogs.
+  try { var ft = CanvasRenderingContext2D.prototype.fillText; CanvasRenderingContext2D.prototype.fillText = function (t) { arguments[0] = tr(String(t)); return ft.apply(this, arguments); }; } catch (e) {}
+  try { var mt = CanvasRenderingContext2D.prototype.measureText; CanvasRenderingContext2D.prototype.measureText = function (t) { return mt.call(this, tr(String(t))); }; } catch (e) {}
+  ['confirm', 'alert'].forEach(function (f) { var o = window[f]; if (o) window[f] = function (m) { return o.call(window, tr(String(m))); }; });
+  var op = window.prompt; if (op) window.prompt = function (m, d) { return op.call(window, tr(String(m)), d); };
+})();
+</script>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -153,6 +219,8 @@ button { cursor: pointer; -webkit-tap-highlight-color: transparent; }
 .progress-card .empty { color: var(--muted); font-size: 14px; margin: 0; }
 .chart-btn { margin-left: auto; border: 1px solid var(--line); background: var(--surface); color: var(--fg); border-radius: 999px; padding: 6px 10px; font: 600 13px var(--body); display: inline-flex; align-items: center; gap: 6px; }
 .chart-btn i { color: var(--accent); }
+.lang-seg { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 24px; } .lang-seg button { flex: 1 1 28%; min-height: 44px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); border-radius: 10px; font: 600 15px var(--body); padding: 8px 10px; } .lang-seg button[aria-pressed="true"] { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 18%, var(--surface)); }
+.onb-lang { display: flex; flex-wrap: wrap; gap: 6px; } .onb-lang button { border: 1px solid var(--line); background: none; color: var(--muted); border-radius: 999px; padding: 6px 12px; font: 600 13px var(--body); min-height: 36px; } .onb-lang button[aria-pressed="true"] { color: var(--fg); border-color: var(--accent); }
 .swap-btn { display: inline-flex; align-items: center; gap: 6px; margin-top: 8px; border: 1px dashed var(--line); background: none; color: var(--muted); border-radius: 999px; padding: 6px 12px; font: 600 13px var(--body); min-height: 34px; touch-action: manipulation; }
 .swap-btn i { color: var(--accent); }
 .swap-opt { display: grid; gap: 2px; text-align: left; width: 100%; border: 1px solid var(--line); background: var(--surface); color: var(--fg); border-radius: 12px; padding: 12px 14px; margin-bottom: 8px; font: 600 15px var(--body); }
@@ -802,6 +870,8 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
   <section class="wrap block" id="license"></section>
 
   <section class="wrap block" id="look">
+    <h2>Язык</h2>
+    <div class="lang-seg" role="group" aria-label="Язык" id="lang-seg" data-notr></div>
     <h2>Оформление</h2>
     <p class="hint">Светлая тема удобнее в ярком зале.</p>
     <div class="theme-seg" role="group" aria-label="Тема">
@@ -2476,7 +2546,8 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
   function voiceOn() { try { return localStorage.getItem('club150:voice') === '1'; } catch (er) { return false; } }
   function say(t) {
     if (!voiceOn() || !window.speechSynthesis) return;
-    try { speechSynthesis.cancel(); var u = new SpeechSynthesisUtterance(t); u.lang = 'ru-RU'; u.rate = 1.02; speechSynthesis.speak(u); } catch (er) {}
+    if (window.LANG && LANG !== 'ru') { var ok = true; t = String(t).replace(/([.!?,])\s+/g, '$1\n').split('\n').map(function (p) { var m = p.match(/^(.*?)([.!?,]*)$/), c = m[1].trim(), v = tr(c); if (v === c && /[А-Яа-яЁё]/.test(c) && LANG !== 'uk') ok = false; if (v === c && LANG === 'uk' && /[ыэъё]/i.test(c)) ok = false; return v + m[2]; }).join(' '); if (!ok) return; }
+    try { speechSynthesis.cancel(); var u = new SpeechSynthesisUtterance(t); u.lang = ({ ru: 'ru-RU', uk: 'uk-UA', en: 'en-US' })[window.LANG || 'ru'] || 'ru-RU'; u.rate = 1.02; speechSynthesis.speak(u); } catch (er) {}
   }
   function openGym(di) {
     if (locked(current)) return;
@@ -2800,7 +2871,7 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
       '<div class="field"><label for="onb-dead">Становая, кг <small>можно потом</small></label><input id="onb-dead" type="number" inputmode="numeric" min="0"></div>' +
       '<p class="onb-err" id="onb-err" role="alert"></p></div><button class="btn primary" type="button" data-onb="2">Дальше</button>';
     else h = '<div class="onb-hero"><h2 id="onb-title">Как <span>тренироваться</span></h2><ol><li>Во вкладке <b>Сегодня</b> нажми <b>Начать в зале</b>.</li><li>Делай подход и жми <b>Сделал подход</b> — отдых запустится сам.</li><li>Последний подход жима записывай: так растёт твой максимум.</li></ol></div><button class="btn primary" type="button" data-onb="done">Поехали</button>';
-    $('onb').innerHTML = dots + h + (step === 0 && iosApp() ? '<button class="onb-skip" type="button" data-move-open style="color:var(--accent)">Уже занимался в Safari? Перенести данные и код</button>' : '') + (step < 2 ? '<button class="onb-skip" type="button" data-onb="skip">Пропустить</button>' : '');
+    $('onb').innerHTML = (step === 0 ? '<div class="onb-lang" data-notr role="group" aria-label="Язык">' + langButtons() + '</div>' : '') + dots + h + (step === 0 && iosApp() ? '<button class="onb-skip" type="button" data-move-open style="color:var(--accent)">Уже занимался в Safari? Перенести данные и код</button>' : '') + (step < 2 ? '<button class="onb-skip" type="button" data-onb="skip">Пропустить</button>' : '');
     $('onb').hidden = false; document.body.classList.add('onb-on');
     var f = $('onb').querySelector('input, .btn.primary'); if (f) f.focus();
     if (step === 1) {
@@ -2986,6 +3057,16 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
       $('sheet-root').innerHTML = '<div class="scrim"></div><div class="sheet" role="dialog" aria-label="Замена"><div class="grab"></div><h3>Готово</h3><p class="hint">' + esc(msg) + '</p></div>';
       setTimeout(function () { location.reload(); }, 1200);
     }
+  });
+  // ---------- interface language ----------
+  var LANGS = [['ru', 'Русский'], ['uk', 'Українська'], ['en', 'English']];
+  function langButtons() { return LANGS.map(function (l) { return '<button type="button" data-lang-set="' + l[0] + '" aria-pressed="' + ((window.LANG || 'ru') === l[0]) + '" lang="' + l[0] + '">' + l[1] + '</button>'; }).join(''); }
+  $('lang-seg').innerHTML = langButtons();
+  document.addEventListener('click', function (ev) {
+    var b = ev.target.closest('[data-lang-set]'); if (!b) return;
+    var l = b.getAttribute('data-lang-set'); if (l === (window.LANG || 'ru')) return;
+    try { localStorage.setItem('club150:lang', l); } catch (er) {}
+    location.reload();
   });
   function netState() { $('offline').hidden = navigator.onLine !== false; }
   window.addEventListener('online', netState); window.addEventListener('offline', netState); netState();
