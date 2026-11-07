@@ -3015,7 +3015,7 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
   // iOS keeps the home-screen app's storage apart from Safari, so the app starts empty with a new phone number.
   // Safari copies everything (with the code and the phone number) as one text; the app pastes it. Valid 30 minutes.
   function iosApp() { return (/iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)) && ((window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true); }
-  var MOVE_SKIP = { 'club150:admin': 1, 'club150:undo': 1 };
+  var MOVE_SKIP = { 'club150:admin': 1, 'club150:undo': 1, 'club150:tkey': 1 }; // the coach's private key never leaves the phone
   function moveText() {
     var d = {}; for (var i = 0; i < localStorage.length; i++) { var k3 = localStorage.key(i); if (k3.indexOf('club150:') === 0 && !MOVE_SKIP[k3]) d[k3] = localStorage.getItem(k3); }
     var js = JSON.stringify({ app: 'club150', at: Date.now(), data: d });
