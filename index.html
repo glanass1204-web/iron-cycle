@@ -153,6 +153,11 @@ button { cursor: pointer; -webkit-tap-highlight-color: transparent; }
 .progress-card .empty { color: var(--muted); font-size: 14px; margin: 0; }
 .chart-btn { margin-left: auto; border: 1px solid var(--line); background: var(--surface); color: var(--fg); border-radius: 999px; padding: 6px 10px; font: 600 13px var(--body); display: inline-flex; align-items: center; gap: 6px; }
 .chart-btn i { color: var(--accent); }
+.swap-btn { display: inline-flex; align-items: center; gap: 6px; margin-top: 8px; border: 1px dashed var(--line); background: none; color: var(--muted); border-radius: 999px; padding: 6px 12px; font: 600 13px var(--body); min-height: 34px; touch-action: manipulation; }
+.swap-btn i { color: var(--accent); }
+.swap-opt { display: grid; gap: 2px; text-align: left; width: 100%; border: 1px solid var(--line); background: var(--surface); color: var(--fg); border-radius: 12px; padding: 12px 14px; margin-bottom: 8px; font: 600 15px var(--body); }
+.swap-opt small { color: var(--muted); font-weight: 400; font-size: 13px; }
+.swap-opt.on { border-color: var(--accent); }
 .ch-table { display: grid; gap: 0; font-size: 14px; }
 .ch-table div { display: grid; grid-template-columns: 48px 52px minmax(0, 1fr) auto; gap: 8px; padding-block: 7px; border-bottom: 1px dashed var(--line); align-items: baseline; }
 .ch-table span { color: var(--muted); font-family: var(--mono); font-size: 12px; }
@@ -1353,6 +1358,57 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
   };
   CYCLE = store.get('cycle', 1);
 
+  // ---------- exercise swaps ----------
+  // An athlete can replace a lift (back, knees, no equipment) with one of a short, checked list.
+  // A swap starts at a given week of a given cycle and lasts until it is undone, so earlier results
+  // stay with the original lift and the replacement gets its own history. The replacement works as «подбор»:
+  // reps follow the wave of the week, the weight comes from its own records.
+  var SWAP_ALTS = {};
+  SWAP_ALTS[DL] = SWAP_ALTS['Мёртвая тяга'] = [['Румынская тяга с гантелями', 'Меньше нагрузки на поясницу, работает задняя поверхность бедра'], ['Гиперэкстензия с блином', 'Спина и ягодицы без нагрузки сверху на позвоночник'], ['Ягодичный мост со штангой', 'Ягодицы и бёдра, спина почти не работает']];
+  SWAP_ALTS[SQ] = [['Гоблет-присед с гантелью', 'Легче для спины и коленей, простая техника'], ['Выпады с гантелями', 'Ноги по очереди, спина разгружена'], ['Болгарские выпады с гантелями', 'Задняя нога на скамье, сильно грузит бедро']];
+  SWAP_ALTS[BENCH] = [['Жим гантелей лёжа', 'Плечам свободнее, можно без страхующего'], ['Отжимания на брусьях', 'Без штанги: грудь и трицепс. Легко — повесь вес на пояс']];
+  SWAP_ALTS[SLDL] = [['Румынская тяга с гантелями', 'То же движение, но легче держать спину'], ['Гиперэкстензия с блином', 'Задняя поверхность бедра и спина без штанги']];
+  SWAP_ALTS[OHP] = [['Жим гантелей сидя', 'Спина в упоре — меньше нагрузки на поясницу'], ['Жим гантелей стоя', 'Каждая рука работает сама, плечам свободнее']];
+  SWAP_ALTS['Жим штанги лёжа узким хватом'] = [['Отжимания на брусьях', 'Трицепс и грудь без штанги'], ['Французский жим EZ-грифом лёжа', 'Только трицепс, грудь отдыхает']];
+  var swaps = store.get('swaps', []);
+  // «Мёртвая тяга» is the same lift as the deadlift: one swap covers both.
+  function swapKey(n) { return n === 'Мёртвая тяга' ? DL : n; }
+  function swapAt(name, c, w) {
+    var to = null; name = swapKey(name);
+    swaps.forEach(function (x) {
+      if (x.n !== name) return;
+      var started = x.c < c || (x.c === c && x.w <= w), ended = x.uc != null && (x.uc < c || (x.uc === c && x.uw <= w));
+      if (started && !ended) to = x.to;
+    });
+    return to;
+  }
+  (function applySwaps() {
+    if (!swaps.length) return;
+    WEEKS.forEach(function (wk, wi) {
+      var changed = false, names = [];
+      wk.days.forEach(function (day) { day.forEach(function (e) { (e.t === 'or' || e.t === 'ss' ? [e.a, e.c] : [e]).forEach(function (y) { names.push(y.n); }); }); });
+      var sw = function (o, dayNames) {
+        var to = swapAt(o.n, CYCLE, wi + 1); if (!to) return o;
+        var pick = [to].concat((SWAP_ALTS[o.n] || []).map(function (a) { return a[0]; })).filter(function (n) { return dayNames.indexOf(n) < 0; })[0];
+        if (!pick) return o;
+        dayNames.push(pick);
+        var total = 0; try { parseSets(o.s).forEach(function (p2) { total += o.t === 'b' ? (p2[2] || 1) : (p2[1] || 1); }); } catch (er) {}
+        var why = ((SWAP_ALTS[o.n] || []).filter(function (a) { return a[0] === pick; })[0] || [])[1] || '';
+        var r = k(pick, '10x' + Math.max(3, Math.min(4, total || 3)), 'Замена для «' + o.n + '». ' + why + '. Повторы — по волне недели, вес запиши сам.');
+        r.orig = swapKey(o.n); changed = true; return r;
+      };
+      var days = wk.days.map(function (day) {
+        var dayNames = [];
+        day.forEach(function (e) { (e.t === 'or' || e.t === 'ss' ? [e.a, e.c] : [e]).forEach(function (y) { dayNames.push(y.n); }); });
+        return day.map(function (e) {
+          if (e.t === 'or' || e.t === 'ss') { var a = sw(e.a, dayNames), c = sw(e.c, dayNames); return a === e.a && c === e.c ? e : Object.assign({}, e, { a: a, c: c }); }
+          return sw(e, dayNames);
+        });
+      });
+      if (changed) WEEKS[wi] = Object.assign({}, wk, { days: days });
+    });
+  })();
+
 
   // ---------- Telegram Mini App ----------
   var TG = (window.Telegram && Telegram.WebApp && Telegram.WebApp.initData) ? Telegram.WebApp : null;
@@ -1537,10 +1593,10 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
   // ---------- muscles ----------
   var MUSCLES = [['grud', 'Грудь'], ['plechi', 'Плечи'], ['spina', 'Спина'], ['nogi', 'Ноги'], ['ruki', 'Руки'], ['press', 'Пресс']];
   function muscle(n) {
-    if (/Присед|гоблет|Болгарск/.test(n)) return 'nogi';
+    if (/Присед|гоблет|Болгарск|Выпады|Ягодичный мост/i.test(n)) return 'nogi';
     if (/Отжиман/.test(n)) return 'grud';
-    if (/становая|Мёртвая|Румынская/i.test(n)) return 'spina';
-    if (/Махи|Жим штанги стоя|Жим гантелей сидя/.test(n)) return 'plechi';
+    if (/становая|Мёртвая|Румынская|Гиперэкстензия/i.test(n)) return 'spina';
+    if (/Махи|Жим штанги стоя|Жим гантелей сидя|Жим гантелей стоя/.test(n)) return 'plechi';
     if (/Тяга|Пуловер/.test(n)) return 'spina';
     if (/Француз|из-за головы/.test(n)) return 'ruki';
     if (/Жим|Разводка/.test(n)) return 'grud';
@@ -1814,7 +1870,8 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
     [/Махи одной рукой/, 'bench', 0.06], [/Махи/, 'bench', 0.1], [/Француз/, 'bench', 0.3], [/Разгибание гантели/, 'bench', 0.15],
     [/Пуловер/, 'bench', 0.15], [/Сгибания EZ/, 'bench', 0.25], [/Сгибания/, 'bench', 0.2],
     [/одной рукой/, 'dead', 0.2], [/Тяга гантел/, 'dead', 0.25], [/Румынская/, 'dead', 0.3],
-    [/Болгарские/, 'squat', 0.2], [/гоблет/i, 'squat', 0.15]
+    [/Болгарские/, 'squat', 0.2], [/гоблет/i, 'squat', 0.15], [/Выпады с гантелями/, 'squat', 0.25],
+    [/Гиперэкстензия/, 'dead', 0.1], [/Ягодичный мост/, 'dead', 0.6], [/Жим гантелей стоя/, 'bench', 0.3]
   ];
   function startKg(name) {
     for (var i = 0; i < START.length; i++) if (START[i][0].test(name)) { var mx = +maxes[START[i][1]]; return mx > 0 ? mx * START[i][2] : 0; }
@@ -2130,7 +2187,8 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
     var kk = key(wk, di, ei), on = !!done[kk];
     return '<div class="ex' + (isMain ? ' main' : '') + (on ? ' checked' : '') + '">' +
       '<input type="checkbox" id="c' + kk + '" data-key="' + kk + '"' + (on ? ' checked' : '') + ' aria-label="Сделано: ' + esc(e.n) + '">' +
-      '<div class="ex-body">' + bodyHtml(e, isMain, wk + '|' + di + '|' + ei + '|a') + (extra || '') + '</div></div>';
+      '<div class="ex-body">' + bodyHtml(e, isMain, wk + '|' + di + '|' + ei + '|a') + (extra || '') +
+      (e.orig ? '<button type="button" class="swap-btn" data-swap="' + esc(e.orig) + '"><i class="ph ph-arrows-left-right" aria-hidden="true"></i>Вместо «' + esc(e.orig) + '» · изменить</button>' : SWAP_ALTS[e.n] ? '<button type="button" class="swap-btn" data-swap="' + esc(swapKey(e.n)) + '"><i class="ph ph-arrows-left-right" aria-hidden="true"></i>Заменить упражнение</button>' : '') + '</div></div>';
   }
   function ringHtml(s) {
     var c = 2 * Math.PI * 17, off = c * (1 - s.got / s.n);
@@ -2886,6 +2944,47 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
         localStorage.setItem('club150:onb', '1');
       } catch (er) { $('move-msg').textContent = 'Не хватило памяти. Попробуй ещё раз.'; return; }
       $('move-msg').textContent = 'Готово! Перезапускаю…'; setTimeout(function () { location.reload(); }, 700);
+    }
+  });
+  // ---------- exercise swap sheet ----------
+  // From which week a change applies: this week, unless something is already written for that exercise this week.
+  function swapStartWeek(names) {
+    var busy = false;
+    Object.keys(results).concat(Object.keys(setsDone)).forEach(function (ck) {
+      if (busy || +ck.split('|')[0] !== current) return;
+      try { var f = findEx(ck.split('|').slice(0, 4).join('|')); if (f.e && names.indexOf(f.e.n) >= 0) busy = true; } catch (er) {}
+    });
+    return busy ? current + 1 : current;
+  }
+  function setSwap(orig, to) {
+    var cur = swapAt(orig, CYCLE, current), w = swapStartWeek([orig, cur || orig]), c = CYCLE;
+    if (w > NW) { c = CYCLE + 1; w = 1; }
+    swaps.forEach(function (x) { if (x.n === orig && x.uc == null) { if (x.c > c || (x.c === c && x.w >= w)) x.dead = 1; else { x.uc = c; x.uw = w; } } });
+    swaps = swaps.filter(function (x) { return !x.dead; });
+    if (to) swaps.push({ n: orig, to: to, c: c, w: w });
+    store.set('swaps', swaps);
+    return c === CYCLE ? w : 0;
+  }
+  document.addEventListener('click', function (ev) {
+    var b = ev.target.closest('[data-swap]');
+    if (b) {
+      var orig = b.getAttribute('data-swap'), cur = swapAt(orig, CYCLE, current);
+      $('sheet-root').innerHTML = '<div class="scrim" data-close></div><div class="sheet" role="dialog" aria-label="Замена упражнения"><div class="grab"></div><h3>Чем заменить «' + esc(orig) + '»</h3>' +
+        '<p class="hint">Замена действует во всех неделях, начиная с этой, пока не вернёшь. Прошлые результаты останутся у исходного упражнения, у замены будет своя история. Повторы — по волне недели: 15–20 / 10–12 / 6–8.</p>' +
+        (SWAP_ALTS[orig] || []).map(function (a) { return '<button type="button" class="swap-opt' + (cur === a[0] ? ' on' : '') + '" data-swap-of="' + esc(orig) + '" data-swap-to="' + esc(a[0]) + '">' + esc(a[0]) + (cur === a[0] ? ' ✓' : '') + '<small>' + esc(a[1]) + '</small></button>'; }).join('') +
+        (cur ? '<button type="button" class="btn" data-swap-of="' + esc(orig) + '" data-swap-to="">Вернуть «' + esc(orig) + '»</button>' : '') +
+        (/^(Жим штанги лёжа|Приседания|Тяга становая|Мёртвая тяга)$/.test(orig) ? '<p class="hint">Максимум этого упражнения не меняется, пока оно заменено. В неделе проверки его можно пропустить.</p>' : '') +
+        '<button type="button" class="btn" data-close>Отмена</button></div>';
+      return;
+    }
+    var o = ev.target.closest('[data-swap-to]');
+    if (o) {
+      var of = o.getAttribute('data-swap-of'), to = o.getAttribute('data-swap-to');
+      if (to && swapAt(of, CYCLE, current) === to) { closeSheet(); return; }
+      var w = setSwap(of, to || null);
+      var msg = (to ? '«' + of + '» → «' + to + '»' + (w && w !== current ? ' со следующей недели: в этой уже есть записи' : '') : '«' + of + '» вернулось' + (w && w !== current ? ' со следующей недели' : ''));
+      $('sheet-root').innerHTML = '<div class="scrim"></div><div class="sheet" role="dialog" aria-label="Замена"><div class="grab"></div><h3>Готово</h3><p class="hint">' + esc(msg) + '</p></div>';
+      setTimeout(function () { location.reload(); }, 1200);
     }
   });
   function netState() { $('offline').hidden = navigator.onLine !== false; }
