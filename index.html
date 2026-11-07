@@ -1502,13 +1502,33 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
   }
   // ---------- trial and full version: weeks 1–2 free, the rest opens with a code bound to this phone ----------
   // Simple protection without a server: the code is a hash of this phone's random number. Stops casual link sharing only.
-  var FREE_WEEKS = 2, LIC_SALT = '3c0795e14022d943', ADMIN_H = 619185260224645;
+  // Full-version codes are ECDSA P-256 signatures of the phone number. Only the public key is here, so a code
+  // cannot be made from this source: it has to be signed with the trainer's private key, which never leaves the trainer's phone.
+  var FREE_WEEKS = 2, LIC_PUB = { kty: 'EC', crv: 'P-256', x: 'SHtt58Shvp3cIXyjtK-EXaOviwd4zDKQhIZ5nMBe3LY', y: 'VXt6VXu3ijyG-oqd53-rOiRDBkXgHOtDSOW39t-praE' };
+  // Checksum for the copy-and-paste data transfer (detects a damaged paste; not a secret).
+  var LIC_SALT = '3c0795e14022d943';
   function cyrb53(str, seed) {
     var h1 = 0xdeadbeef ^ seed, h2 = 0x41c6ce57 ^ seed;
     for (var i = 0, ch; i < str.length; i++) { ch = str.charCodeAt(i); h1 = Math.imul(h1 ^ ch, 2654435761); h2 = Math.imul(h2 ^ ch, 1597334677); }
     h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507); h1 ^= Math.imul(h2 ^ (h2 >>> 13), 3266489909);
     h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507); h2 ^= Math.imul(h1 ^ (h1 >>> 13), 3266489909);
     return 4294967296 * (2097151 & h2) + (h1 >>> 0);
+  }
+  var SUBTLE = window.crypto && crypto.subtle, EC = { name: 'ECDSA', namedCurve: 'P-256' }, SIG = { name: 'ECDSA', hash: 'SHA-256' };
+  function b64u(buf) { var b = new Uint8Array(buf), t = ''; for (var i = 0; i < b.length; i++) t += String.fromCharCode(b[i]); return btoa(t).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); }
+  function unb64u(t) { t = t.replace(/-/g, '+').replace(/_/g, '/'); while (t.length % 4) t += '='; var r = atob(t), b = new Uint8Array(r.length); for (var i = 0; i < r.length; i++) b[i] = r.charCodeAt(i); return b; }
+  function licMsg(dev) { return new TextEncoder().encode('IC1|' + normCode(dev)); }
+  function cleanCode(c) { return String(c || '').replace(/[^A-Za-z0-9_-]/g, ''); }
+  function verifyCode(dev, code) {
+    code = cleanCode(code);
+    if (!SUBTLE || code.length !== 86) return Promise.resolve(false);
+    return SUBTLE.importKey('jwk', LIC_PUB, EC, false, ['verify'])
+      .then(function (k) { return SUBTLE.verify(SIG, k, unb64u(code), licMsg(dev)); }).catch(function () { return false; });
+  }
+  function trainerKey() { try { return localStorage.getItem('club150:tkey') || ''; } catch (e) { return ''; } }
+  function signCode(dev, d) {
+    var jwk = { kty: 'EC', crv: 'P-256', x: LIC_PUB.x, y: LIC_PUB.y, d: d || trainerKey() };
+    return SUBTLE.importKey('jwk', jwk, EC, false, ['sign']).then(function (k) { return SUBTLE.sign(SIG, k, licMsg(dev)); }).then(b64u);
   }
   var B32 = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
   function b32(n, len) { var o = ''; for (var i = 0; i < len; i++) { o += B32[n % B32.length]; n = Math.floor(n / B32.length); } return o; }
@@ -1522,15 +1542,18 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
     } catch (e) { return 'AAAA-AAAA'; }
   })();
   function normCode(c) { c = String(c || '').toUpperCase().replace(/[^A-Z0-9]/g, ''); return c.length === 8 ? c.slice(0, 4) + '-' + c.slice(4) : c; }
-  function codeFor(dev) { var c = b32(cyrb53(normCode(dev) + '|' + LIC_SALT, 7), 8); return c.slice(0, 4) + '-' + c.slice(4); }
-  function licensed() { try { return normCode(localStorage.getItem('club150:lic')) === codeFor(DEV); } catch (e) { return false; } }
-  function isAdmin() { try { return localStorage.getItem('club150:admin') === '1'; } catch (e) { return false; } }
+  // A stored code counts as valid until the check says otherwise (no locked flash for paid users on start); the check runs once on load.
+  var LIC_OK = (function () { try { return cleanCode(localStorage.getItem('club150:lic')).length === 86; } catch (e) { return false; } })();
+  var LIC_OLD = (function () { try { var v = localStorage.getItem('club150:lic'); return !!v && cleanCode(v).length < 20; } catch (e) { return false; } })();
+  function licensed() { return LIC_OK; }
+  function isAdmin() { return trainerKey().length > 20; }
+  function saveLicense(code) { try { localStorage.setItem('club150:lic', cleanCode(code)); } catch (er) {} LIC_OK = true; LIC_OLD = false; }
   function locked(wk) { return wk > FREE_WEEKS && !licensed() && !tgFree(); }
   function codeFormHtml() {
     return (TG ? '<p class="hint">Твой номер в Telegram: <b class="dev-id">' + DEV + '</b>. Отправь его тренеру — он пришлёт код, который работает только в твоём Telegram.</p>'
       : '<p class="hint">Номер этого телефона: <b class="dev-id">' + DEV + '</b>. Отправь его тренеру — он пришлёт код, который работает только на этом телефоне.</p>') +
       '<div class="lic-row"><button class="btn" type="button" data-dev-copy>Скопировать номер</button></div>' +
-      '<div class="lic-row"><input class="lic-in" type="text" autocapitalize="characters" autocomplete="off" maxlength="9" placeholder="XXXX-XXXX" aria-label="Код доступа"><button class="btn primary" type="button" data-lic-go>Открыть</button></div>' +
+      '<div class="lic-row"><input class="lic-in" type="text" autocapitalize="off" autocorrect="off" spellcheck="false" autocomplete="off" maxlength="200" placeholder="Вставь код из сообщения" aria-label="Код доступа"><button class="btn primary" type="button" data-lic-go>Открыть</button></div>' +
       '<p class="toast lic-msg" aria-live="polite"></p>';
   }
   function paywallHtml(wk) {
@@ -1547,12 +1570,12 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
     var h = '<h2>Полная версия</h2><div class="card' + (licensed() ? '' : ' paywall') + '">';
     if (licensed()) h += '<h3 data-admin-tap><i class="ph ph-lock-open" aria-hidden="true"></i>Открыта на этом телефоне</h3><p class="hint">Все ' + NW + ' недель и обе программы доступны. Номер телефона: <b class="dev-id">' + DEV + '</b>.</p>';
     else if (tgFree()) h += '<h3 data-admin-tap><i class="ph ph-lock-open" aria-hidden="true"></i>Всё открыто в Telegram</h3><p class="hint">До ' + fmtDate(TG_FREE_UNTIL) + ' включительно все ' + NW + ' недель бесплатно. Потом — недели 1–' + FREE_WEEKS + ' бесплатно, дальше по коду.</p>' + codeFormHtml();
-    else h += '<h3 data-admin-tap><i class="ph ph-lock" aria-hidden="true"></i>Пробная версия</h3><p class="hint">Сейчас открыты недели 1–' + FREE_WEEKS + '. Чтобы открыть все ' + NW + ' недель, получи код у тренера.</p>' + codeFormHtml();
+    else h += '<h3 data-admin-tap><i class="ph ph-lock" aria-hidden="true"></i>Пробная версия</h3><p class="hint">Сейчас открыты недели 1–' + FREE_WEEKS + '. Чтобы открыть все ' + NW + ' недель, получи код у тренера.</p>' + (LIC_OLD ? '<p class="hint">Коды старого образца больше не действуют. Отправь тренеру номер телефона — он пришлёт новый код.</p>' : '') + codeFormHtml();
     h += '<div class="lic-row"><button class="btn" type="button" data-share-app>Отправить другу</button></div><p class="toast share-msg" aria-live="polite"></p></div>';
     if (isAdmin()) h += '<div class="card" style="margin-top:12px"><h3><i class="ph ph-crown" aria-hidden="true"></i>Выдать код</h3><p class="hint">Впиши номер телефона, который прислал человек. Код откроет полную версию только на его телефоне.</p>' +
       '<div class="lic-row"><input class="lic-in" id="adm-dev" type="text" autocapitalize="characters" autocomplete="off" maxlength="9" placeholder="Номер XXXX-XXXX" aria-label="Номер телефона"><button class="btn primary" type="button" data-adm-gen>Получить код</button></div>' +
       '<div id="adm-out"></div>' + (licensed() ? '' : '<button class="btn" type="button" data-adm-self>Открыть на моём телефоне</button>') +
-      '<button class="btn" type="button" data-adm-off>Выйти из режима тренера</button></div>';
+      '<button class="btn" type="button" data-adm-off>Выйти из режима тренера</button><p class="hint">Ключ тренера хранится только на этом телефоне. Выйдешь из режима — понадобится вставить ключ снова.</p></div>';
     $('license').innerHTML = h;
   }
   var adminTaps = 0, adminT = null;
@@ -1562,9 +1585,13 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
     if (cp) { if (navigator.clipboard) navigator.clipboard.writeText(DEV).then(function () { cp.textContent = 'Скопировано: ' + DEV; }, function () { cp.textContent = DEV; }); else cp.textContent = DEV; return; }
     var go = t.closest('[data-lic-go]');
     if (go) {
-      var box = go.closest('.card'), c = normCode(box.querySelector('.lic-in').value), msg = box.querySelector('.lic-msg');
-      if (c && c === codeFor(DEV)) { try { localStorage.setItem('club150:lic', c); } catch (er) {} renderLicense(); renderAll(); celebrate('Полная <span>версия</span>', 'Все ' + NW + ' недель открыты. Вперёд к 150!', 'ph-crown'); }
-      else msg.textContent = c ? 'Код не подходит к этому телефону. Проверь номер ' + DEV + ' и код.' : 'Впиши код из сообщения.';
+      var box = go.closest('.card'), c = cleanCode(box.querySelector('.lic-in').value), msg = box.querySelector('.lic-msg');
+      if (!c) { msg.textContent = 'Вставь код из сообщения.'; return; }
+      if (!SUBTLE) { msg.textContent = 'Этот браузер не умеет проверять код. Открой программу в Chrome или Safari.'; return; }
+      verifyCode(DEV, c).then(function (ok) {
+        if (ok) { saveLicense(c); renderLicense(); renderAll(); celebrate('Полная <span>версия</span>', 'Все ' + NW + ' недель открыты. Вперёд!', 'ph-crown'); }
+        else msg.textContent = 'Код не подходит к этому телефону. Проверь номер ' + DEV + ' и что код скопирован целиком.';
+      });
       return;
     }
     if (t.closest('[data-share-app]')) { shareLink(); return; }
@@ -1573,24 +1600,31 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
       if (adminTaps >= 5) {
         adminTaps = 0;
         var card = t.closest('.card');
-        if (card && !card.querySelector('#adm-pw')) card.insertAdjacentHTML('beforeend', '<div class="lic-row"><input class="lic-in" id="adm-pw" type="password" autocomplete="off" placeholder="Пароль тренера" aria-label="Пароль тренера"><button class="btn primary" type="button" data-adm-login>Войти</button></div>');
+        if (card && !card.querySelector('#adm-pw')) card.insertAdjacentHTML('beforeend', '<div class="lic-row"><input class="lic-in" id="adm-pw" type="password" autocomplete="off" placeholder="Ключ тренера" aria-label="Ключ тренера"><button class="btn primary" type="button" data-adm-login>Войти</button></div><p class="toast adm-msg" aria-live="polite"></p>');
       }
       return;
     }
     if (t.closest('[data-adm-login]')) {
-      var pw = ($('adm-pw').value || '').trim().toLowerCase();
-      if (cyrb53(pw + '|admin|' + LIC_SALT, 150) === ADMIN_H) { try { localStorage.setItem('club150:admin', '1'); } catch (er) {} renderLicense(); }
-      else $('adm-pw').value = '';
+      var pw = cleanCode($('adm-pw').value), am = document.querySelector('.adm-msg');
+      if (!SUBTLE || !pw) { $('adm-pw').value = ''; return; }
+      // The key is accepted only if a code it signs passes the public-key check.
+      signCode('TEST-TEST', pw).then(function (sig) { return verifyCode('TEST-TEST', sig); }).catch(function () { return false; }).then(function (ok) {
+        if (ok) { try { localStorage.setItem('club150:tkey', pw); } catch (er) {} renderLicense(); }
+        else { $('adm-pw').value = ''; if (am) am.textContent = 'Ключ не подходит.'; }
+      });
       return;
     }
     if (t.closest('[data-adm-gen]')) {
       var d = normCode($('adm-dev').value);
-      $('adm-out').innerHTML = /^[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(d) ? '<p class="hint">Код для ' + esc(d) + ':</p><div class="lic-code">' + codeFor(d) + '</div><button class="btn" type="button" data-adm-copy="' + codeFor(d) + '">Скопировать код</button>' : '<p class="hint">Номер — 8 знаков, как XXXX-XXXX.</p>';
+      if (!/^[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(d)) { $('adm-out').innerHTML = '<p class="hint">Номер — 8 знаков, как XXXX-XXXX.</p>'; return; }
+      signCode(d).then(function (code) {
+        $('adm-out').innerHTML = '<p class="hint">Код для ' + esc(d) + ':</p><div class="lic-code" style="overflow-wrap:anywhere;font-size:13px">' + code + '</div><button class="btn" type="button" data-adm-copy="' + code + '">Скопировать код</button>';
+      }, function () { $('adm-out').innerHTML = '<p class="hint">Не получилось подписать код. Выйди из режима тренера и вставь ключ заново.</p>'; });
       return;
     }
     var ac = t.closest('[data-adm-copy]'); if (ac) { var cc = ac.getAttribute('data-adm-copy'); if (navigator.clipboard) navigator.clipboard.writeText(cc).then(function () { ac.textContent = 'Скопировано'; }, function () { ac.textContent = 'Код: ' + cc + ' — скопируй вручную'; }); return; }
-    if (t.closest('[data-adm-self]')) { try { localStorage.setItem('club150:lic', codeFor(DEV)); } catch (er) {} renderLicense(); renderAll(); return; }
-    if (t.closest('[data-adm-off]')) { try { localStorage.removeItem('club150:admin'); } catch (er) {} renderLicense(); }
+    if (t.closest('[data-adm-self]')) { signCode(DEV).then(function (code) { saveLicense(code); renderLicense(); renderAll(); }); return; }
+    if (t.closest('[data-adm-off]')) { try { localStorage.removeItem('club150:tkey'); localStorage.removeItem('club150:admin'); } catch (er) {} renderLicense(); }
   });
   var maxes = store.get('maxes', null), isExample = !maxes;
   if (!maxes) maxes = Object.assign({}, EXAMPLE);
@@ -3118,7 +3152,7 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
 
   // ---------- backup: every club150:* key into one JSON file ----------
   // Never copied between phones: the phone number for codes, the code itself and coach mode stay on this phone.
-  var NO_COPY = { 'club150:dev': 1, 'club150:lic': 1, 'club150:admin': 1, 'club150:undo': 1 };
+  var NO_COPY = { 'club150:dev': 1, 'club150:lic': 1, 'club150:admin': 1, 'club150:tkey': 1, 'club150:undo': 1 };
   $('backup-save').addEventListener('click', function () {
     var data = {};
     try { localStorage.setItem('club150:lastBackup', dayISO(new Date())); } catch (er) {}
@@ -3474,6 +3508,8 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
     if (fx) { fx.parentNode.querySelectorAll('[data-focus-next]').forEach(function (b3) { var on = b3 === fx; b3.classList.toggle('on', on); b3.setAttribute('aria-pressed', String(on)); }); }
   });
   renderLicense();
+  // Check the stored code once; a forged or foreign code is dropped and the weeks lock again.
+  if (LIC_OK) { try { var storedLic = localStorage.getItem('club150:lic'); } catch (e) { storedLic = ''; } verifyCode(DEV, storedLic).then(function (ok) { if (!ok) { LIC_OK = false; renderLicense(); renderAll(); } }); }
   renderAll(); renderBody();
   prBest = bestBench();
 })();
