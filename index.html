@@ -824,6 +824,8 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
       <div class="field"><label for="act">Активность</label><select id="act" class="field-select"><option value="1.375">Сидячая работа + 3 трен.</option><option value="1.55" selected>Средняя</option><option value="1.725">Физическая работа</option></select></div>
       <div class="field"><label for="f-goal">Цель</label><select id="f-goal" class="field-select"><option value="cut">Сушка</option><option value="keep">Держать вес</option><option value="gain">Набор</option></select></div>
       <div class="field"><label for="f-pace">Темп сушки</label><select id="f-pace" class="field-select"><option value="0.5">0,5% веса в неделю</option><option value="0.75" selected>0,75% в неделю</option><option value="1">1% в неделю</option></select></div>
+      <div class="field"><label for="f-fatp">% жира, если знаешь</label><input id="f-fatp" type="number" inputmode="decimal" min="4" max="60" placeholder="не знаю"></div>
+      <div class="field"><label for="f-target">Целевой вес, кг</label><input id="f-target" type="number" inputmode="decimal" min="35" max="200" placeholder="необязательно"></div>
     </div>
     <div class="pct-table" id="food"></div>
     <p class="hint">Ориентир, не медицинский расчёт. Взвешивайся утром натощак раз в неделю: если за 2 недели вес не идёт к цели — поправь калории на 150–200 ккал. Вес подставляется из «Вес и замеры».</p>
@@ -2863,7 +2865,7 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
   });
   $('sr-info').hidden = PROG !== 'sr';
   function renderFood() {
-    var cfg = {}; ['f-sex', 'f-age', 'f-h', 'act', 'f-goal', 'f-pace'].forEach(function (id) { cfg[id] = $(id).value; });
+    var cfg = {}; ['f-sex', 'f-age', 'f-h', 'act', 'f-goal', 'f-pace', 'f-fatp', 'f-target'].forEach(function (id) { cfg[id] = $(id).value; });
     try { localStorage.setItem(store.k('food'), JSON.stringify(cfg)); } catch (er) {}
     var bw = parseFloat(String($('bw').value).replace(',', '.')) || 0, age = +$('f-age').value || 30, h = +$('f-h').value || 178, act = +$('act').value || 1.55;
     var goal = $('f-goal').value; $('f-pace').parentNode.hidden = goal !== 'cut';
@@ -2871,15 +2873,22 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
     var bmr = 10 * bw + 6.25 * h - 5 * age + ($('f-sex').value === 'f' ? -161 : 5), keep = Math.round(bmr * act / 10) * 10;
     var pace = +$('f-pace').value || 0.75, deficit = Math.min(Math.round(bw * pace / 100 * 7700 / 7), Math.round(keep * 0.25));
     var kcal = goal === 'cut' ? keep - deficit : goal === 'gain' ? keep + 250 : keep; kcal = Math.round(kcal / 10) * 10;
-    var pLo = goal === 'cut' ? 2 : 1.6, pHi = goal === 'cut' ? 2.2 : 2, prot = Math.round(bw * (pLo + pHi) / 2), fat = Math.round(bw * 0.9), carb = Math.max(0, Math.round((kcal - prot * 4 - fat * 9) / 4));
+    var fatp = parseFloat(String($('f-fatp').value).replace(',', '.')), target = parseFloat(String($('f-target').value).replace(',', '.')), bmi = bw / Math.pow(h / 100, 2);
+    var ref = bw, refTxt = 'по твоему весу';
+    if (fatp >= 4 && fatp <= 60) { ref = bw * (1 - fatp / 100); refTxt = 'по безжировой массе ' + fmtN(Math.round(ref)) + ' кг'; }
+    else if (target >= 35 && target < bw) { ref = target; refTxt = 'по целевому весу ' + fmtN(Math.round(ref)) + ' кг'; }
+    else if (bmi > 27) { ref = 25 * Math.pow(h / 100, 2); refTxt = 'по весу при нормальном ИМТ ' + fmtN(Math.round(ref)) + ' кг (у тебя ИМТ ' + fmtN(Math.round(bmi * 10) / 10) + ')'; }
+    var lean = fatp >= 4 && fatp <= 60;
+    var pLo = lean ? (goal === 'cut' ? 2.3 : 2) : (goal === 'cut' ? 2 : 1.6), pHi = lean ? (goal === 'cut' ? 2.6 : 2.4) : (goal === 'cut' ? 2.2 : 2);
+    var prot = Math.round(ref * (pLo + pHi) / 2), fat = Math.round(lean ? ref * 1.1 : ref * 0.9), carb = Math.max(0, Math.round((kcal - prot * 4 - fat * 9) / 4));
     $('food').innerHTML = ['<div><span>Поддержка веса</span><b>≈ ' + keep + ' ккал</b></div>',
       '<div><span>' + (goal === 'cut' ? 'Сушка' : goal === 'gain' ? 'Набор' : 'Твоя норма') + '</span><b>≈ ' + kcal + ' ккал</b></div>',
-      '<div><span>Белок</span><b>' + Math.round(bw * pLo) + '–' + Math.round(bw * pHi) + ' г</b></div>', '<div><span>Жиры</span><b>≈ ' + fat + ' г</b></div>',
+      '<div><span>Белок</span><b>' + Math.round(ref * pLo) + '–' + Math.round(ref * pHi) + ' г</b></div>', '<div><span>Жиры</span><b>≈ ' + fat + ' г</b></div>',
       '<div><span>Углеводы</span><b>≈ ' + carb + ' г</b></div>',
-      '<div><span>' + (goal === 'cut' ? 'Минус в неделю' : goal === 'gain' ? 'Плюс в неделю' : 'Вес') + '</span><b>' + (goal === 'cut' ? '≈ ' + fmtN(Math.round(bw * pace) / 100) + ' кг' : goal === 'gain' ? '≈ 0,2–0,3 кг' : 'держится') + '</b></div>'].join('');
+      '<div><span>Белок и жиры</span><b style="font-size:12px;font-weight:600">' + refTxt + '</b></div>', '<div><span>' + (goal === 'cut' ? 'Минус в неделю' : goal === 'gain' ? 'Плюс в неделю' : 'Вес') + '</span><b>' + (goal === 'cut' ? '≈ ' + fmtN(Math.round(bw * pace) / 100) + ' кг' : goal === 'gain' ? '≈ 0,2–0,3 кг' : 'держится') + '</b></div>'].join('');
   }
   (function () { try { var c = JSON.parse(localStorage.getItem(store.k('food'))); if (c) Object.keys(c).forEach(function (id) { if ($(id) && c[id]) $(id).value = c[id]; }); } catch (er) {} })();
-  ['f-sex', 'f-age', 'f-h', 'f-goal', 'f-pace'].forEach(function (id) { $(id).addEventListener('change', renderFood); });
+  ['f-sex', 'f-age', 'f-h', 'f-goal', 'f-pace', 'f-fatp', 'f-target'].forEach(function (id) { $(id).addEventListener('change', renderFood); });
   $('bw').addEventListener('input', renderFood); $('act').addEventListener('change', renderFood); renderFood();
 
   renderCalc();
