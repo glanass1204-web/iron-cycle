@@ -721,6 +721,9 @@ html.simple #today .icon-row { display: none !important; }
 html.nav-gap .tabbar { padding-bottom: calc(22px + env(safe-area-inset-bottom, 0px)); }
 html.nav-gap body { padding-bottom: 92px; }
 .tabbar { background: color-mix(in srgb, var(--bg) 97%, transparent); }
+/* 320 px phones: the code row (input + button) must not push the licence card past the screen edge */
+#license { grid-template-columns: minmax(0, 1fr); } .lic-row > * { min-width: 0; }
+html { overflow-x: clip; }
 /* Android: invisible tap area around small controls (at least ~44 px for a finger) */
 .ex input[type="checkbox"], .more-btn, .goal-edit, .chart-btn, .install { position: relative; touch-action: manipulation; }
 .ex input[type="checkbox"]::before, .more-btn::before, .goal-edit::before, .chart-btn::before, .install::before { content: ""; position: absolute; inset: -9px -6px; }
