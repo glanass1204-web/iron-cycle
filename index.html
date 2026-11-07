@@ -1526,6 +1526,11 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
       .then(function (k) { return SUBTLE.verify(SIG, k, unb64u(code), licMsg(dev)); }).catch(function () { return false; });
   }
   function trainerKey() { try { return localStorage.getItem('club150:tkey') || ''; } catch (e) { return ''; } }
+  // The key is accepted only if a code it signs passes the public-key check.
+  function tryTrainerKey(k) {
+    return signCode('TEST-TEST', k).then(function (sig) { return verifyCode('TEST-TEST', sig); }).catch(function () { return false; })
+      .then(function (ok) { if (ok) { try { localStorage.setItem('club150:tkey', k); } catch (er) {} } return ok; });
+  }
   function signCode(dev, d) {
     var jwk = { kty: 'EC', crv: 'P-256', x: LIC_PUB.x, y: LIC_PUB.y, d: d || trainerKey() };
     return SUBTLE.importKey('jwk', jwk, EC, false, ['sign']).then(function (k) { return SUBTLE.sign(SIG, k, licMsg(dev)); }).then(b64u);
@@ -1588,6 +1593,10 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
       var box = go.closest('.card'), c = cleanCode(box.querySelector('.lic-in').value), msg = box.querySelector('.lic-msg');
       if (!c) { msg.textContent = 'Вставь код из сообщения.'; return; }
       if (!SUBTLE) { msg.textContent = 'Этот браузер не умеет проверять код. Открой программу в Chrome или Safari.'; return; }
+      if (c.length === 43) { // a coach key pasted here: switch on coach mode instead
+        tryTrainerKey(c).then(function (ok) { if (ok) renderLicense(); else msg.textContent = 'Код не подходит к этому телефону. Проверь номер ' + DEV + ' и что код скопирован целиком.'; });
+        return;
+      }
       verifyCode(DEV, c).then(function (ok) {
         if (ok) { saveLicense(c); renderLicense(); renderAll(); celebrate('Полная <span>версия</span>', 'Все ' + NW + ' недель открыты. Вперёд!', 'ph-crown'); }
         else msg.textContent = 'Код не подходит к этому телефону. Проверь номер ' + DEV + ' и что код скопирован целиком.';
@@ -1597,7 +1606,7 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
     if (t.closest('[data-share-app]')) { shareLink(); return; }
     if (t.closest('[data-admin-tap]')) {
       adminTaps++; clearTimeout(adminT); adminT = setTimeout(function () { adminTaps = 0; }, 2500);
-      if (adminTaps >= 5) {
+      if (adminTaps >= 5 && !isAdmin()) {
         adminTaps = 0;
         var card = t.closest('.card');
         if (card && !card.querySelector('#adm-pw')) card.insertAdjacentHTML('beforeend', '<div class="lic-row"><input class="lic-in" id="adm-pw" type="password" autocomplete="off" placeholder="Ключ тренера" aria-label="Ключ тренера"><button class="btn primary" type="button" data-adm-login>Войти</button></div><p class="toast adm-msg" aria-live="polite"></p>');
@@ -1607,9 +1616,15 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
     if (t.closest('[data-adm-login]')) {
       var pw = cleanCode($('adm-pw').value), am = document.querySelector('.adm-msg');
       if (!SUBTLE || !pw) { $('adm-pw').value = ''; return; }
-      // The key is accepted only if a code it signs passes the public-key check.
-      signCode('TEST-TEST', pw).then(function (sig) { return verifyCode('TEST-TEST', sig); }).catch(function () { return false; }).then(function (ok) {
-        if (ok) { try { localStorage.setItem('club150:tkey', pw); } catch (er) {} renderLicense(); }
+      if (pw.length === 86) { // a full-version code pasted here: open the full version instead
+        verifyCode(DEV, pw).then(function (ok) {
+          if (ok) { saveLicense(pw); renderLicense(); renderAll(); celebrate('Полная <span>версия</span>', 'Все ' + NW + ' недель открыты. Вперёд!', 'ph-crown'); }
+          else { $('adm-pw').value = ''; if (am) am.textContent = 'Ключ не подходит.'; }
+        });
+        return;
+      }
+      tryTrainerKey(pw).then(function (ok) {
+        if (ok) renderLicense();
         else { $('adm-pw').value = ''; if (am) am.textContent = 'Ключ не подходит.'; }
       });
       return;
