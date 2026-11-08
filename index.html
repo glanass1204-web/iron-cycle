@@ -1935,12 +1935,13 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
     var list = warmList(e, ctx); if (!list.length) return '';
     return '<div class="warm"><span class="warm-label">Разминка</span><div class="sets">' + list.map(function (w) { return '<button type="button" class="set warm-set" data-warm="' + w[0] + '|' + w[1] + '"><span class="kg">' + w[0] + ' кг × ' + w[1] + '</span><span class="sub">' + (w[0] === BAR ? 'пустой гриф' : 'сторона ' + platesText(w[0])) + '</span></button>'; }).join('') + '</div></div>';
   }
-  // Technique videos: RuTube and VK Video work in Russia without VPN.
+  // Technique videos: one YouTube search, in the language of the interface.
   function howLinks(name) {
-    var q = encodeURIComponent(name.replace(/\s*\(.*?\)/g, '').replace(/ ·.*$/, '') + ' техника выполнения');
+    var base = name.replace(/\s*\(.*?\)/g, '').replace(/ ·.*$/, ''), L = window.LANG || 'ru';
+    var shown = L !== 'ru' && window.tr ? tr(base) : base;
+    var q = encodeURIComponent(shown + ({ ru: ' техника выполнения', uk: ' техніка виконання', en: ' proper form' })[L]);
     return '<div class="how-row"><span class="how-l"><i class="ph ph-play-circle" aria-hidden="true"></i> Как делать:</span>' +
-      '<a class="how" href="https://rutube.ru/search/?query=' + q + '" target="_blank" rel="noopener">RuTube</a>' +
-      '<a class="how" href="https://vkvideo.ru/search?q=' + q + '" target="_blank" rel="noopener">VK Видео</a></div>';
+      '<a class="how" href="https://www.youtube.com/results?search_query=' + q + '" target="_blank" rel="noopener">YouTube</a></div>';
   }
   function bodyHtml(e, isMain, ctx) {
     var tech = isMain && e.t === 'b' && TECH[e.lift] && !/жим штанги стоя/i.test(e.n) ? '<p class="tech"><b>Техника:</b> ' + TECH[e.lift] + ' Если техника ломается — вес не прибавляй.</p>' : '';
