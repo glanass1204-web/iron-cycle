@@ -118,11 +118,12 @@ input[type=range]::-moz-range-thumb { width: 22px; height: 22px; border-radius: 
 /* Barbell drawn from plates */
 .bar { position: relative; height: 128px; margin: 18px 0 6px; }
 .bar .rod { position: absolute; left: 0; right: 0; top: 58px; height: 12px; border-radius: 6px; background: linear-gradient(180deg, #e6e6e6, #8d8d8d 60%, #5a5a5a); }
-.bar .grip { position: absolute; left: 30%; right: 30%; top: 58px; height: 12px; background: repeating-linear-gradient(90deg, rgba(0,0,0,.25) 0 2px, transparent 2px 5px); }
+.bar .grip { position: absolute; left: 34%; right: 34%; top: 58px; height: 12px; background: repeating-linear-gradient(90deg, rgba(0,0,0,.25) 0 2px, transparent 2px 5px); }
 .bar .collar { position: absolute; top: 48px; width: 10px; height: 32px; border-radius: 3px; background: linear-gradient(180deg, #d8d8d8, #7a7a7a); }
 .bar .side { position: absolute; top: 0; height: 128px; display: flex; align-items: center; gap: 3px; }
-.bar .side.l { right: 84%; flex-direction: row-reverse; }
-.bar .side.r { left: 84%; }
+.bar .side.l { right: 74%; flex-direction: row-reverse; }
+.bar .side.r { left: 74%; }
+@media (max-width: 400px) { .plate { width: 12px; } .plate.k5 { width: 9px; } .bar .side { gap: 2px; } .bar .side.l { right: 70%; } .bar .side.r { left: 70%; } .bar .collar.cl { left: calc(30% - 10px) !important; } .bar .collar.cr { right: calc(30% - 10px) !important; } }
 .plate { width: 17px; border-radius: 5px; display: grid; place-items: center; font: 800 9px var(--mono); color: rgba(0,0,0,.65); box-shadow: inset 0 0 0 2px rgba(0,0,0,.18), 0 6px 14px rgba(0,0,0,.5); animation: slideR .35s cubic-bezier(.2,.8,.2,1) both; }
 .plate.k20 { height: 124px; background: var(--p20); color: rgba(255,255,255,.85); }
 .plate.k15 { height: 108px; background: var(--p15); }
@@ -294,9 +295,9 @@ footer a { color: var(--muted); }
             <div class="tag">Тяжёлая неделя · жим лёжа</div>
             <div class="big"><b id="hv">80</b><span>кг × 6–8 повторов</span></div>
             <div class="bar" aria-hidden="true"><div class="rod"></div><div class="grip"></div>
-              <div class="collar" style="left:calc(16% - 10px)"></div><div class="collar" style="right:calc(16% - 10px)"></div>
+              <div class="collar cl" style="left:calc(26% - 10px)"></div><div class="collar cr" style="right:calc(26% - 10px)"></div>
               <div class="side l" id="pl"></div><div class="side r" id="pr"></div></div>
-            <p class="per-side" id="ps">На сторону: <b>20 + 10</b> · гриф 20 кг</p>
+            <p class="per-side" id="ps">На сторону: <b>20 + 10</b> · гриф 20&nbsp;кг</p>
           </div>
         </div>
         <div class="col-b">
@@ -350,7 +351,7 @@ footer a { color: var(--muted); }
         <div class="chip fade"><span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 8.5a15 15 0 0 1 20 0M5.5 12a10 10 0 0 1 13 0M9 15.5a5 5 0 0 1 6 0M3 3l18 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span><div><b>Без интернета</b><span>В подвальном зале работает так же</span></div></div>
         <div class="chip fade"><span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h11l-3-3M17 17H6l3 3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><b>Замена упражнений</b><span>Спина или колени — 2–3 проверенные замены</span></div></div>
         <div class="chip fade"><span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19l5-6 4 3 7-9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><b>Рекорды и застой</b><span>Видно рост, а если упёрся — подсказка, что делать</span></div></div>
-        <div class="chip fade"><span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3c3 3.5 5 6.5 5 9.5a5 5 0 0 1-10 0C7 9.5 9 6.5 12 3z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg></span><div><b>Питание</b><span>Калории и БЖУ под сушку или набор</span></div></div>
+        <div class="chip fade"><span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3c3 3.5 5 6.5 5 9.5a5 5 0 0 1-10 0C7 9.5 9 6.5 12 3z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg></span><div><b>Калькулятор питания</b><span>Калории, белки, жиры и углеводы под сушку, набор или поддержание</span></div></div>
         <div class="chip fade"><span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 10h8M8 14h5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span><div><b>Две программы</b><span>«Железный цикл» и «Сила и рельеф» 5/3/1 · RU · UA · EN</span></div></div>
       </div>
     </div>
@@ -367,7 +368,7 @@ footer a { color: var(--muted); }
         <div class="ticket full fade"><div class="tag">Полная версия</div><div class="cost">Все 13 недель</div><p class="small">Цену назовёт тренер — напиши ему в Telegram.</p>
           <ul><li>недели 3–13 и проверка максимума</li><li>вторая программа «Сила и рельеф»</li><li>новый цикл с новым максимумом</li></ul>
           <a class="btn btn-line" href="https://t.me/Direj90" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 4L3 11l6 2 2 6 3-4 5 4 2-15z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 13l12-9" stroke="currentColor" stroke-width="1.8"/></svg>Написать тренеру</a>
-          <p class="small">В приложении: «Ещё» → «Полная версия» → отправь номер телефона в Telegram <a href="https://t.me/Direj90" rel="noopener">@Direj90</a> и получи код.</p></div>
+          <p class="small">В приложении: «Ещё» → «Полная версия» → отправь код устройства (вида AB12-CD34) в Telegram <a href="https://t.me/Direj90" rel="noopener">@Direj90</a> и получи код.</p></div>
       </div>
     </div>
   </section>
@@ -380,9 +381,10 @@ footer a { color: var(--muted); }
         <details><summary>Надо скачивать из App Store или Google Play?</summary><p>Нет. Открывается по ссылке. Чтобы было как приложение — добавь на экран «Домой»: iPhone — Safari → «Поделиться» → «На экран „Домой“», Android — Chrome ⋮ → «Установить приложение».</p></details>
         <details><summary>Работает без интернета?</summary><p>Да. После первого открытия всё работает офлайн: веса, таймер, записи.</p></details>
         <details><summary>Не знаю свой максимум. Что делать?</summary><p>Введи вес и сколько раз ты его выжимаешь — приложение посчитает максимум само.</p></details>
-        <details><summary>Как получить полную версию?</summary><p>«Ещё» → «Полная версия», скопируй номер телефона и отправь тренеру в Telegram <a href="https://t.me/Direj90" rel="noopener">@Direj90</a>. Он пришлёт код — вставь, и откроются все недели. Код работает только на твоём телефоне.</p></details>
+        <details><summary>Как получить полную версию?</summary><p>«Ещё» → «Полная версия», скопируй код устройства — он вида AB12-CD34, это не твой номер телефона — и отправь тренеру в Telegram <a href="https://t.me/Direj90" rel="noopener">@Direj90</a>. Он пришлёт код — вставь, и откроются все недели. Код работает только на твоём телефоне.</p></details>
         <details><summary>Проверка максимума — не опасно?</summary><p>Правила чёткие: после разминки не больше 3 тяжёлых попыток, без отказа, стоп при потере техники. Жим и присед — только со страхующим, присед — в раме с упорами.</p></details>
-        <details><summary>Где хранятся мои данные?</summary><p>Только в твоём телефоне. Без регистрации, без почты и номера — приложение никуда не отправляет твои веса и записи. Чтобы не потерять их при смене телефона, сохрани резервную копию: «Ещё» → «Резервная копия».</p></details>
+        <details><summary>Где хранятся мои данные?</summary><p>Только в твоём телефоне. Без регистрации: приложение не спрашивает ни имя, ни почту, ни номер телефона и никуда не отправляет твои веса и записи. Для полной версии нужен только код устройства — случайный набор букв и цифр, который приложение создаёт само. Чтобы не потерять записи при смене телефона, сохрани резервную копию: «Ещё» → «Резервная копия».</p></details>
+        <details><summary>Что будет после 2 бесплатных недель?</summary><p>Ничего не пропадёт: недели 1–2 и все твои записи остаются. Недели 3–13 будут закрыты, пока не введёшь код полной версии — после этого продолжишь с того же места.</p></details>
         <details><summary>Кому не подойдёт?</summary><p>Если впервые берёшь штангу — сначала поставь технику с тренером. Есть травма или боль — сначала к врачу. Нужны штанга, блины, гантели и скамья.</p></details>
       </div>
     </div>
@@ -403,7 +405,7 @@ footer a { color: var(--muted); }
 <footer>
   <div class="wrap">
     <span>© Железный цикл</span>
-    <span><a href="about.html">О программе</a> · <a href="https://t.me/Direj90" rel="noopener">Тренер в Telegram</a></span>
+    <span><a href="about.html">О программе</a> · <a href="#faq">Данные и конфиденциальность</a> · <a href="https://t.me/Direj90" rel="noopener">Тренер в Telegram</a></span>
     <span>Фото созданы нейросетью.</span>
   </div>
 </footer>
@@ -446,7 +448,7 @@ footer a { color: var(--muted); }
       lastKg = heavy;
       var p = plates(heavy), html = p.map(function (x) { return '<span class="plate k' + x + '">' + x + '</span>'; }).join('');
       pl.innerHTML = html; pr.innerHTML = html;
-      ps.innerHTML = p.length ? 'На сторону: <b>' + p.join(' + ') + '</b> · гриф 20 кг' : 'Пустой гриф · 20 кг';
+      ps.innerHTML = p.length ? 'На сторону: <b>' + p.join(' + ') + '</b> · гриф 20&nbsp;кг' : 'Пустой гриф · 20&nbsp;кг';
     }
   }
   mx.addEventListener('input', render); render();
