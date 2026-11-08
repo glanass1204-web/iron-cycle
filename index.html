@@ -331,6 +331,26 @@ button { cursor: pointer; -webkit-tap-highlight-color: transparent; }
 .vol.focus .meter i { background: var(--accent); opacity: 1; }
 .vol-note { font-size: 13px; color: var(--muted); margin: -6px 0 0; }
 .vol .meter { height: 8px; overflow: visible; border-radius: 4px; } .vol .meter i { border-radius: 4px; }
+/* ---- Design pass: less clutter, one rhythm ---- */
+/* The program switch is needed once a cycle: keep it in «Ещё» only. */
+body[data-tab]:not([data-tab="club"]) .prog-switch { display: none !important; }
+/* Weekly load: the numbers go under the bar instead of squeezing it. */
+.load-meter { grid-template-columns: auto minmax(0, 1fr); row-gap: 6px; }
+.load-meter > span:last-child { grid-column: 1 / -1; }
+.load-meter .lm { height: 8px; border-radius: 4px; overflow: hidden; }
+/* How you feel today: three equal buttons in one row. */
+.ready > .ready-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.ready > .ready-row .chip-btn { min-height: 46px; padding: 8px 6px; border-radius: 12px; text-align: center; line-height: 1.2; }
+/* Main call to action on «Сегодня»: full width, the second button under it. */
+#today .cta { display: grid; gap: 8px; }
+#today .cta .btn { width: 100%; justify-content: center; }
+#today .cta .gym-cta { min-height: 58px; font-size: 18px; }
+/* Exercise cards: the log is part of the card, not a box inside a box. */
+.log { background: transparent; border: 0; border-top: 1px dashed var(--line); border-radius: 0; padding: 12px 0 2px; margin-top: 4px; }
+.log label { font-size: 12px; text-transform: none; letter-spacing: 0; font-weight: 500; }
+.log input { min-height: 42px; width: 78px; border-radius: 10px; }
+.ex .sets { gap: 6px; }
+
 
 .day { background: var(--surface); border: 1px solid var(--line); border-radius: 20px; overflow: hidden; scroll-margin-top: 130px; }
 .day.is-today { border-color: color-mix(in srgb, var(--accent) 60%, var(--line)); }
@@ -2444,9 +2464,9 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
     }).join('') + '</div><p class="vol-note">Рабочих подходов за неделю по группам мышц. Золотая рамка — ориентир: ' + zone[0] + '–' + zone[1] + ' подходов на мышцу в неделю.</p>';
   }
   function renderWeek() {
-    if (locked(current)) { $('week').innerHTML = '<div class="week-head"><div><div class="eyebrow">Программа</div><h2>' + current + ' неделя</h2><div class="motto">' + esc(WEEKS[current - 1].motto) + '</div></div></div>' + paywallHtml(current); return; }
+    if (locked(current)) { $('week').innerHTML = '<div class="week-head"><div><div class="eyebrow">Программа</div><h2>Неделя ' + current + '</h2><div class="motto">' + esc(WEEKS[current - 1].motto) + '</div></div></div>' + paywallHtml(current); return; }
     var wk = current, wd = WEEKS[wk - 1], ws = weekStats(wk), nd = nextDay(wk);
-    var h = '<div class="week-head"><div><div class="eyebrow">Программа</div><h2>' + wk + ' неделя</h2><div class="motto">' + esc(wd.motto) + '</div></div><div class="pct">' + Math.round(ws.got / ws.n * 100) + '% выполнено</div></div>';
+    var h = '<div class="week-head"><div><div class="eyebrow">Программа</div><h2>Неделя ' + wk + '</h2><div class="motto">' + esc(wd.motto) + '</div></div><div class="pct">' + Math.round(ws.got / ws.n * 100) + '% выполнено</div></div>';
     var wdn = weekDone(wk), wdd = weekDate(wk);
     h += wdn
       ? '<div class="week-done on"><div><b>✓ Неделя завершена</b><small>' + (wdd ? 'Закрыта ' + fmtDate(wdd) : '') + (ws.got < ws.n ? ' · отмечено ' + ws.got + ' из ' + ws.n + ' упр.' : ' · все упражнения сделаны') + '</small></div>' + (closed[wk] ? '<button class="btn" type="button" data-wopen>Вернуть в работу</button>' : '') + '</div>'
