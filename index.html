@@ -418,6 +418,20 @@ button.set:hover { border-color: var(--accent); }
 .timer .lbl { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; opacity: .7; margin-right: 4px; }
 .timer button { border: 0; border-radius: 999px; background: rgba(0,0,0,.1); color: inherit; padding: 8px 11px; font-weight: 700; font-size: 14px; }
 .timer.ring-done { background: var(--accent); animation: pulse .8s ease-in-out 3; }
+.rest-ring { width: 30px; height: 30px; flex: none; }
+.rest-ring circle { fill: none; stroke-width: 3.5; }
+.rest-ring .bg { stroke: color-mix(in srgb, currentColor 20%, transparent); }
+.rest-ring .fg { stroke: var(--accent); stroke-linecap: round; stroke-dasharray: 94.25; stroke-dashoffset: 0; transform: rotate(-90deg); transform-origin: 50% 50%; transition: stroke-dashoffset .25s linear; }
+.timer.ring-done .rest-ring .fg, .gym-rest.go .rest-ring .fg { stroke: var(--on-accent); }
+.gym-rest .rest-ring { width: 40px; height: 40px; margin-right: 2px; }
+.done-burst { position: fixed; left: 50%; top: 42%; z-index: 80; box-sizing: border-box; max-width: none; padding: 0; width: 120px; height: 120px; margin: -60px 0 0 -60px; border-radius: 50%; display: grid; place-items: center; font: 800 64px/1 var(--body); color: var(--on-accent); background: var(--accent); box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 60%, transparent); pointer-events: none; animation: burst .65s cubic-bezier(.2, .9, .3, 1.2) forwards; }
+@keyframes burst { 0% { transform: scale(.3); opacity: 0; } 35% { transform: scale(1.05); opacity: 1; box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 60%, transparent); } 100% { transform: scale(.9); opacity: 0; box-shadow: 0 0 0 40px transparent; } }
+.ex.just input[type="checkbox"] { animation: tickPop .4s cubic-bezier(.2, .9, .3, 1.4); }
+.ex.just { animation: exGlow .9s ease-out; }
+@keyframes tickPop { 0% { transform: scale(.6); } 60% { transform: scale(1.25); } 100% { transform: scale(1); } }
+@keyframes exGlow { 0% { box-shadow: inset 3px 0 0 var(--good); } 100% { box-shadow: inset 0 0 0 transparent; } }
+.confetti { position: fixed; inset: 0; z-index: 70; pointer-events: none; width: 100vw; height: 100vh; }
+.ring .fg { transition: stroke-dashoffset .8s cubic-bezier(.2, .8, .2, 1); }
 @keyframes pulse { 50% { transform: translateX(-50%) scale(1.06); } }
 
 /* Maxes / calc / rules */
@@ -1115,7 +1129,7 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
 <div class="gym" id="gym" hidden role="dialog" aria-modal="true" aria-labelledby="gym-title"></div>
 <div class="onb" id="onb" hidden role="dialog" aria-modal="true" aria-labelledby="onb-title"></div>
 <div class="timer" id="timer" hidden>
-  <span class="lbl">Отдых</span><span class="t" id="timer-t">3:00</span>
+  <svg class="rest-ring" viewBox="0 0 36 36" aria-hidden="true"><circle class="bg" cx="18" cy="18" r="15"/><circle class="fg" cx="18" cy="18" r="15"/></svg><span class="lbl">Отдых</span><span class="t" id="timer-t">3:00</span>
   <button type="button" id="timer-minus" aria-label="Минус 30 секунд">−30</button>
   <button type="button" id="timer-plus" aria-label="Плюс 30 секунд">+30</button>
   <button type="button" id="timer-stop" aria-label="Остановить отдых">✕</button>
@@ -1973,7 +1987,7 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
         (rv === 'tired' ? '<p class="ready-note">Веса этой тренировки снижены на 10%. Лучше сделать чисто и восстановиться, чем сорвать прогресс.</p>' : rv === 'bad' ? '<p class="ready-note warn">Лучше перенести тренировку на завтра. Если идёшь — веса снижены на 20%, подход «+» не делай.</p>' : '<p class="ready-note">Спал меньше 6 часов — выбирай «Устал».</p>') + '</div>';
       if (ts) {
         var tsi = parseSets(main.s).map(String).indexOf(String(ts)), kg = setKg(main, wk + '|' + di + '|' + mi + '|a', tsi, ts);
-        h += '<div class="topset"><div class="topset-row"><div class="big">' + kg + ' <small>кг</small></div><div class="what">' + (overrides[wk + '|' + di + '|' + mi + '|a|' + tsi] ? 'вес изменён вручную · ' : '') + 'самый тяжёлый подход · ' + fmtN(ts[0]) + '% от ' + (+maxes[main.lift] || '—') + ' кг × ' + repTxt(main, ts) + ' × ' + ts[2] + '</div></div>' + barbellHtml(kg) + legendHtml(kg) + '</div>';
+        h += '<div class="topset"><div class="topset-row"><div class="big" data-count="' + kg + '" data-count-key="' + wk + '-' + di + '-' + kg + '">' + kg + ' <small>кг</small></div><div class="what">' + (overrides[wk + '|' + di + '|' + mi + '|a|' + tsi] ? 'вес изменён вручную · ' : '') + 'самый тяжёлый подход · ' + fmtN(ts[0]) + '% от ' + (+maxes[main.lift] || '—') + ' кг × ' + repTxt(main, ts) + ' × ' + ts[2] + '</div></div>' + barbellHtml(kg) + legendHtml(kg) + '</div>';
       }
       h += '<div class="cta"><button class="btn primary gym-cta" type="button" data-gym="' + di + '"><i class="ph ph-play-circle" aria-hidden="true"></i> Начать в зале</button><button class="btn" type="button" data-goday="' + di + '">Открыть тренировку</button></div>';
       var sg = stalls();
@@ -1990,7 +2004,7 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
     h += '<div class="slogan-box">' + esc(WEEKS[wk - 1].motto) + ' <b>' + esc(slogan(wk)) + '</b></div>';
     h += '<div class="icon-row"><div><i class="ph ph-barbell" aria-hidden="true"></i><b>Сила <span>по плану</span></b><small>Точные веса и повторы</small></div><div><i class="ph ph-crosshair" aria-hidden="true"></i><b>Фокус <span>на технике</span></b><small>Чисто — значит в зачёт</small></div><div><i class="ph ph-lightning" aria-hidden="true"></i><b>Рост <span>каждую неделю</span></b><small>Записывай результат</small></div></div>';
     h += '<blockquote class="quote quote-anim"><p>«' + esc(q.ru) + '»</p>' + (q.orig ? '<div class="orig">' + esc(q.orig) + '</div>' : '') + '<cite><b>' + esc(q.who) + '</b> · ' + esc(q.src) + '</cite></blockquote>';
-    $('today').innerHTML = h;
+    $('today').innerHTML = h; countUp($('today'));
   }
 
   // ---------- week ----------
@@ -2522,6 +2536,38 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
   function celebrate(title, text, icon, extra) {
     $('sheet-root').innerHTML = '<div class="scrim" data-close></div><div class="win" role="dialog" aria-label="Победа"><i class="ph ' + icon + '" aria-hidden="true"></i><h2>' + title + '</h2><p>' + esc(text) + '</p><div class="slogan-box"><b>' + esc(slogan(current)) + '</b></div>' + (extra || '') + '<button class="btn' + (extra ? '' : ' primary') + '" type="button" data-close>Дальше</button></div>';
     try { navigator.vibrate && navigator.vibrate([80, 60, 160]); } catch (er) {}
+    confetti();
+  }
+  // ---------- motion: small rewards, all off when the phone asks for reduced motion ----------
+  function calm() { return window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches; }
+  function burst(host) {
+    if (!host || calm()) return;
+    var b = document.createElement('div'); b.className = 'done-burst'; b.setAttribute('aria-hidden', 'true'); b.textContent = '✓';
+    document.body.appendChild(b); setTimeout(function () { b.remove(); }, 700);
+  }
+  function confetti() {
+    if (calm()) return;
+    var cv = document.createElement('canvas'), dpr = Math.min(2, window.devicePixelRatio || 1), W = innerWidth, H = innerHeight;
+    cv.className = 'confetti'; cv.width = W * dpr; cv.height = H * dpr; document.body.appendChild(cv);
+    var x = cv.getContext('2d'); x.scale(dpr, dpr);
+    var cs = getComputedStyle(document.documentElement), cols = [cs.getPropertyValue('--accent').trim() || '#dca83c', '#f5f2ea', '#f3c862', '#8fb383'];
+    var ps = []; for (var i = 0; i < 90; i++) ps.push({ x: W / 2 + (Math.random() - .5) * 60, y: H * .35, vx: (Math.random() - .5) * 9, vy: -Math.random() * 9 - 4, r: Math.random() * 6 + 3, a: Math.random() * 6, va: (Math.random() - .5) * .3, c: cols[i % cols.length] });
+    var t0 = performance.now();
+    (function frame(t) {
+      var k = (t - t0) / 1800; x.clearRect(0, 0, W, H);
+      ps.forEach(function (p) { p.vy += .28; p.vx *= .99; p.x += p.vx; p.y += p.vy; p.a += p.va; x.save(); x.globalAlpha = Math.max(0, 1 - k); x.translate(p.x, p.y); x.rotate(p.a); x.fillStyle = p.c; x.fillRect(-p.r / 2, -p.r / 4, p.r, p.r / 2); x.restore(); });
+      if (k < 1) requestAnimationFrame(frame); else cv.remove();
+    })(t0);
+  }
+  // The weight of the day «runs up» to its value the first time it is shown.
+  var counted = {};
+  window.__countUp = function (r) { countUp(r); };
+  function countUp(root) {
+    (root || document).querySelectorAll('[data-count]').forEach(function (el) {
+      var to = +el.getAttribute('data-count'), key = el.getAttribute('data-count-key') || to; if (!el.offsetParent) return; if (!(to > 0) || counted[key] || calm()) { counted[key] = 1; return; }
+      counted[key] = 1; var t0 = performance.now(), num = el.firstChild;
+      (function step(t) { var k = Math.min(1, (t - t0) / 700), e = 1 - Math.pow(1 - k, 3); num.nodeValue = String(Math.round(to * e)); if (k < 1) requestAnimationFrame(step); else num.nodeValue = String(to); })(t0);
+    });
   }
   function renderAll() { renderRail(); renderToday(); renderProgress(); renderWeek(); $('chip-max').textContent = maxes.bench || '—'; }
 
@@ -2576,7 +2622,7 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
   });
   $('week').addEventListener('change', function (ev) {
     var kk = ev.target.getAttribute('data-key'); if (!kk) return;
-    if (ev.target.checked) done[kk] = 1; else delete done[kk];
+    if (ev.target.checked) { done[kk] = 1; var exEl = ev.target.closest('.ex'); if (exEl) { exEl.classList.remove('just'); void exEl.offsetWidth; exEl.classList.add('just'); } } else delete done[kk];
     store.set('done2', done);
     var di = +kk.split('-')[1], st = dayStats(current, di), art = $('day-' + di), dk = current + '-' + di;
     var flip = false;
@@ -2677,12 +2723,15 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
   document.addEventListener('keydown', function (ev) { if (ev.key === 'Escape') closeSheet(); });
 
   // ---------- rest timer ----------
-  var endAt = 0, tick = null;
+  var endAt = 0, tick = null, restTotal = 1;
   function fmtT(s) { s = Math.max(0, Math.ceil(s)); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); }
   var lastTick = 0;
   function paint() {
     var left = (endAt - Date.now()) / 1000;
     $('timer-t').textContent = fmtT(left);
+    // Rings empty out as the rest runs (Apple Fitness / Hevy style).
+    var frac = Math.max(0, Math.min(1, left / restTotal));
+    document.querySelectorAll('.rest-ring .fg').forEach(function (c) { c.style.strokeDashoffset = (94.25 * (1 - frac)).toFixed(2); });
     var sl = Math.ceil(left); if (left > 0 && sl <= 3 && sl !== lastTick) { lastTick = sl; blip(); }
     if (left <= 0) {
       clearInterval(tick); tick = null; $('timer').classList.add('ring-done'); $('timer-t').textContent = 'Подход!'; beep(); wakeOff(); if (gymOpen) say(gym && gym.stretch != null ? 'Минута прошла.' : 'Отдых закончен. Подход!');
@@ -2707,10 +2756,10 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
   function startTimer(sec) {
     lastTick = 0; wakeOn();
     try { actx = actx || new (window.AudioContext || window.webkitAudioContext)(); actx.resume && actx.resume(); } catch (er) {}
-    endAt = Date.now() + sec * 1000; $('timer').hidden = false; $('timer').classList.remove('ring-done');
+    restTotal = Math.max(1, sec); endAt = Date.now() + sec * 1000; $('timer').hidden = false; $('timer').classList.remove('ring-done');
     if (tick) clearInterval(tick); tick = setInterval(paint, 250); paint();
   }
-  $('timer-plus').addEventListener('click', function () { if (!tick) return startTimer(30); endAt += 30000; paint(); });
+  $('timer-plus').addEventListener('click', function () { if (!tick) return startTimer(30); endAt += 30000; restTotal += 30; paint(); });
   $('timer-minus').addEventListener('click', function () { if (tick) { endAt -= 30000; paint(); } });
   $('timer-stop').addEventListener('click', function () { if (tick) clearInterval(tick); tick = null; $('timer').hidden = true; $('timer').classList.remove('ring-done'); wakeOff(); });
 
@@ -2784,7 +2833,7 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
     var bar = '<div class="gym-prog" aria-hidden="true">' + steps.map(function (s, i) { return '<i class="' + (stepDone(s) ? 'ok' : i === gym.idx ? 'cur' : '') + '"></i>'; }).join('') + '</div>';
     var top = '<div class="gym-top"><button type="button" class="gym-x" data-gx="close" aria-label="Выйти из режима зала">✕</button><div class="gym-where">' + DAYS[gym.di] + ' · неделя ' + gym.wk + '</div>' +
       '<button type="button" class="gym-voice" data-gx="voice" aria-pressed="' + voiceOn() + '">Голос</button><div class="gym-count">' + Math.min(gym.idx + 1, n) + '/' + n + '</div></div>' + bar;
-    var rest = '<div class="gym-rest" id="gym-rest" hidden><span class="gr-l">Отдых</span><span class="gr-t">0:00</span><button type="button" data-gx="minus">−30</button><button type="button" data-gx="plus">+30</button><button type="button" data-gx="stop" aria-label="Закончить отдых">✕</button></div>';
+    var rest = '<div class="gym-rest" id="gym-rest" hidden><svg class="rest-ring" viewBox="0 0 36 36" aria-hidden="true"><circle class="bg" cx="18" cy="18" r="15"/><circle class="fg" cx="18" cy="18" r="15"/></svg><span class="gr-l">Отдых</span><span class="gr-t">0:00</span><button type="button" data-gx="minus">−30</button><button type="button" data-gx="plus">+30</button><button type="button" data-gx="stop" aria-label="Закончить отдых">✕</button></div>';
     var h;
     if (gym.stretch != null) {
       var sx = STRETCH[gym.stretch];
@@ -2915,7 +2964,7 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
       var st2 = gymSteps(gym.wk, gym.di)[gym.idx];
       if (stepDone(st2)) afterStep(st2); else renderGym();
       startTimer(+b2.getAttribute('data-rest'));
-      $('gym').classList.remove('flash'); void $('gym').offsetWidth; $('gym').classList.add('flash');
+      $('gym').classList.remove('flash'); void $('gym').offsetWidth; $('gym').classList.add('flash'); burst($('gym'));
     }
   });
   document.addEventListener('keydown', function (ev) { if (ev.key === 'Escape' && gymOpen && !$('sheet-root').innerHTML) closeGym(); });
@@ -3846,7 +3895,7 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
   function setTab(t, top) {
     if (!MAP[t]) t = 'today';
     var changed = document.body.getAttribute('data-tab') !== t;
-    document.body.setAttribute('data-tab', t);
+    document.body.setAttribute('data-tab', t); if (t === 'today' && window.__countUp) setTimeout(function () { window.__countUp(document.getElementById('today')); }, 30);
     btns.forEach(function (b) { if (b.getAttribute('data-tabgo') === t) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); });
     if (changed) secs.forEach(function (s) {
       if (s.getAttribute('data-tab') !== t) return;
