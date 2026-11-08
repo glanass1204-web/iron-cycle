@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Железный цикл — сила по волнам</title>
 <meta name="description" content="Программа силы на 13 недель в телефоне: лёгкие, средние и тяжёлые недели, точный вес на каждый подход, блины на штанге и таймер отдыха. Первые 2 недели бесплатно.">
-<meta name="theme-color" content="#070707">
+<meta name="theme-color" content="#0a0a09">
 <meta property="og:type" content="website">
 <meta property="og:locale" content="ru_RU">
 <meta property="og:title" content="Железный цикл — сила по волнам">
@@ -17,166 +17,369 @@
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<!-- Fonts never hold up the first paint (slow Google servers in Russia). -->
-<link rel="stylesheet" media="print" onload="this.media='all'" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500&family=JetBrains+Mono:wght@700&family=Oswald:wght@500;600;700&display=swap">
-<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}</style>
+<!-- Fonts never hold up the first paint: Google is slow from Russia, the page shows at once with system fonts. -->
+<link rel="stylesheet" media="print" onload="this.media='all'" href="https://fonts.googleapis.com/css2?family=Anton&family=Oswald:wght@500;600;700&family=Golos+Text:wght@400;500;600&family=JetBrains+Mono:wght@700&display=swap">
 <style>
-/* Layout: one pinned scroll scene with three photographs that cross-fade and slowly push in, captions change per chapter,
-   the last chapter ends on the call to action. Dark only, by design: an old gym at night, gold and iron. */
+/* Ad page for the app. Dark by design: an old gym at night, gold on iron. Mobile first (traffic from Telegram and stories). */
 :root {
-  --bg: #070707; --fg: #f4f1ea; --muted: #c2bcb0; --line: #34312c;
-  --accent: #dca83c; --on-accent: #120f08;
+  --bg: #0a0a09; --bg-2: #11100e; --surface: #161512; --line: #2c2a25; --line-2: #3d3a33;
+  --fg: #f4f1ea; --muted: #b8b1a3; --dim: #8a8478;
+  --accent: #dca83c; --accent-2: #f0c461; --on-accent: #140f05;
+  --w-light: #8fb383; --w-mid: #e9e4d8; --w-heavy: #dca83c; --w-test: #e2683c;
+  --poster: "Anton", "Oswald", Impact, "Arial Narrow", sans-serif;
   --display: "Oswald", "Arial Narrow", Impact, sans-serif;
-  --body: "Golos Text", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --body: "Golos Text", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+  --gutter: 20px; --radius: 16px;
   color-scheme: dark;
 }
 * { box-sizing: border-box; }
-body { background: var(--bg); color: var(--fg); font: 16px/1.55 var(--body); }
+html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } *, *::before, *::after { animation: none !important; transition: none !important; } }
+body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.55 var(--body); -webkit-font-smoothing: antialiased; overflow-x: clip; }
+img { display: block; max-width: 100%; }
+a { color: inherit; }
+:focus-visible { outline: 2px solid var(--accent-2); outline-offset: 3px; border-radius: 6px; }
+.wrap { width: 100%; max-width: 1120px; margin: 0 auto; padding: 0 max(var(--gutter), env(safe-area-inset-left, 0px)) 0 max(var(--gutter), env(safe-area-inset-right, 0px)); }
+.gold { color: var(--accent); }
+.kicker { font: 600 12px/1.2 var(--display); letter-spacing: .22em; text-transform: uppercase; color: var(--accent); margin: 0 0 14px; }
+h1, h2, h3 { margin: 0; font-weight: 400; }
+h2 { font: 400 clamp(38px, 10vw, 64px)/.95 var(--poster); text-transform: uppercase; letter-spacing: .005em; }
+.lead { color: var(--muted); font-size: 17px; max-width: 34em; margin: 16px 0 0; }
+section { padding: 72px 0; }
+@media (min-width: 900px) { section { padding: 112px 0; } }
 
-.scene { position: relative; height: 600vh; }
-.stage { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; isolation: isolate; }
-.shot { position: absolute; inset: 0; opacity: 0; will-change: transform, opacity; }
-.shot img { width: 100%; height: 100%; object-fit: cover; display: block; }
-@media (max-aspect-ratio: 1/1) {
-  /* Phones: show the whole frame, upper part of the screen, and fade its edges into black. */
-  .shot img { object-fit: contain; object-position: 50% 28%;
-    -webkit-mask-image: linear-gradient(180deg, transparent 6%, #000 18%, #000 50%, transparent 66%);
-            mask-image: linear-gradient(180deg, transparent 6%, #000 18%, #000 50%, transparent 66%); }
-}
-.shade { position: absolute; inset: 0; z-index: 1; pointer-events: none;
-  background: linear-gradient(0deg, rgb(7 7 7 / .92) 0%, rgb(7 7 7 / .55) 30%, transparent 58%),
-              radial-gradient(130% 90% at 50% 40%, transparent 55%, rgb(0 0 0 / .7) 100%); }
-.grain { position: absolute; inset: -50%; z-index: 2; pointer-events: none; opacity: .08;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
+/* Buttons */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 54px; padding: 0 26px; border-radius: 12px; font: 600 16px/1 var(--display); letter-spacing: .14em; text-transform: uppercase; text-decoration: none; border: 1px solid transparent; transition: transform .15s ease, background .15s ease, border-color .15s ease; touch-action: manipulation; }
+.btn:active { transform: translateY(1px); }
+.btn-gold { background: var(--accent); color: var(--on-accent); box-shadow: 0 10px 30px -10px rgba(220,168,60,.55); }
+.btn-gold:hover { background: var(--accent-2); }
+.btn-line { border-color: var(--line-2); color: var(--fg); background: rgba(255,255,255,.02); }
+.btn-line:hover { border-color: var(--accent); }
+.btn svg { width: 20px; height: 20px; flex: none; }
 
-.top { position: absolute; z-index: 3; left: 0; right: 0; top: 0; display: flex; justify-content: space-between; align-items: center;
-  padding: 18px max(16px, env(safe-area-inset-right, 0px)) 0 max(16px, env(safe-area-inset-left, 0px)); }
-.brand { font: 700 20px/1 var(--display); letter-spacing: .04em; text-transform: uppercase; }
-.brand span { color: var(--accent); }
-.dots { display: flex; gap: 6px; }
-.dots i { width: 22px; height: 3px; border-radius: 2px; background: rgb(244 241 234 / .25); transition: background 200ms ease-out; }
-.dots i.on { background: var(--accent); }
+/* Top bar */
+.top { position: absolute; z-index: 5; top: 0; left: 0; right: 0; padding-top: env(safe-area-inset-top, 0px); }
+.top .wrap { display: flex; align-items: center; justify-content: space-between; height: 64px; }
+.brand { font: 400 20px/1 var(--poster); letter-spacing: .04em; text-transform: uppercase; text-decoration: none; }
+.top .btn { min-height: 40px; padding: 0 16px; font-size: 13px; }
 
-.copy { position: absolute; z-index: 3; left: 0; right: 0; bottom: 0;
-  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
-  padding-block: 0 max(32px, env(safe-area-inset-bottom, 0px)); }
-.chap { position: absolute; z-index: 3; left: 0; right: 0; bottom: 0; display: grid; gap: 12px; max-width: 760px; margin: 0 auto;
-  padding: 0 max(16px, env(safe-area-inset-right, 0px)) max(32px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
-  opacity: 0; transform: translateY(16px); transition: opacity 300ms ease-out, transform 300ms ease-out; pointer-events: none; }
-.chap.on { opacity: 1; transform: none; pointer-events: auto; }
-.eyebrow { font: 600 12px var(--display); letter-spacing: .22em; text-transform: uppercase; color: var(--accent); }
-.chap h1, .chap h2 { margin: 0; font: 700 clamp(40px, 10.5vw, 96px)/.92 var(--display); text-transform: uppercase; letter-spacing: -.005em; text-wrap: balance; }
-.chap h1 span, .chap h2 span { color: var(--accent); }
-.chap p { margin: 0; max-width: 42ch; color: var(--muted); font-size: clamp(15px, 3.8vw, 18px); }
-.num { font: 700 13px var(--mono); color: var(--muted); letter-spacing: .04em; }
-.num b { color: var(--fg); }
-.hint { font: 600 12px var(--display); letter-spacing: .2em; text-transform: uppercase; color: var(--muted); }
-.hint i { display: inline-block; margin-left: 6px; font-style: normal; animation: nudge 1.6s ease-in-out infinite; }
-@keyframes nudge { 50% { transform: translateY(4px); } }
-.cta { justify-self: start; display: inline-flex; align-items: center; min-height: 52px; padding: 0 28px; border-radius: 10px;
-  background: var(--accent); color: var(--on-accent); text-decoration: none; font: 600 16px var(--display); letter-spacing: .14em; text-transform: uppercase;
-  transition: transform 150ms ease-out; }
-.cta:hover { transform: translateY(-2px); }
-.cta:focus-visible { outline: 3px solid var(--fg); outline-offset: 3px; }
-.credit { font-size: 11px; color: rgb(194 188 176 / .6); }
+/* Hero */
+.hero { position: relative; min-height: 100svh; display: flex; align-items: flex-end; padding: 0; overflow: hidden; isolation: isolate; }
+.hero-img { position: absolute; inset: 0; z-index: -2; }
+.hero-img img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 42%; transform: scale(1.04); animation: push 18s ease-out both; }
+@keyframes push { from { transform: scale(1.14); } to { transform: scale(1.04); } }
+.hero::after { content: ""; position: absolute; inset: 0; z-index: -1; background:
+  linear-gradient(180deg, rgba(10,10,9,.72) 0%, rgba(10,10,9,.15) 24%, rgba(10,10,9,.2) 42%, rgba(10,10,9,.88) 70%, var(--bg) 100%),
+  radial-gradient(80% 50% at 50% 38%, rgba(220,168,60,.12), transparent 70%); }
+.hero .wrap { padding-bottom: calc(40px + env(safe-area-inset-bottom, 0px)); }
+.hero h1 { font: 400 clamp(58px, 16.5vw, 150px)/.88 var(--poster); text-transform: uppercase; letter-spacing: -.005em; }
+.hero h1 span { display: block; color: var(--accent); }
+.hero .lead { color: #ddd6c8; font-size: 16px; max-width: 30em; margin-top: 14px; }
+@media (min-width: 600px) { .hero .lead { font-size: 18px; } }
+.hero .wrap { padding-top: calc(84px + env(safe-area-inset-top, 0px)); }
+.hero-img picture { display: block; width: 100%; height: 100%; }
+@media (max-width: 599px) { .hero-img img { object-position: 38% 50%; } .hero .kicker { margin-bottom: 10px; } .hero-cta { margin-top: 22px; } }
+.hero-cta { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
+.hero-cta .btn-gold { flex: 1 1 260px; max-width: 360px; }
+.free { display: flex; align-items: center; gap: 8px; margin-top: 14px; color: var(--muted); font-size: 14px; }
+.free::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--w-light); box-shadow: 0 0 0 4px rgba(143,179,131,.18); }
+.scroll-hint { display: inline-flex; align-items: center; gap: 8px; margin-top: 22px; color: var(--dim); font: 600 12px var(--display); letter-spacing: .2em; text-transform: uppercase; text-decoration: none; }
+@media (min-width: 900px) { .hero .wrap { padding-bottom: 80px; } }
 
-@media (prefers-reduced-motion: reduce) { .hint i { animation: none; } .chap { transition: none; } }
+/* Phones with real screenshots */
+.phone { position: relative; width: 100%; max-width: 300px; aspect-ratio: 390 / 664; border-radius: 34px; padding: 9px; background: linear-gradient(160deg, #2b2924, #141310 60%); box-shadow: 0 0 0 1px #3a372f, 0 40px 80px -30px rgba(0,0,0,.9), 0 0 60px -20px rgba(220,168,60,.25); }
+.phone img { width: 100%; height: 100%; object-fit: cover; object-position: top; border-radius: 26px; background: #0b0b0b; }
+.show { display: grid; gap: 40px; align-items: center; margin-top: 40px; }
+.show .phone { margin: 0 auto; max-width: 290px; }
+.callouts { display: grid; gap: 14px; }
+.callout { display: grid; grid-template-columns: 44px 1fr; gap: 14px; align-items: start; padding: 16px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-2); }
+.callout b { display: block; font: 600 18px/1.25 var(--display); letter-spacing: .02em; text-transform: uppercase; }
+.callout p { margin: 4px 0 0; color: var(--muted); font-size: 15px; }
+.ico { width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; background: rgba(220,168,60,.1); color: var(--accent); }
+.ico svg { width: 22px; height: 22px; }
+@media (min-width: 900px) { .show { grid-template-columns: 1fr 1fr; gap: 64px; } .show .phone { max-width: 330px; } }
+
+.screens { display: grid; grid-auto-flow: column; grid-auto-columns: 72%; gap: 16px; overflow-x: auto; scroll-snap-type: x mandatory; padding: 8px 2px 18px; margin-top: 48px; scrollbar-width: none; }
+.screens::-webkit-scrollbar { display: none; }
+.screens figure { margin: 0; scroll-snap-align: center; }
+.screens .phone { max-width: none; border-radius: 30px; padding: 8px; }
+.screens .phone img { border-radius: 23px; }
+.screens figcaption { margin-top: 14px; font-size: 15px; color: var(--muted); }
+.screens figcaption b { display: block; color: var(--fg); font: 600 17px/1.2 var(--display); letter-spacing: .03em; text-transform: uppercase; margin-bottom: 3px; }
+.swipe { color: var(--dim); font-size: 13px; margin: 4px 0 0; }
+@media (min-width: 760px) { .screens { grid-auto-flow: row; grid-template-columns: repeat(4, 1fr); overflow: visible; } .swipe { display: none; } }
+
+/* 13-week wave */
+.wave-box { margin-top: 40px; padding: 22px 16px 16px; border: 1px solid var(--line); border-radius: var(--radius); background: linear-gradient(180deg, var(--bg-2), var(--bg)); }
+.wave { display: grid; grid-template-columns: repeat(13, 1fr); gap: 5px; align-items: end; height: 190px; }
+.wave .bar { position: relative; border-radius: 6px 6px 3px 3px; transform-origin: bottom; }
+.wave .bar.l { height: 34%; background: var(--w-light); }
+.wave .bar.m { height: 60%; background: var(--w-mid); }
+.wave .bar.h { height: 84%; background: var(--w-heavy); }
+.wave .bar.p { height: 100%; background: linear-gradient(180deg, var(--accent-2), var(--w-heavy)); box-shadow: 0 0 24px -4px rgba(220,168,60,.6); }
+.wave .bar.t { height: 100%; background: repeating-linear-gradient(135deg, var(--w-test) 0 6px, #b44c26 6px 12px); }
+.wave-nums { display: grid; grid-template-columns: repeat(13, 1fr); gap: 5px; margin-top: 8px; text-align: center; font: 700 11px var(--mono); color: var(--dim); }
+.legend { display: flex; flex-wrap: wrap; gap: 10px 18px; margin-top: 16px; font-size: 13px; color: var(--muted); }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 7px; vertical-align: -1px; }
+.reveal .bar { transform: scaleY(.04); transition: transform .7s cubic-bezier(.2,.8,.2,1); }
+.reveal.in .bar { transform: none; }
+.reveal.in .bar:nth-child(n) { transition-delay: calc(var(--i) * 45ms); }
+.weeks { display: grid; gap: 12px; margin-top: 18px; }
+.week { padding: 18px; border-radius: var(--radius); border: 1px solid var(--line); background: var(--bg-2); border-top: 3px solid var(--c); }
+.week b { font: 600 18px/1.2 var(--display); text-transform: uppercase; letter-spacing: .03em; }
+.week .reps { font: 700 26px/1 var(--mono); color: var(--c); margin: 10px 0 6px; }
+.week p { margin: 0; color: var(--muted); font-size: 15px; }
+@media (min-width: 760px) { .weeks { grid-template-columns: repeat(4, 1fr); } .wave { height: 240px; gap: 8px; } .wave-nums { gap: 8px; } }
+
+/* Features */
+.feats { display: grid; gap: 12px; margin-top: 40px; }
+.feat { padding: 20px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-2); }
+.feat .ico { margin-bottom: 14px; }
+.feat b { display: block; font: 600 19px/1.2 var(--display); text-transform: uppercase; letter-spacing: .02em; }
+.feat p { margin: 6px 0 0; color: var(--muted); font-size: 15px; }
+@media (min-width: 640px) { .feats { grid-template-columns: 1fr 1fr; } }
+@media (min-width: 980px) { .feats { grid-template-columns: repeat(3, 1fr); } }
+
+/* Fit */
+.fit { display: grid; gap: 12px; margin-top: 36px; }
+.fit-col { padding: 22px; border-radius: var(--radius); border: 1px solid var(--line); background: var(--bg-2); }
+.fit-col h3 { font: 600 18px/1.2 var(--display); letter-spacing: .06em; text-transform: uppercase; margin-bottom: 12px; }
+.fit-col ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 10px; }
+.fit-col li { position: relative; padding-left: 28px; color: #ddd6c8; }
+.fit-col li::before { content: ""; position: absolute; left: 0; top: 4px; width: 16px; height: 16px; border-radius: 50%; }
+.yes li::before { background: rgba(143,179,131,.18) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 8.5l2.5 2.5L12 5.5' fill='none' stroke='%238fb383' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/16px no-repeat; }
+.no li::before { background: rgba(226,104,60,.15) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M5 5l6 6M11 5l-6 6' fill='none' stroke='%23e2683c' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E") center/16px no-repeat; }
+@media (min-width: 760px) { .fit { grid-template-columns: 1fr 1fr; } }
+
+/* Price */
+.price { margin-top: 36px; display: grid; gap: 12px; }
+.plan { padding: 24px; border-radius: var(--radius); border: 1px solid var(--line); background: var(--bg-2); }
+.plan.full { border-color: rgba(220,168,60,.5); background: linear-gradient(180deg, rgba(220,168,60,.08), var(--bg-2) 60%); }
+.plan .tag { font: 600 12px var(--display); letter-spacing: .2em; text-transform: uppercase; color: var(--dim); }
+.plan.full .tag { color: var(--accent); }
+.plan .cost { font: 400 40px/1 var(--poster); text-transform: uppercase; margin: 12px 0 6px; }
+.plan ul { margin: 14px 0 0; padding: 0; list-style: none; display: grid; gap: 8px; color: #ddd6c8; font-size: 15px; }
+.plan li::before { content: "—"; color: var(--accent); margin-right: 8px; }
+.plan .btn { width: 100%; margin-top: 20px; }
+.how-code { margin: 14px 0 0; color: var(--muted); font-size: 14px; }
+@media (min-width: 760px) { .price { grid-template-columns: 1fr 1fr; } }
+
+/* FAQ */
+.faq { margin-top: 32px; border-top: 1px solid var(--line); }
+.faq details { border-bottom: 1px solid var(--line); }
+.faq summary { list-style: none; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 20px 2px; font: 500 18px/1.3 var(--display); letter-spacing: .01em; }
+.faq summary::-webkit-details-marker { display: none; }
+.faq summary::after { content: "+"; font: 400 26px/1 var(--body); color: var(--accent); transition: transform .2s; }
+.faq details[open] summary::after { transform: rotate(45deg); }
+.faq details p { margin: 0 0 20px; color: var(--muted); max-width: 46em; }
+
+/* Final */
+.final { position: relative; overflow: hidden; text-align: left; }
+.final .bg { position: absolute; inset: 0; z-index: -1; }
+.final .bg img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 45%; opacity: .45; }
+.final .bg::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, var(--bg) 0%, rgba(10,10,9,.55) 40%, var(--bg) 100%); }
+.final h2 { font-size: clamp(56px, 16vw, 120px); }
+.final .hero-cta { margin-top: 26px; }
+footer { padding: 28px 0 calc(110px + env(safe-area-inset-bottom, 0px)); border-top: 1px solid var(--line); color: var(--dim); font-size: 13px; }
+footer .wrap { display: flex; flex-wrap: wrap; gap: 8px 22px; justify-content: space-between; }
+footer a { color: var(--muted); }
+@media (min-width: 760px) { footer { padding-bottom: 28px; } }
+
+/* Sticky CTA on phones */
+.dock { position: fixed; z-index: 20; left: 0; right: 0; bottom: 0; padding: 10px max(14px, env(safe-area-inset-left, 0px)) calc(10px + env(safe-area-inset-bottom, 0px)); background: rgba(10,10,9,.92); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); border-top: 1px solid var(--line); display: flex; gap: 10px; align-items: center; transform: translateY(110%); transition: transform .3s ease; }
+.dock.on { transform: none; }
+.dock .btn { flex: 1; min-height: 50px; }
+.dock small { color: var(--muted); font-size: 12px; line-height: 1.3; max-width: 110px; }
+@media (min-width: 760px) { .dock { display: none; } }
+
+/* Section entrance */
+.fade { opacity: 0; transform: translateY(18px); transition: opacity .6s ease, transform .6s ease; }
+.fade.in { opacity: 1; transform: none; }
 </style>
 </head>
 <body>
 
-<section class="scene" id="scene" aria-label="Железный цикл: программа силы на 13 недель">
-  <div class="stage">
-    <div class="shot" data-shot="0"><img src="img/hero-bar.jpg" alt="Штанга с блинами на стойках скамьи для жима в тёмном зале под лампой" width="1536" height="1024"></div>
-    <div class="shot" data-shot="1"><img src="img/hero-plate.jpg" alt="Синий блин 20 кг надевают на гриф" width="1536" height="1024"></div>
-    <div class="shot" data-shot="2"><img src="img/hero-hands.jpg" alt="Руки в магнезии на грифе перед жимом" width="1536" height="1024"></div>
-    <div class="shade"></div>
-    <div class="grain"></div>
-
-    <div class="top">
-      <div class="brand">Железный <span>цикл</span></div>
-      <div class="dots" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
-    </div>
-
-    <div class="chap" data-chap="0">
-      <div class="eyebrow">Программа силы · 13 недель</div>
-      <h1>Сила <span>по волнам</span></h1>
-      <p>Лёгкие, средние и тяжёлые недели. Точные веса на каждый подход, блины на штанге и таймер отдыха. В зале работает без интернета.</p>
-      <div class="hint">Листай вниз <i aria-hidden="true">↓</i></div>
-    </div>
-    <div class="chap" data-chap="1">
-      <div class="eyebrow">Точный вес</div>
-      <h2>Каждый блин <span>посчитан</span></h2>
-      <p>Приложение берёт проценты от твоего максимума и показывает, что вешать на гриф. Тяжёлые подходы округляет только вниз.</p>
-      <div class="num">82,5% от 111 кг → <b>90 кг</b> · на сторону 20 + 15</div>
-    </div>
-    <div class="chap" data-chap="2">
-      <div class="eyebrow">Режим зала</div>
-      <h2>Мел. Хват. <span>Подход.</span></h2>
-      <p>Нажал «Сделал подход» — таймер отдыха запустился сам. Голос подскажет следующий вес, экран не погаснет.</p>
-    </div>
-    <div class="chap" data-chap="3">
-      <div class="eyebrow">Недели 1–2 бесплатно</div>
-      <h2>Начни <span>цикл</span></h2>
-      <p>Введи свой максимум, и программа рассчитает каждую тренировку до проверки нового рекорда. Потом новый максимум и следующий цикл.</p>
-      <a class="cta" href="./">Открыть приложение</a>
-      <div class="credit">Фото созданы нейросетью для демо.</div>
-    </div>
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="./">Железный <span class="gold">цикл</span></a>
+    <a class="btn btn-line" href="./">Открыть</a>
   </div>
-</section>
+</header>
+
+<main>
+  <section class="hero" id="top">
+    <div class="hero-img"><picture><source media="(max-width: 599px)" srcset="img/hero-plate.jpg"><img src="img/hero-bar.jpg" alt="Штанга с блинами в тёмном зале" width="1536" height="1024" fetchpriority="high"></picture></div>
+    <div class="wrap">
+      <p class="kicker">Программа силы · 13 недель</p>
+      <h1>Сила <span>по волнам</span></h1>
+      <p class="lead">Телефон говорит, какой вес взять в каждом подходе и какие блины повесить. Лёгкие, средние и тяжёлые недели — до нового максимума.</p>
+      <div class="hero-cta">
+        <a class="btn btn-gold" href="./">Начать бесплатно
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+      </div>
+      <p class="free">Первые 2 недели бесплатно · без регистрации</p>
+      <a class="scroll-hint" href="#gym">Как это работает ↓</a>
+    </div>
+  </section>
+
+  <section id="gym">
+    <div class="wrap">
+      <p class="kicker fade">Режим зала</p>
+      <h2 class="fade">Открыл — <span class="gold">и жмёшь</span></h2>
+      <p class="lead fade">Не надо считать проценты и вспоминать, что было на прошлой неделе. Программа уже знает твой вес на сегодня.</p>
+      <div class="show">
+        <div class="phone fade"><img src="img/promo-gym.webp" alt="Экран режима зала: жим штанги лёжа, 90 кг на 6–8 повторов, на штанге блины 20 и 15 кг с каждой стороны" width="660" height="1124" loading="lazy"></div>
+        <div class="callouts">
+          <div class="callout fade"><span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h2m14 0h2M7 7v10M17 7v10M9 9v6m6-6v6M9 12h6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span><div><b>Вес и блины</b><p>90 кг — на сторону 20 + 15. Считает из тех блинов, что есть в твоём зале.</p></div></div>
+          <div class="callout fade"><span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="13" r="8" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 9v4l2.5 2.5M10 2h4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span><div><b>Подход → отдых → следующий</b><p>Нажал «Сделал подход» — таймер отдыха пошёл сам. Голос подскажет следующий вес, экран не погаснет.</p></div></div>
+          <div class="callout fade"><span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10m6 10V4m6 16v-7m4 7H2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span><div><b>Записал — и вес растёт</b><p>Впиши повторы последнего подхода. Сделал все — в следующий раз приложение само предложит больше.</p></div></div>
+        </div>
+      </div>
+
+      <div class="screens" aria-label="Экраны приложения">
+        <figure class="fade"><div class="phone"><img src="img/promo-today.webp" alt="Экран «Сегодня»: самый тяжёлый подход 90 кг, 78% от максимума 110 кг, блины на штанге" width="660" height="1124" loading="lazy"></div><figcaption><b>Сегодня</b>Самый тяжёлый подход и блины — ещё до зала.</figcaption></figure>
+        <figure class="fade"><div class="phone"><img src="img/promo-gym.webp" alt="Режим зала: 90 кг, подход 1 из 4, кнопка «Сделал подход»" width="660" height="1124" loading="lazy"></div><figcaption><b>В зале</b>Одна кнопка на подход. Остальное приложение делает само.</figcaption></figure>
+        <figure class="fade"><div class="phone"><img src="img/promo-week.webp" alt="План недели: жим штанги лёжа 90 кг на 6–8 повторов, 4 подхода, поле для записи последнего подхода" width="660" height="1124" loading="lazy"></div><figcaption><b>План недели</b>Три тренировки, одна база в каждой: жим, становая, присед.</figcaption></figure>
+        <figure class="fade"><div class="phone"><img src="img/promo-progress.webp" alt="График нагрузки по 13 неделям: лёгкие, средние и тяжёлые недели волной" width="660" height="1124" loading="lazy"></div><figcaption><b>Прогресс</b>Нагрузка волной, рекорды и расчётный максимум.</figcaption></figure>
+      </div>
+      <p class="swipe">Листай вбок →</p>
+    </div>
+  </section>
+
+  <section id="waves">
+    <div class="wrap">
+      <p class="kicker fade">Периодизация</p>
+      <h2 class="fade">13 недель <span class="gold">волнами</span></h2>
+      <p class="lead fade">Мышцы растут, когда нагрузка меняется. Поэтому недели чередуются: лёгкая — средняя — тяжёлая. В конце — пик и проверка нового максимума.</p>
+      <div class="wave-box fade">
+        <div class="wave reveal" role="img" aria-label="Нагрузка по неделям: 1 лёгкая, 2 средняя, 3 тяжёлая, 4 лёгкая, 5 средняя, 6 тяжёлая, 7 средняя, 8 лёгкая, 9 средняя, 10 тяжёлая, 11 пик, 12 лёгкая, 13 проверка максимума">
+          <i class="bar l" style="--i:0"></i><i class="bar m" style="--i:1"></i><i class="bar h" style="--i:2"></i><i class="bar l" style="--i:3"></i><i class="bar m" style="--i:4"></i><i class="bar h" style="--i:5"></i><i class="bar m" style="--i:6"></i><i class="bar l" style="--i:7"></i><i class="bar m" style="--i:8"></i><i class="bar h" style="--i:9"></i><i class="bar p" style="--i:10"></i><i class="bar l" style="--i:11"></i><i class="bar t" style="--i:12"></i>
+        </div>
+        <div class="wave-nums" aria-hidden="true"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span></div>
+        <div class="legend" aria-hidden="true"><span><i style="background:var(--w-light)"></i>лёгкая</span><span><i style="background:var(--w-mid)"></i>средняя</span><span><i style="background:var(--w-heavy)"></i>тяжёлая и пик</span><span><i style="background:var(--w-test)"></i>проверка максимума</span></div>
+      </div>
+      <div class="weeks">
+        <div class="week fade" style="--c:var(--w-light)"><b>Лёгкая</b><div class="reps">15–20</div><p>повторов небольшим весом. Техника идеальная, тело восстанавливается.</p></div>
+        <div class="week fade" style="--c:var(--w-mid)"><b>Средняя</b><div class="reps">10–12</div><p>повторов до технического отказа: подход заканчиваешь, когда техника начинает ломаться.</p></div>
+        <div class="week fade" style="--c:var(--w-heavy)"><b>Тяжёлая</b><div class="reps">6–8</div><p>повторов с большим весом, без рывков. Страхующий рядом.</p></div>
+        <div class="week fade" style="--c:var(--w-test)"><b>Проверка</b><div class="reps">1</div><p>повтор с новым весом, не больше 3 тяжёлых попыток. Потом новый максимум и следующий цикл.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="features">
+    <div class="wrap">
+      <p class="kicker fade">Что внутри</p>
+      <h2 class="fade">Всё для зала <span class="gold">в одном телефоне</span></h2>
+      <div class="feats">
+        <div class="feat fade"><span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12a7 7 0 0 1 14 0M12 12l3-3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M4 16h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span><b>Точный вес</b><p>Проценты от твоего максимума, пересчитанные в блины. Тяжёлые подходы округляются только вниз.</p></div>
+        <div class="feat fade"><span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 8.5a15 15 0 0 1 20 0M5.5 12a10 10 0 0 1 13 0M9 15.5a5 5 0 0 1 6 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M3 3l18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span><b>Без интернета</b><p>В подвальном зале нет сети — не страшно. Всё работает офлайн и хранится в телефоне.</p></div>
+        <div class="feat fade"><span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h11l-3-3M17 17H6l3 3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><b>Замена упражнений</b><p>Болит спина или колени — замени становую или присед одной из 2–3 проверенных альтернатив.</p></div>
+        <div class="feat fade"><span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19l5-6 4 3 7-9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><b>Рекорды и графики</b><p>Расчётный максимум по неделям, рекорды и сигнал, если упёрся в застой, — с подсказкой, что делать.</p></div>
+        <div class="feat fade"><span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3c3 3.5 5 6.5 5 9.5a5 5 0 0 1-10 0C7 9.5 9 6.5 12 3z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg></span><b>Питание</b><p>Калории, белки, жиры и углеводы под цель: сушка, набор или поддержание веса.</p></div>
+        <div class="feat fade"><span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 10h8M8 14h5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span><b>Две программы</b><p>«Железный цикл» на 13 недель и «Сила и рельеф» по системе 5/3/1 на 12. Русский, украинский, английский.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="fit">
+    <div class="wrap">
+      <p class="kicker fade">Честно</p>
+      <h2 class="fade">Кому <span class="gold">подойдёт</span></h2>
+      <div class="fit">
+        <div class="fit-col yes fade"><h3>Подойдёт, если</h3><ul>
+          <li>в зале есть штанга, блины, гантели и скамья;</li>
+          <li>можешь ходить 3 раза в неделю, в любые дни;</li>
+          <li>уже знаешь технику жима, приседа и становой;</li>
+          <li>хочешь расти в силе по плану, а не наугад.</li>
+        </ul></div>
+        <div class="fit-col no fade"><h3>Не подойдёт, если</h3><ul>
+          <li>впервые берёшь штангу — сначала поставь технику с тренером;</li>
+          <li>есть травма или боль — сначала к врачу;</li>
+          <li>тренируешься только дома без штанги.</li>
+        </ul></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="price">
+    <div class="wrap">
+      <p class="kicker fade">Сколько стоит</p>
+      <h2 class="fade">Начни <span class="gold">бесплатно</span></h2>
+      <div class="price">
+        <div class="plan fade"><div class="tag">Пробная</div><div class="cost">Бесплатно</div><p class="how-code">Без регистрации и без карты.</p>
+          <ul><li>недели 1 и 2 полностью</li><li>режим зала, таймер, блины</li><li>графики и запись подходов</li></ul>
+          <a class="btn btn-gold" href="./">Начать бесплатно</a></div>
+        <div class="plan full fade"><div class="tag">Полная версия</div><div class="cost">Цену уточни у тренера</div><p class="how-code">Код открывает всё на твоём телефоне.</p>
+          <ul><li>все 13 недель и проверка максимума</li><li>вторая программа «Сила и рельеф»</li><li>новый цикл с новым максимумом</li></ul>
+          <a class="btn btn-line" href="https://t.me/Direj90" rel="noopener">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 4L3 11l6 2 2 6 3-4 5 4 2-15z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 13l12-9" stroke="currentColor" stroke-width="1.8"/></svg>
+            Написать тренеру</a>
+          <p class="how-code">В приложении: «Ещё» → «Полная версия» → скопируй номер телефона и отправь его в Telegram <a href="https://t.me/Direj90" rel="noopener">@Direj90</a>.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="faq">
+    <div class="wrap">
+      <p class="kicker fade">Вопросы</p>
+      <h2 class="fade">Коротко <span class="gold">о главном</span></h2>
+      <div class="faq">
+        <details><summary>Надо скачивать из App Store или Google Play?</summary><p>Нет. Приложение открывается по ссылке в браузере. Чтобы было как обычное приложение — добавь его на экран «Домой»: на iPhone в Safari «Поделиться» → «На экран „Домой“», на Android в Chrome ⋮ → «Установить приложение».</p></details>
+        <details><summary>Работает без интернета?</summary><p>Да. После первого открытия всё работает офлайн: веса, таймер, записи. Интернет нужен только чтобы получить обновления.</p></details>
+        <details><summary>Откуда программа знает мой вес?</summary><p>В начале вводишь максимум в жиме, приседе и становой — или вес и сколько раз его поднимаешь, программа посчитает сама. Дальше все веса — проценты от максимума, пересчитанные в блины.</p></details>
+        <details><summary>Как получить полную версию?</summary><p>В приложении открой «Ещё» → «Полная версия», скопируй номер телефона и отправь его тренеру в Telegram <a href="https://t.me/Direj90" rel="noopener">@Direj90</a>. Он пришлёт код — вставь его, и откроются все недели. Код работает только на твоём телефоне.</p></details>
+        <details><summary>Что будет с записями, если сменю телефон?</summary><p>Данные хранятся в телефоне. Перед сменой сохрани резервную копию («Ещё» → «Резервная копия») и загрузи её на новом. Для полной версии на новом телефоне напиши тренеру — код привязан к телефону.</p></details>
+        <details><summary>Проверка максимума — это не опасно?</summary><p>Программа даёт чёткие правила: после разминки не больше 3 тяжёлых попыток, без отказа, стоп при потере техники. Жим и присед — только со страхующим, присед — в раме со страховочными упорами.</p></details>
+      </div>
+    </div>
+  </section>
+
+  <section class="final" id="start">
+    <div class="bg"><img src="img/hero-hands.jpg" alt="" width="1536" height="1024" loading="lazy"></div>
+    <div class="wrap">
+      <p class="kicker fade">Недели 1–2 бесплатно</p>
+      <h2 class="fade">Начни <span class="gold">цикл</span></h2>
+      <p class="lead fade">Введи свой максимум — и программа рассчитает каждую тренировку до проверки нового рекорда.</p>
+      <div class="hero-cta fade"><a class="btn btn-gold" href="./">Открыть приложение
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></a></div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>© Железный цикл</span>
+    <span><a href="about.html">О программе</a> · <a href="https://t.me/Direj90" rel="noopener">Тренер в Telegram</a></span>
+    <span>Фото созданы нейросетью.</span>
+  </div>
+</footer>
+
+<div class="dock" id="dock" aria-hidden="true">
+  <small>Недели 1–2 бесплатно</small>
+  <a class="btn btn-gold" href="./" tabindex="-1">Начать бесплатно</a>
+</div>
 
 <script>
 (function () {
-  var scene = document.getElementById('scene');
-  var shots = [].slice.call(document.querySelectorAll('.shot'));
-  var chaps = [].slice.call(document.querySelectorAll('.chap'));
-  var dots = [].slice.call(document.querySelectorAll('.dots i'));
-  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  // Chapter → photo: bar (wide), plate, hands, bar again pushed in close.
-  var MAP = [0, 1, 2, 0];
-  var current = -1;
-  function clamp(v) { return Math.max(0, Math.min(1, v)); }
-
-  function render(p) {
-    var n = MAP.length, pos = p * n, ch = Math.min(n - 1, Math.floor(pos)), local = pos - ch;
-    // cross-fade over the last 18% of each chapter
-    var fade = clamp((local - 0.82) / 0.18), next = Math.min(n - 1, ch + 1);
-    shots.forEach(function (s, i) {
-      var o = 0;
-      if (MAP[ch] === i) o = ch === n - 1 ? 1 : 1 - fade;
-      if (MAP[next] === i && next !== ch) o = Math.max(o, fade);
-      s.style.opacity = o.toFixed(3);
-    });
-    if (!reduce) {
-      // slow push-in per chapter; the last chapter pushes the wide bar shot in further
-      MAP.forEach(function (img, c) {
-        if (c !== ch && c !== next) return;
-        var t = c === ch ? local : 0;
-        var base = c === n - 1 ? 1.18 : 1.0, gain = c === n - 1 ? 0.12 : 0.1;
-        var drift = c === 1 ? (-3 + t * 6) : 0; // the plate shot slides sideways
-        shots[img].style.transform = 'translate3d(' + drift + '%,0,0) scale(' + (base + t * gain).toFixed(4) + ')';
-      });
-    }
-    if (ch !== current) {
-      current = ch;
-      chaps.forEach(function (c, i) { c.classList.toggle('on', i === ch); });
-      dots.forEach(function (d, i) { d.classList.toggle('on', i <= ch); });
-    }
+  // Gentle entrance for sections and the wave bars; everything is visible without JS or with reduced motion.
+  var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var els = document.querySelectorAll('.fade, .reveal');
+  if (reduce || !('IntersectionObserver' in window)) { els.forEach(function (e) { e.classList.add('in'); }); }
+  else {
+    var io = new IntersectionObserver(function (es) { es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }); }, { rootMargin: '0px 0px -8% 0px' });
+    els.forEach(function (e) { io.observe(e); });
   }
-
-  var ticking = false;
-  function onScroll() {
-    if (ticking) return; ticking = true;
-    requestAnimationFrame(function () {
-      ticking = false;
-      var r = scene.getBoundingClientRect(), total = scene.offsetHeight - window.innerHeight;
-      render(clamp(-r.top / total));
-    });
+  // Sticky button on phones: after the first screen, hidden again at the final call to action.
+  var dock = document.getElementById('dock'), hero = document.getElementById('top'), fin = document.getElementById('start');
+  if (dock && 'IntersectionObserver' in window) {
+    var heroOut = false, finIn = false;
+    var upd = function () { var on = heroOut && !finIn; dock.classList.toggle('on', on); dock.setAttribute('aria-hidden', String(!on)); dock.querySelector('a').tabIndex = on ? 0 : -1; };
+    new IntersectionObserver(function (es) { heroOut = !es[0].isIntersecting; upd(); }, { threshold: 0.15 }).observe(hero);
+    new IntersectionObserver(function (es) { finIn = es[0].isIntersecting; upd(); }).observe(fin);
   }
-  window.addEventListener('scroll', onScroll, { passive: true });
-  window.addEventListener('resize', onScroll);
-  render(0); onScroll();
 })();
 </script>
-</body></html>
+</body>
+</html>
