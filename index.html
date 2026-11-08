@@ -644,6 +644,44 @@ body.gym-on .timer, body.gym-on .tabbar, body.onb-on .tabbar { display: none !im
 .onb-err { color: #ff8a65 !important; min-height: 1.2em; }
 .onb > .btn.primary { min-height: 56px; font-family: var(--display); font-size: 20px; text-transform: uppercase; letter-spacing: .06em; }
 .onb-skip { background: none; border: 0; color: var(--muted); text-decoration: underline; min-height: 44px; }
+/* First-launch questions: one question per screen, big cards, the chosen one glows. */
+.onb.qzm { grid-template-rows: 1fr auto auto; }
+.qz { display: grid; gap: 12px; align-content: start; align-self: start; animation: tabIn var(--m-300) var(--ease-out) both; }
+.qz-top { display: flex; align-items: center; gap: 12px; }
+.qz-back { background: none; border: 0; color: var(--muted); font: 600 15px var(--body); min-height: 40px; padding: 0 6px 0 0; display: inline-flex; align-items: center; gap: 6px; }
+.qz-back[hidden] { display: none; }
+.qz-bar { flex: 1; height: 5px; border-radius: 3px; background: var(--line); overflow: hidden; }
+.qz-bar i { display: block; height: 100%; background: var(--accent); border-radius: 3px; transition: width .4s var(--ease-out); box-shadow: 0 0 12px color-mix(in srgb, var(--accent) 60%, transparent); }
+.qz-q { font: 600 clamp(26px, 7.4vw, 36px)/1.12 var(--display); margin: 14px 0 0; text-transform: none; letter-spacing: .005em; }
+.qz-sub { margin: 0 0 6px !important; }
+.qz-opts { display: grid; gap: 10px; }
+.qz-opt { display: grid; grid-template-columns: 52px 1fr; gap: 14px; align-items: center; text-align: left; width: 100%; min-height: 74px; padding: 12px 16px; border-radius: 18px; border: 1px solid var(--line); background: var(--surface); color: var(--muted); font: 600 17px/1.25 var(--body); cursor: pointer; transition: border-color .2s, box-shadow .2s, color .2s, transform .12s, background .2s; touch-action: manipulation; }
+.qz-opt:active { transform: scale(.985); }
+.qz-opt svg { width: 48px; height: 48px; color: color-mix(in srgb, var(--accent) 45%, var(--muted)); transition: color .2s; }
+.qz-opt small { display: block; margin-top: 3px; font-weight: 400; font-size: 13px; color: var(--muted); }
+.qz-opt[aria-pressed="true"] { color: var(--fg); border-color: var(--accent); background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 12%, var(--surface)), var(--surface)); box-shadow: 0 0 0 1px var(--accent), 0 0 28px -8px color-mix(in srgb, var(--accent) 70%, transparent); }
+.qz-opt[aria-pressed="true"] svg { color: var(--accent); }
+.qz input { font: 600 22px var(--body) !important; }
+.qz-wait { display: grid; justify-items: center; gap: 18px; text-align: center; padding-top: 6vh; }
+.qz-ring { width: 150px; height: 150px; }
+.qz-ring circle { fill: none; stroke-width: 9; }
+.qz-ring .bg { stroke: var(--line); }
+.qz-ring .fg { stroke: var(--accent); stroke-linecap: round; stroke-dasharray: 427; stroke-dashoffset: 427; transform: rotate(-90deg); transform-origin: 50% 50%; animation: qzRing 2.4s var(--ease-out) forwards; filter: drop-shadow(0 0 8px color-mix(in srgb, var(--accent) 70%, transparent)); }
+@keyframes qzRing { to { stroke-dashoffset: 0; } }
+.qz-steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; text-align: left; }
+.qz-steps li { display: flex; align-items: center; gap: 10px; color: var(--fg); opacity: 0; animation: qzIn .35s var(--ease-out) forwards; background: none !important; border: 0 !important; padding: 0 !important; }
+.qz-steps li::before { content: "✓"; color: var(--accent); font-weight: 800; }
+@keyframes qzIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.qz-plan { border: 1px solid var(--accent); border-radius: 22px; padding: 20px; background: radial-gradient(120% 80% at 100% 0%, color-mix(in srgb, var(--accent) 20%, transparent), transparent 60%), var(--surface); display: grid; gap: 12px; }
+.qz-plan h3 { margin: 0; font: 400 clamp(30px, 8.5vw, 42px)/1 var(--poster); text-transform: uppercase; }
+.qz-plan h3 span { color: var(--accent); }
+.qz-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.qz-chips b { font: 600 12px var(--display); letter-spacing: .08em; text-transform: uppercase; padding: 6px 10px; border-radius: 999px; background: var(--bg); border: 1px solid var(--line); color: var(--fg); }
+.qz-plan ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; }
+.qz-plan li { display: flex !important; gap: 10px; align-items: flex-start; background: none !important; border: 0 !important; padding: 0 !important; color: var(--fg); }
+.qz-plan li i { flex: none; width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; background: color-mix(in srgb, var(--accent) 18%, transparent); color: var(--accent); font-style: normal; font-weight: 800; font-size: 12px; margin-top: 1px; }
+.qz-plan .warn { color: #ffb38a; }
+@media (prefers-reduced-motion: reduce) { .qz-ring .fg { stroke-dashoffset: 0; } .qz-steps li { opacity: 1; } }
 /* ---------- share ---------- */
 .share-sheet { max-height: 92vh; overflow-y: auto; }
 .share-img { width: auto; max-width: 100%; height: min(52vh, 560px); object-fit: contain; margin: 0 auto; border-radius: 12px; border: 1px solid var(--line); display: block; }
@@ -872,6 +910,9 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
   <section class="wrap block" id="license"></section>
 
   <section class="wrap block" id="look">
+    <h2>Твой план</h2>
+    <p class="hint" id="plan-sum"></p>
+    <div class="photo-row" style="margin-bottom:24px"><button class="btn" type="button" data-quiz-again>Подобрать заново</button></div>
     <h2>Язык</h2>
     <div class="lang-seg" role="group" aria-label="Язык" id="lang-seg" data-notr></div>
     <h2>Оформление</h2>
@@ -1584,9 +1625,9 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
   function saveLicense(code) { try { localStorage.setItem('club150:lic', cleanCode(code)); } catch (er) {} LIC_OK = true; LIC_OLD = false; }
   function locked(wk) { return wk > FREE_WEEKS && !licensed() && !tgFree(); }
   function codeFormHtml() {
-    return (TG ? '<p class="hint">Твой номер в Telegram: <b class="dev-id">' + DEV + '</b>. Отправь его тренеру — он пришлёт код, который работает только в твоём Telegram.</p>'
-      : '<p class="hint">Номер этого телефона: <b class="dev-id">' + DEV + '</b>. Отправь его тренеру — он пришлёт код, который работает только на этом телефоне.</p>') +
-      '<div class="lic-row"><button class="btn" type="button" data-dev-copy>Скопировать номер</button></div>' +
+    return (TG ? '<p class="hint">Твой код в Telegram: <b class="dev-id">' + DEV + '</b>. Отправь его тренеру — он пришлёт код, который работает только в твоём Telegram.</p>'
+      : '<p class="hint">Код устройства: <b class="dev-id">' + DEV + '</b>. Это не номер телефона — просто метка этого устройства. Отправь её тренеру — он пришлёт код доступа, который работает только здесь.</p>') +
+      '<div class="lic-row"><button class="btn" type="button" data-dev-copy>Скопировать код устройства</button></div>' +
       '<div class="lic-row"><input class="lic-in" type="text" autocapitalize="off" autocorrect="off" spellcheck="false" autocomplete="off" maxlength="200" placeholder="Вставь код из сообщения" aria-label="Код доступа"><button class="btn primary" type="button" data-lic-go>Открыть</button></div>' +
       '<p class="toast lic-msg" aria-live="polite"></p>';
   }
@@ -1602,12 +1643,12 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
   }
   function renderLicense() {
     var h = '<h2>Полная версия</h2><div class="card' + (licensed() ? '' : ' paywall') + '">';
-    if (licensed()) h += '<h3 data-admin-tap><i class="ph ph-lock-open" aria-hidden="true"></i>Открыта на этом телефоне</h3><p class="hint">Все ' + NW + ' недель и обе программы доступны. Номер телефона: <b class="dev-id">' + DEV + '</b>.</p>';
+    if (licensed()) h += '<h3 data-admin-tap><i class="ph ph-lock-open" aria-hidden="true"></i>Открыта на этом телефоне</h3><p class="hint">Все ' + NW + ' недель и обе программы доступны. Код устройства: <b class="dev-id">' + DEV + '</b>.</p>';
     else if (tgFree()) h += '<h3 data-admin-tap><i class="ph ph-lock-open" aria-hidden="true"></i>Всё открыто в Telegram</h3><p class="hint">До ' + fmtDate(TG_FREE_UNTIL) + ' включительно все ' + NW + ' недель бесплатно. Потом — недели 1–' + FREE_WEEKS + ' бесплатно, дальше по коду.</p>' + codeFormHtml();
-    else h += '<h3 data-admin-tap><i class="ph ph-lock" aria-hidden="true"></i>Пробная версия</h3><p class="hint">Сейчас открыты недели 1–' + FREE_WEEKS + '. Чтобы открыть все ' + NW + ' недель, получи код у тренера.</p>' + (LIC_OLD ? '<p class="hint">Коды старого образца больше не действуют. Отправь тренеру номер телефона — он пришлёт новый код.</p>' : '') + codeFormHtml();
+    else h += '<h3 data-admin-tap><i class="ph ph-lock" aria-hidden="true"></i>Пробная версия</h3><p class="hint">Сейчас открыты недели 1–' + FREE_WEEKS + '. Чтобы открыть все ' + NW + ' недель, получи код у тренера.</p>' + (LIC_OLD ? '<p class="hint">Коды старого образца больше не действуют. Отправь тренеру код устройства — он пришлёт новый код.</p>' : '') + codeFormHtml();
     h += '<div class="lic-row"><button class="btn" type="button" data-share-app>Отправить другу</button></div><p class="toast share-msg" aria-live="polite"></p></div>';
-    if (isAdmin()) h += '<div class="card" style="margin-top:12px"><h3><i class="ph ph-crown" aria-hidden="true"></i>Выдать код</h3><p class="hint">Впиши номер телефона, который прислал человек. Код откроет полную версию только на его телефоне.</p>' +
-      '<div class="lic-row"><input class="lic-in" id="adm-dev" type="text" autocapitalize="characters" autocomplete="off" maxlength="9" placeholder="Номер XXXX-XXXX" aria-label="Номер телефона"><button class="btn primary" type="button" data-adm-gen>Получить код</button></div>' +
+    if (isAdmin()) h += '<div class="card" style="margin-top:12px"><h3><i class="ph ph-crown" aria-hidden="true"></i>Выдать код</h3><p class="hint">Впиши код устройства, который прислал человек. Код доступа откроет полную версию только на его телефоне.</p>' +
+      '<div class="lic-row"><input class="lic-in" id="adm-dev" type="text" autocapitalize="characters" autocomplete="off" maxlength="9" placeholder="Код XXXX-XXXX" aria-label="Код устройства"><button class="btn primary" type="button" data-adm-gen>Получить код</button></div>' +
       '<div id="adm-out"></div>' + (licensed() ? '' : '<button class="btn" type="button" data-adm-self>Открыть на моём телефоне</button>') +
       '<button class="btn" type="button" data-adm-off>Выйти из режима тренера</button><p class="hint">Ключ тренера хранится только на этом телефоне. Выйдешь из режима — понадобится вставить ключ снова.</p></div>';
     $('license').innerHTML = h;
@@ -1623,12 +1664,12 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
       if (!c) { msg.textContent = 'Вставь код из сообщения.'; return; }
       if (!SUBTLE) { msg.textContent = 'Этот браузер не умеет проверять код. Открой программу в Chrome или Safari.'; return; }
       if (c.length === 43) { // a coach key pasted here: switch on coach mode instead
-        tryTrainerKey(c).then(function (ok) { if (ok) renderLicense(); else msg.textContent = 'Код не подходит к этому телефону. Проверь номер ' + DEV + ' и что код скопирован целиком.'; });
+        tryTrainerKey(c).then(function (ok) { if (ok) renderLicense(); else msg.textContent = 'Код не подходит к этому телефону. Проверь код устройства ' + DEV + ' и что код скопирован целиком.'; });
         return;
       }
       verifyCode(DEV, c).then(function (ok) {
         if (ok) { saveLicense(c); renderLicense(); renderAll(); celebrate('Полная <span>версия</span>', 'Все ' + NW + ' недель открыты. Вперёд!', 'ph-crown'); }
-        else msg.textContent = 'Код не подходит к этому телефону. Проверь номер ' + DEV + ' и что код скопирован целиком.';
+        else msg.textContent = 'Код не подходит к этому телефону. Проверь код устройства ' + DEV + ' и что код скопирован целиком.';
       });
       return;
     }
@@ -1660,7 +1701,7 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
     }
     if (t.closest('[data-adm-gen]')) {
       var d = normCode($('adm-dev').value);
-      if (!/^[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(d)) { $('adm-out').innerHTML = '<p class="hint">Номер — 8 знаков, как XXXX-XXXX.</p>'; return; }
+      if (!/^[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(d)) { $('adm-out').innerHTML = '<p class="hint">Код устройства — 8 знаков, как XXXX-XXXX.</p>'; return; }
       signCode(d).then(function (code) {
         $('adm-out').innerHTML = '<p class="hint">Код для ' + esc(d) + ':</p><div class="lic-code" style="overflow-wrap:anywhere;font-size:13px">' + code + '</div><button class="btn" type="button" data-adm-copy="' + code + '">Скопировать код</button>';
       }, function () { $('adm-out').innerHTML = '<p class="hint">Не получилось подписать код. Выйди из режима тренера и вставь ключ заново.</p>'; });
@@ -1695,7 +1736,9 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
   // Readiness before a workout: tired → −10%, bad → −20% on % lifts of that workout.
   var ready = store.get('ready2', {});
   var READY = { ok: 1, tired: 0.9, bad: 0.8 };
-  function dayFactor(wk, di) { return READY[ready[wk + '-' + di]] || 1; }
+  // Back after a break (from the first-launch questions): weeks 1–2 are 10% lighter.
+  var COMEBACK = !!store.get('comeback', 0);
+  function dayFactor(wk, di) { return (READY[ready[wk + '-' + di]] || 1) * (COMEBACK && +wk <= 2 ? 0.9 : 1); }
   function setKg(e, ctx, si, p) {
     var o = overrides[ctx + '|' + si]; if (o) return o;
     var c = ctx.split('|'), mx = +maxes[e.lift]; if (!(mx > 0)) return null;
@@ -1896,7 +1939,7 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
       h += '<div class="cta">' + (wk < NW ? '<button class="btn primary" type="button" data-goweek="' + (wk + 1) + '">Перейти к неделе ' + (wk + 1) + '</button>' : '') + '</div>';
     } else {
       var day = WEEKS[wk - 1].days[di], mi = mainIndex(day, di), main = mi >= 0 ? items(day).map(head)[mi] : null, ts = topSet(main);
-      h += '<div class="eyebrow">Тренировка ' + (di + 1) + ' из 3</div><h1>' + twoTone(DAYS[di]) + '</h1><div class="sub">' + (main ? esc(main.n) : esc(items(day)[0].n)) + '</div></div>';
+      h += '<div class="eyebrow">' + (myName() ? esc(myName()) + ' · ' : '') + 'Тренировка ' + (di + 1) + ' из 3</div><h1>' + twoTone(DAYS[di]) + '</h1><div class="sub">' + (main ? esc(main.n) : esc(items(day)[0].n)) + '</div></div>';
       var rk = wk + '-' + di;
       if (ago !== null && ago >= 10 && !ready[rk]) { ready[rk] = 'tired'; store.set('ready2', ready); }
       var lb = (function () { try { return localStorage.getItem('club150:lastBackup'); } catch (er) { return null; } })(), nW = Object.keys(dates).length;
@@ -2991,12 +3034,155 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
   }
   $('sheet-root').addEventListener('click', function (ev) { var s = ev.target.closest('[data-share-week]'); if (s) shareWeek(+s.getAttribute('data-share-week')); });
 
+
+  // ---------- first-launch questions: the program is set up for this athlete ----------
+  // Goal → program and focus; experience → a softer start after a break; aches → exercise swaps; place → an honest warning.
+  function myName() { try { var me = (profiles || []).filter(function (p) { return p.id === PROFILE; })[0]; return me && me.name && me.name !== 'Я' ? me.name : ''; } catch (er) { return ''; } }
+  var QI = {
+    str: '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 24h40"/><rect x="8" y="13" width="5" height="22" rx="1.5"/><rect x="13" y="16" width="4" height="16" rx="1.5"/><rect x="35" y="13" width="5" height="22" rx="1.5"/><rect x="31" y="16" width="4" height="16" rx="1.5"/></svg>',
+    mass: '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 38c-2-8 1-15 7-19l3-7c1-2 4-2 5 0l1 4-4 5"/><path d="M17 19c6-3 14-2 18 3 4 5 2 13-5 15-7 2-14 1-20 1"/><path d="M26 27c2 1 4 1 6 0"/></svg>',
+    cut: '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M24 4c3 7 12 11 12 23a12 12 0 0 1-24 0c0-6 3-9 5-12 1 4 3 6 5 6-2-6 0-12 2-17z"/><path d="M24 42a5 5 0 0 1-5-5c0-4 5-6 5-10 2 3 5 6 5 10a5 5 0 0 1-5 5z"/></svg>',
+    db1: '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 30l20-12"/><circle cx="12" cy="31" r="5"/><circle cx="36" cy="17" r="5"/></svg>',
+    back: '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 28l20-10"/><circle cx="12" cy="29" r="4"/><circle cx="36" cy="17" r="4"/><path d="M8 18a17 17 0 0 1 26-10"/><path d="M34 4v5h-5"/><path d="M40 30a17 17 0 0 1-26 10"/><path d="M14 44v-5h5"/></svg>',
+    db2: '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 30l20-12"/><circle cx="12" cy="31" r="6"/><circle cx="12" cy="31" r="2"/><circle cx="36" cy="17" r="6"/><circle cx="36" cy="17" r="2"/></svg>',
+    db3: '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 29l16-10"/><circle cx="12" cy="31" r="7"/><circle cx="12" cy="31" r="3.5"/><circle cx="36" cy="17" r="7"/><circle cx="36" cy="17" r="3.5"/></svg>',
+    bb: '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 24h42"/><rect x="6" y="12" width="5" height="24" rx="1.5"/><rect x="11" y="15" width="4" height="18" rx="1.5"/><rect x="15" y="18" width="3" height="12" rx="1"/><rect x="37" y="12" width="5" height="24" rx="1.5"/><rect x="33" y="15" width="4" height="18" rx="1.5"/><rect x="30" y="18" width="3" height="12" rx="1"/></svg>',
+    ok: '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M24 4l16 6v12c0 11-7 18-16 22C15 40 8 33 8 22V10z"/><path d="M17 24l5 5 9-10"/></svg>',
+    spine: '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="24" cy="7" r="4"/><path d="M15 44V24c0-6 4-10 9-10s9 4 9 10v20"/><path d="M24 17v3M24 24v3M24 31v3M24 38v3" stroke-width="3"/><path d="M33 24c3 0 5 2 5 5"/></svg>',
+    knee: '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4l6 20-6 20"/><path d="M26 4l4 18-8 22"/><path d="M33 18l5-3M34 24h6M33 30l5 3"/></svg>',
+    shoulder: '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="9" r="5"/><path d="M8 44V28c0-7 4-12 10-12h4c5 0 8 3 9 7l4 14"/><path d="M30 14a8 8 0 0 1 8 2"/><path d="M40 11l2-3M42 17h4"/></svg>',
+    gym: '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 44V6M38 44V6"/><path d="M6 18h36"/><rect x="2" y="13" width="4" height="10" rx="1"/><rect x="42" y="13" width="4" height="10" rx="1"/><path d="M16 36h16v8M16 36v8"/></svg>',
+    home: '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22L24 7l18 15"/><path d="M10 19v23h28V19"/><path d="M17 33l14-6"/><circle cx="16" cy="34" r="3"/><circle cx="32" cy="26" r="3"/></svg>',
+    none: '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="24" cy="8" r="4"/><path d="M24 12v16M24 28l-7 14M24 28l7 14M13 20l11-4 11 4"/></svg>'
+  };
+  var QZ_STEPS = [
+    { k: 'name', q: 'Как тебя зовут?', sub: 'Программа будет обращаться к тебе по имени.' },
+    { k: 'goal', q: 'Что для тебя главное?', sub: 'От этого зависит программа и повторы.', o: [['strength', 'str', 'Сила в жиме и базе', 'Меньше повторов, больше вес'], ['mass', 'mass', 'Масса и сила', 'Больше повторов, рост мышц'], ['cut', 'cut', 'Рельеф и сушка', 'Сила 5/3/1 + питание на сушке']] },
+    { k: 'exp', q: 'Какой у тебя опыт со штангой?', sub: 'Поможет подобрать нагрузку.', o: [['never', 'db1', 'Только начинаю', ''], ['back', 'back', 'Возвращаюсь после перерыва', ''], ['y1', 'db2', 'До 1 года', ''], ['y2', 'db3', '1–2 года', ''], ['y3', 'bb', 'Больше 2 лет', '']] },
+    { k: 'lim', multi: true, q: 'Что-то беспокоит?', sub: 'Заменю упражнения, чтобы тренировки были безопаснее. Можно выбрать несколько.', o: [['no', 'ok', 'Ничего не беспокоит', ''], ['spine', 'spine', 'Спина иногда побаливает', 'Становая → румынская тяга с гантелями'], ['knee', 'knee', 'Болят колени', 'Присед → гоблет-присед'], ['shoulder', 'shoulder', 'Плечи', 'Жим стоя → жим гантелей сидя']] },
+    { k: 'place', q: 'Где тренируешься?', sub: 'Программа сделана для зала со штангой.', o: [['gym', 'gym', 'В зале', 'Штанга, блины, скамья, гантели'], ['home', 'home', 'Дома с гантелями', ''], ['none', 'none', 'Без инвентаря', '']] }
+  ];
+  var QZ = null;
+  function openQuiz() {
+    var prev = {}; try { prev = JSON.parse(localStorage.getItem(store.k('quiz').replace(/@sr$/, ''))) || {}; } catch (er) {}
+    QZ = { i: 0, a: { name: myName(), goal: prev.goal || '', exp: prev.exp || '', lim: prev.lim || [], place: prev.place || '' } };
+    $('onb').hidden = false; document.body.classList.add('onb-on');
+    renderQuiz();
+  }
+  function quizTop(i) { return '<div class="qz-top"><button type="button" class="qz-back" data-qz="back"' + (i ? '' : ' hidden') + '>← Назад</button><div class="qz-bar" role="progressbar" aria-label="Подбор программы" aria-valuemin="0" aria-valuemax="' + QZ_STEPS.length + '" aria-valuenow="' + i + '"><i style="width:' + Math.round((i + 1) / (QZ_STEPS.length + 1) * 100) + '%"></i></div></div>'; }
+  function renderQuiz() {
+    var i = QZ.i, st = QZ_STEPS[i], h = '';
+    if (st.k === 'name') {
+      h = '<div class="qz">' + quizTop(i) + '<h2 class="qz-q" id="onb-title">' + st.q + '</h2><p class="qz-sub">' + st.sub + '</p><div class="field"><label for="qz-name">Имя</label><input id="qz-name" type="text" maxlength="24" autocomplete="given-name" placeholder="Например, Дима" value="' + esc(QZ.a.name || '') + '"></div></div>' +
+        '<button class="btn primary" type="button" data-qz="next">Дальше</button><button class="onb-skip" type="button" data-qz="next">Пропустить</button>';
+    } else {
+      var sel = QZ.a[st.k];
+      h = '<div class="qz">' + quizTop(i) + '<h2 class="qz-q" id="onb-title">' + st.q + '</h2><p class="qz-sub">' + st.sub + '</p><div class="qz-opts" role="group" aria-labelledby="onb-title">' +
+        st.o.map(function (o) { var on = st.multi ? sel.indexOf(o[0]) >= 0 : sel === o[0]; return '<button type="button" class="qz-opt" data-qz="pick" data-v="' + o[0] + '" aria-pressed="' + on + '">' + QI[o[1]] + '<span>' + o[2] + (o[3] ? '<small>' + o[3] + '</small>' : '') + '</span></button>'; }).join('') +
+        '</div></div>' + (st.multi ? '<button class="btn primary" type="button" data-qz="next"' + (sel.length ? '' : ' disabled') + '>Дальше</button>' : '');
+    }
+    $('onb').innerHTML = h; $('onb').classList.add('qzm');
+    var f = $('onb').querySelector('#qz-name, .qz-opt[aria-pressed="true"], .qz-opt'); if (f) f.focus();
+  }
+  function quizPlan() {
+    var a = QZ.a, prog = a.goal === 'cut' ? 'sr' : 'club', sw = [];
+    if (a.lim.indexOf('spine') >= 0) sw.push([DL, 'Румынская тяга с гантелями', 'бережём спину'], [SLDL, 'Гиперэкстензия с блином', 'бережём спину']);
+    if (a.lim.indexOf('knee') >= 0) sw.push([SQ, 'Гоблет-присед с гантелью', 'бережём колени']);
+    if (a.lim.indexOf('shoulder') >= 0) sw.push([OHP, 'Жим гантелей сидя', 'бережём плечи']);
+    return { prog: prog, focus: a.goal === 'strength' ? 'strength' : 'volume', swaps: sw };
+  }
+  function quizWait() {
+    var a = QZ.a, steps = ['Определяем цель', 'Учитываем опыт', a.lim.length && a.lim[0] !== 'no' ? 'Подбираем замены упражнений' : 'Проверяем ограничения', 'Собираем 13 недель волнами'];
+    $('onb').innerHTML = '<div class="qz qz-wait"><p class="kicker" style="margin:0;color:var(--accent);font:600 13px var(--display);letter-spacing:.2em;text-transform:uppercase">' + (a.name ? esc(a.name) + ', отлично!' : 'Отлично!') + '</p><h2 class="qz-q" id="onb-title" style="margin:0">Подбираем программу</h2>' +
+      '<svg class="qz-ring" viewBox="0 0 150 150" aria-hidden="true"><circle class="bg" cx="75" cy="75" r="68"/><circle class="fg" cx="75" cy="75" r="68"/></svg>' +
+      '<ul class="qz-steps" aria-live="polite">' + steps.map(function (t2, k2) { return '<li style="animation-delay:' + (0.3 + k2 * 0.5) + 's">' + t2 + '</li>'; }).join('') + '</ul></div>';
+    var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    setTimeout(quizResult, reduce ? 600 : 2700);
+  }
+  function quizResult() {
+    var a = QZ.a, plan = quizPlan(), prog = plan.prog === 'sr';
+    var chips = [prog ? '12 недель' : '13 недель', '3 тренировки в неделю', prog ? '5/3/1 + сушка' : (plan.focus === 'strength' ? 'фокус: сила' : 'фокус: масса')];
+    var li = [];
+    li.push(prog ? 'Каждую неделю база по системе 5/3/1, подсобка плотная, питание — на сушку.' : 'Недели волнами: лёгкая, средняя, тяжёлая. В конце — проверка нового максимума.');
+    if (!prog) li.push('Жим 3 раза в неделю: тяжёлый, скоростной и на технику, как у Шейко.');
+    if (a.exp === 'back') li.push('Мягкий вход: первые 2 недели веса на 10% легче.');
+    plan.swaps.forEach(function (s2) { li.push('<b>' + s2[0] + '</b> → <b>' + s2[1] + '</b>: ' + s2[2]); });
+    li.push('Вес подстраивается под тебя: после подхода отмечай, сколько ещё мог.');
+    var warn = [];
+    if (a.exp === 'never') warn.push('Ты только начинаешь — первые тренировки сделай с тренером, чтобы поставить технику жима, приседа и становой.');
+    if (a.place && a.place !== 'gym') warn.push('Программа сделана для зала со штангой. Дома её полностью не выполнить.');
+    $('onb').innerHTML = '<div class="qz">' + quizTop(QZ_STEPS.length) + '<h2 class="qz-q" id="onb-title">' + (a.name ? esc(a.name) + ', вот твой план' : 'Вот твой план') + '</h2>' +
+      '<div class="qz-plan"><h3>' + (prog ? 'Сила <span>и рельеф</span>' : 'Железный <span>цикл</span>') + '</h3><div class="qz-chips">' + chips.map(function (c2) { return '<b>' + c2 + '</b>'; }).join('') + '</div>' +
+      '<ul>' + li.map(function (t2) { return '<li><i>✓</i><span>' + t2 + '</span></li>'; }).join('') + warn.map(function (t2) { return '<li class="warn"><i>!</i><span>' + t2 + '</span></li>'; }).join('') + '</ul></div></div>' +
+      '<button class="btn primary" type="button" data-qz="apply">Дальше — твой максимум</button><button class="onb-skip" type="button" data-qz="restart">Изменить ответы</button>';
+    var f = $('onb').querySelector('[data-qz="apply"]'); if (f) f.focus();
+  }
+  function quizApply() {
+    var a = QZ.a, plan = quizPlan(), pfx = 'club150:' + (PROFILE !== 'main' ? PROFILE + ':' : '');
+    try {
+      if (a.name) { profiles.forEach(function (p2) { if (p2.id === PROFILE) p2.name = a.name.slice(0, 24); }); if (!profiles.some(function (p2) { return p2.id === PROFILE; })) profiles.push({ id: PROFILE, name: a.name }); store.set('profiles', profiles); }
+      localStorage.setItem(pfx + 'quiz', JSON.stringify({ goal: a.goal, exp: a.exp, lim: a.lim, place: a.place }));
+      if (a.goal) {
+        localStorage.setItem(pfx + 'prog', JSON.stringify(plan.prog));
+        if (plan.prog === 'club') localStorage.setItem(pfx + 'focus', plan.focus);
+        ['', '@sr'].forEach(function (suf) { var fk = pfx + 'food' + suf, c = {}; try { c = JSON.parse(localStorage.getItem(fk)) || {}; } catch (er) {} c['f-goal'] = a.goal === 'cut' ? 'cut' : a.goal === 'mass' ? 'gain' : 'keep'; localStorage.setItem(fk, JSON.stringify(c)); });
+      }
+      localStorage.setItem(pfx + 'comeback', a.exp === 'back' ? '1' : '0');
+      if (plan.swaps.length) {
+        var sk = pfx + 'swaps' + (plan.prog === 'sr' ? '@sr' : ''), list = []; try { list = JSON.parse(localStorage.getItem(sk)) || []; } catch (er) {}
+        var same = (plan.prog === 'sr') === (PROG === 'sr');
+        plan.swaps.forEach(function (s2) {
+          if (same) { if (swapAt(s2[0], CYCLE, current) !== s2[1]) { setSwap(s2[0], s2[1]); list = swaps; } return; }
+          if (!list.some(function (x) { return x.n === s2[0] && x.uc == null; })) list.push({ n: s2[0], to: s2[1], c: 0, w: 1 });
+        });
+        if (!same) localStorage.setItem(sk, JSON.stringify(list));
+      }
+      sessionStorage.setItem('c150onb', isExample ? '1' : '');
+      if (!isExample) store.set('onb', 1);
+    } catch (er) {}
+    location.reload();
+  }
+  $('onb').addEventListener('click', function (ev) {
+    var b2 = ev.target.closest('[data-qz]'); if (!b2 || !QZ) return;
+    var act = b2.getAttribute('data-qz'), st = QZ_STEPS[QZ.i];
+    if (act === 'back') { if (QZ.i > 0) { QZ.i--; renderQuiz(); } return; }
+    if (act === 'restart') { QZ.i = 0; renderQuiz(); return; }
+    if (act === 'apply') return quizApply();
+    if (act === 'pick') {
+      var v = b2.getAttribute('data-v');
+      if (st.multi) {
+        var l2 = QZ.a[st.k];
+        if (v === 'no') l2 = ['no']; else { l2 = l2.filter(function (x) { return x !== 'no'; }); l2 = l2.indexOf(v) >= 0 ? l2.filter(function (x) { return x !== v; }) : l2.concat([v]); }
+        QZ.a[st.k] = l2; renderQuiz(); return;
+      }
+      QZ.a[st.k] = v;
+      $('onb').querySelectorAll('.qz-opt').forEach(function (o2) { o2.setAttribute('aria-pressed', String(o2 === b2)); });
+      setTimeout(function () { if (QZ.i < QZ_STEPS.length - 1) { QZ.i++; renderQuiz(); } else quizWait(); }, 260);
+      return;
+    }
+    if (act === 'next') {
+      if (st.k === 'name') QZ.a.name = ($('qz-name').value || '').trim().slice(0, 24);
+      if (QZ.i < QZ_STEPS.length - 1) { QZ.i++; renderQuiz(); } else quizWait();
+    }
+  });
+  $('onb').addEventListener('keydown', function (ev) { if (ev.key === 'Enter' && ev.target.id === 'qz-name') { ev.preventDefault(); var n2 = $('onb').querySelector('[data-qz="next"]'); if (n2) n2.click(); } });
+  // «Твой план» in «Ещё»
+  function renderPlanSum() {
+    var el = $('plan-sum'); if (!el) return;
+    var q = null; try { q = JSON.parse(localStorage.getItem('club150:' + (PROFILE !== 'main' ? PROFILE + ':' : '') + 'quiz')); } catch (er) {}
+    if (!q) { el.textContent = 'Ответь на 4 вопроса — подстрою программу под твою цель, опыт и самочувствие.'; return; }
+    var G = { strength: 'сила в жиме и базе', mass: 'масса и сила', cut: 'рельеф и сушка' }, E = { never: 'только начинаю', back: 'после перерыва', y1: 'до 1 года', y2: '1–2 года', y3: 'больше 2 лет' }, L = { spine: 'Бережём спину', knee: 'Бережём колени', shoulder: 'Бережём плечи' };
+    var lim = (q.lim || []).map(function (x) { return L[x]; }).filter(Boolean);
+    el.innerHTML = (myName() ? '<b>' + esc(myName()) + '</b> · ' : '') + '<span>Цель: ' + (G[q.goal] || '—') + '</span> · <span>Опыт: ' + (E[q.exp] || '—') + '</span>' + lim.map(function (x) { return ' · <span>' + x + '</span>'; }).join('');
+  }
+  setTimeout(renderPlanSum, 0);
+  document.addEventListener('click', function (ev) { if (ev.target.closest('[data-quiz-again]')) openQuiz(); });
   // ---------- first launch ----------
   function openOnb(step) {
     var dots = '<div class="onb-dots" aria-hidden="true">' + [0, 1, 2].map(function (i) { return '<i' + (i === step ? ' class="on"' : '') + '></i>'; }).join('') + '</div>';
     var h;
-    if (step === 0) h = '<div class="onb-hero"><div class="onb-logo">Железный <span>цикл</span></div><h2 id="onb-title">Сила<br><span>по волнам</span></h2><p>13 недель: лёгкие, средние и тяжёлые недели. Потом новый максимум и следующий цикл.</p><ul><li><i class="ph ph-barbell" aria-hidden="true"></i>Точные веса на каждый подход</li><li><i class="ph ph-play-circle" aria-hidden="true"></i>Режим зала: подход, отдых, следующий</li><li><i class="ph ph-chart-line-up" aria-hidden="true"></i>Рекорды и графики роста</li></ul></div><button class="btn primary" type="button" data-onb="1">Начать</button>';
-    else if (step === 1) h = '<div class="onb-hero"><h2 id="onb-title">Твой <span>максимум</span></h2><p>Вес, который ты поднимешь один раз. От него программа считает все подходы.</p>' +
+    if (step === 0) h = '<div class="onb-hero"><div class="onb-logo">Железный <span>цикл</span></div><h2 id="onb-title">Сила<br><span>по волнам</span></h2><p>13 недель: лёгкие, средние и тяжёлые недели. Потом новый максимум и следующий цикл.</p><ul><li><i class="ph ph-barbell" aria-hidden="true"></i>Точные веса на каждый подход</li><li><i class="ph ph-play-circle" aria-hidden="true"></i>Режим зала: подход, отдых, следующий</li><li><i class="ph ph-chart-line-up" aria-hidden="true"></i>Рекорды и графики роста</li></ul></div><button class="btn primary" type="button" data-onb="q">Подобрать программу</button>';
+    else if (step === 1) h = '<div class="onb-hero"><h2 id="onb-title">' + (myName() ? esc(myName()) + ', твой' : 'Твой') + ' <span>максимум</span></h2><p>Вес, который ты поднимешь один раз. От него программа считает все подходы.</p>' +
       '<div class="field"><label for="onb-bench">Жим лёжа, кг</label><input id="onb-bench" type="number" inputmode="numeric" min="20" max="400" placeholder="например 110"></div>' +
       '<details class="onb-calc"><summary>Не знаю свой максимум</summary><p>Введи вес и сколько раз ты его выжимаешь — посчитаю.</p><div class="onb-row"><div class="field"><label for="onb-w">Вес, кг</label><input id="onb-w" type="number" inputmode="numeric" min="20"></div><div class="field"><label for="onb-r">Повторов</label><input id="onb-r" type="number" inputmode="numeric" min="1" max="12"></div></div><p class="onb-est" id="onb-est" aria-live="polite"></p></details>' +
       '<div class="field"><label for="onb-squat">Присед, кг <small>можно потом</small></label><input id="onb-squat" type="number" inputmode="numeric" min="0"></div>' +
@@ -3004,18 +3190,19 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
       '<p class="onb-err" id="onb-err" role="alert"></p></div><button class="btn primary" type="button" data-onb="2">Дальше</button>';
     else h = '<div class="onb-hero"><h2 id="onb-title">Как <span>тренироваться</span></h2><ol><li>Во вкладке <b>Сегодня</b> нажми <b>Начать в зале</b>.</li><li>Делай подход и жми <b>Сделал подход</b> — отдых запустится сам.</li><li>Последний подход жима записывай: так растёт твой максимум.</li></ol></div><button class="btn primary" type="button" data-onb="done">Поехали</button>';
     $('onb').innerHTML = (step === 0 ? '<div class="onb-lang" data-notr role="group" aria-label="Язык">' + langButtons() + '</div>' : '') + dots + h + (step === 0 && iosApp() ? '<button class="onb-skip" type="button" data-move-open style="color:var(--accent)">Уже занимался в Safari? Перенести данные и код</button>' : '') + (step < 2 ? '<button class="onb-skip" type="button" data-onb="skip">Пропустить</button>' : '');
-    $('onb').hidden = false; document.body.classList.add('onb-on');
+    $('onb').hidden = false; $('onb').classList.remove('qzm'); document.body.classList.add('onb-on');
     var f = $('onb').querySelector('input, .btn.primary'); if (f) f.focus();
     if (step === 1) {
       var est = function () { var w2 = parseFloat($('onb-w').value), r2 = parseInt($('onb-r').value, 10); if (w2 > 0 && r2 > 0) { var m = Math.round(oneRM(w2, r2)); $('onb-est').textContent = 'Твой максимум ≈ ' + m + ' кг'; $('onb-bench').value = m; } else $('onb-est').textContent = ''; };
       $('onb-w').addEventListener('input', est); $('onb-r').addEventListener('input', est);
     }
   }
-  function closeOnb() { store.set('onb', 1); $('onb').hidden = true; $('onb').innerHTML = ''; document.body.classList.remove('onb-on'); }
+  function closeOnb() { $('onb').classList.remove('qzm'); store.set('onb', 1); $('onb').hidden = true; $('onb').innerHTML = ''; document.body.classList.remove('onb-on'); }
   $('onb').addEventListener('click', function (ev) {
     var b2 = ev.target.closest('[data-onb]'); if (!b2) return;
     var a = b2.getAttribute('data-onb');
     if (a === 'skip' || a === 'done') return closeOnb();
+    if (a === 'q') return openQuiz();
     if (a === '2') {
       var bv = parseFloat($('onb-bench').value);
       if (!(bv >= 20 && bv <= 400)) { $('onb-err').textContent = 'Введи максимум в жиме от 20 до 400 кг или посчитай его ниже.'; $('onb-bench').focus(); return; }
@@ -3026,7 +3213,11 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
     }
     openOnb(+a);
   });
-  if (isExample && !store.get('onb', 0)) setTimeout(function () { openOnb(0); }, 300);
+  (function () {
+    var resume = null; try { resume = sessionStorage.getItem('c150onb'); sessionStorage.removeItem('c150onb'); } catch (er) {}
+    if (resume) setTimeout(function () { openOnb(+resume); }, 200);
+    else if (isExample && !store.get('onb', 0)) setTimeout(function () { openOnb(0); }, 300);
+  })();
 
   // ---------- theme ----------
   function applyTheme(t) {
