@@ -148,6 +148,7 @@ button { cursor: pointer; -webkit-tap-highlight-color: transparent; }
 .ready { display: grid; gap: 8px; position: relative; }
 .ready > span { font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
 .ready-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.rir-row { align-items: center; margin-top: 6px; } .rir-l { color: var(--muted); font-size: 13px; margin-right: 2px; }
 .chip-btn { border: 1px solid var(--line); background: var(--raised); color: var(--fg); border-radius: 999px; padding: 7px 12px; font-size: 14px; font-weight: 600; }
 .chip-btn.on { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
 .ready-note { margin: 0; font-size: 14px; color: var(--muted); }
@@ -1000,6 +1001,8 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
     <ol class="rules">
       <li><div><b>Подбор по волнам.</b> Лёгкая неделя — 15–20 повторений небольшим весом, техника идеальная. Средняя — тяжелее, 10–12 повторений, техника хорошая. Тяжёлая — 6–8 повторений максимальным для них весом, техника свободнее, но без рывков. Вес приложение считает само от твоего рабочего веса на 10–12: лёгкая ≈ −30%, тяжёлая ≈ +15%. Видео и статьи по периодизации — те же диапазоны.</div></li>
       <li><div><b>Прогрессивная перегрузка.</b> Проценты растут от недели к неделе. В «подборе» записываешь вес — сделал все повторы, и в следующий раз приложение само предложит на шаг больше (гантели +2 кг, штанга и EZ +10 кг).</div></li>
+      <li><div><b>Жим 3 раза в неделю.</b> Как у Шейко: в тренировку 1 — тяжёлый жим, во 2-ю — скоростной, в 3-ю — техника: умеренный вес по 2–3 повтора с паузой на груди. Частота растит силу в жиме быстрее, чем один тяжёлый день.</div></li>
+      <li><div><b>Запас повторов.</b> После подхода со штангой отметь, сколько ещё мог: 0, 1, 2 или 3+. Осталось 3+ при чистой технике — в следующую такую неделю вес больше. Так программа подстраивается под тебя, а не только под таблицу.</div></li>
       <li><div><b>Правильная техника.</b> У базы — подсказка по технике. После подхода отмечаешь «Чисто / Терпимо / Ломалась»; подходы с плохой техникой не идут в расчёт максимума. Ломается техника — вес не прибавляешь.</div></li>
       <li><div><b>Восстановление.</b> Между тренировками минимум день отдыха — приложение подскажет. Пропустил больше недели — продолжаешь с той же тренировки, пропущенное не наверстываешь, веса на первую тренировку −10%.</div></li>
       <li><div><b>Периодизация.</b> Тяжёлые, умеренные и облегчённые недели чередуются: 4-я и 8-я — облегчённые (−10% веса, вдвое меньше подходов), перед проверкой максимума — подводка. Тип недели считается из реальной нагрузки (проценты × повторы × подходы) и написан в её начале вместе со шкалой нагрузки.</div></li>
@@ -1453,6 +1456,31 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
     });
     return to;
   }
+  // Bench 3 times a week, as in Sheiko's plans: heavy on day 1, fast on day 2, technique on day 3.
+  // Day 3: submax 60–75%, 2–3 reps with a 1-second pause on the chest, no failure (Prilepin's zone: 12–20 lifts).
+  // Added only to weeks of this cycle where nothing is written on day 3 yet, so logged workouts keep their exercise list.
+  (function addTechBench() {
+    if (PROG === 'sr') return;
+    var mk = store.get('b3from', null);
+    if (!mk || mk.c !== CYCLE) {
+      var busy = 0;
+      ['done2', 'results2', 'sets2', 'weights2', 'alt2', 'dates2'].forEach(function (key) {
+        Object.keys(store.get(key, {}) || {}).forEach(function (k) { var q = k.split(/[|-]/); if (+q[1] === 2) busy = Math.max(busy, +q[0] || 0); });
+      });
+      mk = { c: CYCLE, w: busy + 1 }; store.set('b3from', mk);
+    }
+    var up = FOCUS === 'strength' ? 3 : 0;
+    WEEKS.forEach(function (wk, wi) {
+      var t = TYPES[wi]; if (wi + 1 < mk.w || t === 'test' || !wk.days[2]) return;
+      var last = wi === WEEKS.length - 2;
+      var sch = last ? [60, 2, 3] : { light: [65, 3, 4], volume: [72, 3, 5], heavy: [75, 3, 5], peak: [75, 2, 3] }[t];
+      if (!sch) return;
+      var e = b('Жим лёжа · техника', P, (sch[0] + (last ? 0 : up)) + 'x' + sch[1] + 'x' + sch[2],
+        'Третий жим недели, по Шейко: вес умеренный, каждый повтор — с паузой 1 секунду на груди, как на соревнованиях. Без отказа: шлифуешь технику.');
+      wk.days[2] = wk.days[2].slice(0, 1).concat([e], wk.days[2].slice(1));
+    });
+    LOADS = WEEKS.map(weekLoad); MAXLOAD = Math.max.apply(null, LOADS.map(function (l) { return l.load; }));
+  })();
   (function applySwaps() {
     if (!swaps.length) return;
     WEEKS.forEach(function (wk, wi) {
@@ -1676,10 +1704,24 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
     var dn = up ? 0 : barDown(e, ctx);
     if (dn && dn * f < kg) kg = Math.max(BAR, loadable(dn * f, true));
     // Never above what the max allows for the low end of the range (Epley): with 10 kg steps the nearest weight can overshoot.
-    if (e.rng) { var lim = mx * f / (1 + e.rng[0] / 30); if (kg > lim) kg = Math.max(BAR, loadable(lim, true)); }
+    // The ceiling follows real strength: if earlier sets of this cycle (counting reps in reserve) show a higher max, use it.
+    // When the athlete has proven to be stronger than the max, round to the nearest weight instead of always down.
+    if (e.rng) { var lm = liveMax(e, ctx), lim = Math.max(mx, lm) * f / (1 + e.rng[0] / 30); if (kg > lim) kg = Math.max(BAR, loadable(lim, !(lm > mx))); }
     // Peak week: nearest weight to the %, but never above what the max allows for these reps.
     if (e.wt === 'peak') { kg = loadable(mx * p[0] / 100 * f); var l2 = mx * f / (1 + p[1] / 30); if (kg > l2) kg = Math.max(BAR, loadable(l2, true)); }
     return kg;
+  }
+  // Best estimated max of this exercise from earlier medium/heavy weeks of the cycle: reps + reps in reserve (up to 3), clean technique only.
+  function liveMax(e, ctx) {
+    if (!results) return 0;
+    var wk = +ctx.split('|')[0], best = 0;
+    Object.keys(results).forEach(function (k2) {
+      var w = +k2.split('|')[0], r = results[k2];
+      if (w >= wk || !r || !r.kg || !r.reps || r.tech === 'bad' || TYPES[w - 1] === 'light') return;
+      var f2; try { f2 = findEx(k2); } catch (er) { return; }
+      if (f2 && f2.e && f2.e.n === e.n) best = Math.max(best, r.kg * (1 + (r.reps + Math.min(3, r.rir || 0)) / 30)); // Epley, same as the ceiling
+    });
+    return best;
   }
   // Two records in a row of the same week type below the low end of the range → this week one step lighter than the last one.
   function barDown(e, ctx) {
@@ -1707,7 +1749,7 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
       var f; try { f = findEx(k2); } catch (er) { return; }
       if (f && f.e && f.e.n === e.n) { best = r; bestW = w; }
     });
-    return best && best.reps >= e.rng[1] ? best.kg + barStep() : 0;
+    return best && (best.reps >= e.rng[1] || (best.rir >= 3 && best.reps >= e.rng[0] && best.tech !== 'bad')) ? best.kg + barStep() : 0;
   }
 
   // ---------- muscles ----------
@@ -2026,11 +2068,36 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
     if (reps > 12) return Math.round(kg * (1 + reps / 30));
     return oneRM(kg, reps);
   }
+  // Heaviest planned set of this exercise in the next week of the same type (same workout of the week).
+  function nextSameKg(e, ctx) {
+    var c = ctx.split('|'), wk = +c[0], di = +c[1], t = TYPES[wk - 1];
+    for (var w2 = wk + 1; w2 <= NW; w2++) {
+      if (TYPES[w2 - 1] !== t || !WEEKS[w2 - 1].days[di]) continue;
+      var list = items(WEEKS[w2 - 1].days[di]);
+      for (var i = 0; i < list.length; i++) {
+        var it = list[i].t === 'or' ? list[i].a : list[i];
+        if (it.n !== e.n || !it.s) continue;
+        var best = 0; parseSets(it.s).forEach(function (p, si) { var kg = setKg(it, w2 + '|' + di + '|' + i + '|a', si, p); if (kg > best) best = kg; });
+        return { w: w2, kg: best };
+      }
+      return null;
+    }
+    return null;
+  }
   function logOut(e, r, ctx) {
     if (!r || !r.reps) return '';
     var wn = ctx ? waveFor(e, +ctx.split('|')[0]) : null;
     if (!wn && e.t === 'b' && e.rng) {
       var rb = e.rng, o1 = r.kg ? '≈ 1ПМ <b>' + e1rm(r.kg, r.reps) + ' кг</b> · ' : '';
+      var lt = ctx && TYPES[+ctx.split('|')[0] - 1] === 'light';
+      var easy = r.reps < rb[1] && r.rir >= 3 && r.reps >= rb[0] && r.tech !== 'bad';
+      if (!lt && (easy || r.reps >= rb[1])) {
+        // Say what the next week of this type will really give, not a promise the plates can't keep.
+        var nx = nextSameKg(e, ctx), head2 = easy ? 'легко: 3+ в запасе' : rb[1] + '+';
+        if (nx && nx.kg > r.kg) return o1 + '<span class="up">' + head2 + ' — на неделе ' + nx.w + ' будет ' + nx.kg + ' кг</span>';
+        if (barStep() >= 10) return o1 + '<span class="up">сделал всё ✓ — для прибавки нужен шаг меньше: добавь блины 2,5 кг в «Блинах в зале»</span>';
+        return o1 + '<span class="up">сделал всё ✓</span>';
+      }
       return o1 + (r.reps >= rb[1] ? '<span class="up">' + rb[1] + '+ — в следующую такую неделю +' + barStep() + ' кг</span>' : r.reps < rb[0] ? '<span class="down">ниже ' + rb[0] + ' — вес великоват</span>' : '<span class="up">в диапазоне ' + rb.join('–') + '</span>');
     }
     if (wn) { var rg = WAVE[wn].r; return r.reps > rg[1] ? '<span class="up">выше диапазона — в следующий раз вес больше</span>' : r.reps < rg[0] ? '<span class="down">ниже ' + rg[0] + ' — вес великоват</span>' : '<span class="up">в диапазоне ' + rg.join('–') + '</span>'; }
@@ -2052,6 +2119,7 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
     }
     h += '<input type="number" inputmode="numeric" min="0" max="99" placeholder="повт" aria-label="Повторения" data-f="reps" value="' + (r.reps || '') + '">';
     if (e.t === 'b') h += '<div class="ready-row" role="group" aria-label="Техника">' + [['good', 'Чисто'], ['ok', 'Терпимо'], ['bad', 'Ломалась']].map(function (o) { return '<button type="button" class="chip-btn' + (r.tech === o[0] ? ' on' : '') + '" data-tech="' + o[0] + '">' + o[1] + '</button>'; }).join('') + '</div>';
+    if (e.t === 'b' && e.rng) h += '<div class="ready-row rir-row" role="group" aria-label="Повторов в запасе"><span class="rir-l">В запасе:</span>' + [['0', '0 — отказ'], ['1', '1'], ['2', '2'], ['3', '3+']].map(function (o) { return '<button type="button" class="chip-btn' + (String(r.rir) === o[0] ? ' on' : '') + '" data-rir="' + o[0] + '" aria-pressed="' + (String(r.rir) === o[0]) + '">' + o[1] + '</button>'; }).join('') + '</div>';
     h += '<span class="out">' + logOut(e, r, ctx) + '</span><button type="button" class="chart-btn" data-chart="' + esc(e.n) + '"><i class="ph ph-chart-line-up" aria-hidden="true"></i>График</button></div>';
     return h;
   }
@@ -2423,6 +2491,14 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
   }
   $('week').addEventListener('input', function (ev) { var box = ev.target.closest('[data-log]'); if (box) saveLog(box); });
   $('week').addEventListener('click', function (ev) {
+    var rb = ev.target.closest('[data-rir]');
+    if (rb) {
+      var bx = rb.closest('[data-log]'), cx = bx.getAttribute('data-log'), rr = results[cx] || {};
+      rr.rir = +rb.getAttribute('data-rir'); results[cx] = rr; store.set('results2', results);
+      bx.querySelectorAll('[data-rir]').forEach(function (b2) { b2.classList.toggle('on', b2 === rb); b2.setAttribute('aria-pressed', String(b2 === rb)); });
+      var oe = bx.querySelector('.out'); if (oe) { var fe = findEx(cx).e; oe.innerHTML = logOut(fe, rr, cx); }
+      return;
+    }
     var tb = ev.target.closest('[data-tech]'); if (!tb) return;
     var box = tb.closest('[data-log]'), ctx = box.getAttribute('data-log'), r = results[ctx] || {};
     r.tech = tb.getAttribute('data-tech'); results[ctx] = r; store.set('results2', results);
@@ -2669,6 +2745,7 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
         (e.t === 'k' ? stepper('g-lk', gym.lk, stepOf(e.n), pairDb(e.n) ? 'Две гантели вместе' : 'Вес', 'кг') : '<div class="gym-reps">' + gym.lk + ' кг · по плану ' + plan + ' повт.</div>') +
         stepper('g-lr', gym.lr, 1, 'Повторы', 'повт.') +
         (e.t === 'b' ? '<div class="ready-row gym-tech" role="group" aria-label="Техника">' + [['good', 'Чисто'], ['ok', 'Терпимо'], ['bad', 'Ломалась']].map(function (o) { return '<button type="button" class="chip-btn' + (gym.lt === o[0] ? ' on' : '') + '" data-gx="tech" data-v="' + o[0] + '" aria-pressed="' + (gym.lt === o[0]) + '">' + o[1] + '</button>'; }).join('') + '</div>' : '') +
+        (e.t === 'b' && e.rng ? '<div class="ready-row rir-row gym-tech" role="group" aria-label="Повторов в запасе"><span class="rir-l">В запасе:</span>' + [['0', '0 — отказ'], ['1', '1'], ['2', '2'], ['3', '3+']].map(function (o) { return '<button type="button" class="chip-btn' + (String(gym.lrir) === o[0] ? ' on' : '') + '" data-gx="rir" data-v="' + o[0] + '" aria-pressed="' + (String(gym.lrir) === o[0]) + '">' + o[1] + '</button>'; }).join('') + '</div>' : '') +
         (e.t === 'b' && gym.lk ? '<div class="gym-side">Расчётный максимум ≈ <b>' + e1rm(gym.lk, gym.lr) + ' кг</b></div>' : '');
       act = '<button class="btn primary gym-go" type="button" data-gx="save">Записать</button><button class="btn" type="button" data-gx="nolog">Не записывать</button>';
       h = top + '<div class="gym-body">' + head + mid + '</div>' + rest + '<div class="gym-actions">' + act + '</div>';
@@ -2708,14 +2785,14 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
     $('gym').innerHTML = h; paintGymRest();
   }
   function gymNext() {
-    gym.log = false; gym.lr = gym.lk = gym.lt = null;
+    gym.log = false; gym.lr = gym.lk = gym.lt = gym.lrir = null;
     var steps = gymSteps(gym.wk, gym.di);
     for (var i = gym.idx + 1; i < steps.length; i++) if (!stepDone(steps[i])) { gym.idx = i; return renderGym(); }
     if (steps.every(stepDone)) return renderGym();
     if (gym.idx < steps.length - 1) { gym.idx++; return renderGym(); }
     gym.finished = true; renderGym();
   }
-  function afterStep(st) { if (st.log && !loggedToday(st.ctx)) { gym.log = true; gym.lr = gym.lk = gym.lt = null; renderGym(); } else gymNext(); }
+  function afterStep(st) { if (st.log && !loggedToday(st.ctx)) { gym.log = true; gym.lr = gym.lk = gym.lt = gym.lrir = null; renderGym(); } else gymNext(); }
   function tickEx(kk) { var box = document.getElementById('c' + kk); if (box && !box.checked) { box.checked = true; box.dispatchEvent(new Event('change', { bubbles: true })); } }
   document.addEventListener('click', function (ev) {
     var g = ev.target.closest('[data-gym]'); if (g) { ev.preventDefault(); openGym(g.getAttribute('data-gym')); }
@@ -2741,9 +2818,11 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
       renderGym(); var again = $('gym').querySelector('[data-gx="' + a + '"][data-f="' + f + '"]'); if (again) again.focus(); return;
     }
     if (a === 'tech') { gym.lt = b2.getAttribute('data-v'); renderGym(); return; }
+    if (a === 'rir') { gym.lrir = +b2.getAttribute('data-v'); renderGym(); return; }
     if (a === 'save') {
       var e = st.e, r = { reps: gym.lr, kg: e.t === 'b' ? setKg(e, st.ctx, logIdx(e), lastPart(e)) : gym.lk, date: dayISO(new Date()) };
       if (e.t === 'b' && gym.lt) r.tech = gym.lt;
+      if (e.t === 'b' && gym.lrir != null) r.rir = gym.lrir;
       if (r.reps || r.kg) results[st.ctx] = r;
       store.set('results2', results);
       var before = prBest; laterRender(renderProgress); renderWeek();
@@ -2752,7 +2831,7 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
       return gymNext();
     }
     if (a === 'nolog') { tickEx(st.kk); return gymNext(); }
-    if (a === 'ex') { if (st.log && !loggedToday(st.ctx) && !stepDone(st)) { gym.log = true; gym.lr = gym.lk = gym.lt = null; return renderGym(); } if (!stepDone(st)) tickEx(st.kk); return gymNext(); }
+    if (a === 'ex') { if (st.log && !loggedToday(st.ctx) && !stepDone(st)) { gym.log = true; gym.lr = gym.lk = gym.lt = gym.lrir = null; return renderGym(); } if (!stepDone(st)) tickEx(st.kk); return gymNext(); }
     if (a === 'warm') { gym.warm[b2.getAttribute('data-ref')] = 1; startTimer(60); try { navigator.vibrate && navigator.vibrate(10); } catch (er) {} return renderGym(); }
     if (a === 'nowarm') { st.warm.forEach(function (w) { gym.warm[w.ref] = 1; }); return renderGym(); }
     if (a === 'undo') {
