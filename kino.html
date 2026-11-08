@@ -197,6 +197,18 @@ input[type=range]::-moz-range-thumb { width: 22px; height: 22px; border-radius: 
 .chip span { display: block; color: var(--muted); font-size: 14px; margin-top: 2px; }
 @media (min-width: 700px) { .chips { grid-template-columns: 1fr 1fr; } }
 @media (min-width: 1000px) { .chips { grid-template-columns: repeat(3, 1fr); } }
+.review { display: grid; gap: 14px; margin-top: 18px; }
+.pros { border: 1px solid var(--line); border-top: 4px solid #59c27a; border-radius: 16px; background: var(--bg-2); padding: 18px 18px 14px; }
+.pros h3 { margin: 0 0 10px; font: 600 22px/1.1 var(--display); text-transform: uppercase; letter-spacing: .02em; }
+.pros ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; }
+.pros li { display: grid; grid-template-columns: 22px 1fr; gap: 10px; align-items: start; font-size: 15px; line-height: 1.4; }
+.pros li svg { width: 20px; height: 20px; color: #59c27a; margin-top: 1px; }
+.specs { margin: 0; border: 1px solid var(--line); border-radius: 16px; background: var(--bg-2); overflow: hidden; }
+.specs div { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 12px; padding: 13px 18px; border-top: 1px solid var(--line); }
+.specs div:first-child { border-top: 0; }
+.specs dt { color: var(--muted); font-size: 14px; }
+.specs dd { margin: 0; font-size: 14px; font-weight: 600; }
+@media (min-width: 900px) { .review { grid-template-columns: 1fr 1fr; align-items: start; } }
 
 /* Offer */
 .offer { margin-top: 34px; display: grid; gap: 14px; }
@@ -353,6 +365,10 @@ footer a { color: var(--muted); }
         <div class="chip fade"><span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19l5-6 4 3 7-9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><b>Рекорды и застой</b><span>Видно рост, а если упёрся — подсказка, что делать</span></div></div>
         <div class="chip fade"><span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3c3 3.5 5 6.5 5 9.5a5 5 0 0 1-10 0C7 9.5 9 6.5 12 3z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg></span><div><b>Калькулятор питания</b><span>Калории, белки, жиры и углеводы под сушку, набор или поддержание</span></div></div>
         <div class="chip fade"><span class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 10h8M8 14h5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span><div><b>Две программы</b><span>«Железный цикл» и «Сила и рельеф» 5/3/1 · RU · UA · EN</span></div></div>
+      </div>
+      <div class="review">
+        <div class="pros fade"><h3>Плюсы</h3><ul><li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Точный вес на каждый подход — от твоего максимума</span></li><li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Самочувствие учитывается: устал — веса ниже</span></li><li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Цель, рекорды и графики роста</span></li><li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Значки за тренировки и рекорды</span></li><li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Питание под сушку, набор или поддержание</span></li><li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Работает без интернета</span></li><li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg><span>На русском, украинском и английском</span></li></ul></div>
+        <dl class="specs fade"><div><dt>Платформа</dt><dd>Android и iPhone — через браузер, без магазина</dd></div><div><dt>Цель</dt><dd>Есть</dd></div><div><dt>Отслеживание прогресса</dt><dd>Есть</dd></div><div><dt>Мотивация</dt><dd>Значки, рекорды, серия недель</dd></div><div><dt>Самочувствие и питание</dt><dd>Есть</dd></div><div><dt>Без интернета</dt><dd>Есть</dd></div><div><dt>Цена</dt><dd>2 недели бесплатно, дальше — у тренера</dd></div></dl>
       </div>
     </div>
   </section>

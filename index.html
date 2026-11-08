@@ -649,9 +649,33 @@ body.gym-on .timer, body.gym-on .tabbar, body.onb-on .tabbar { display: none !im
 .gym-rest .gr-l { font: 600 12px var(--body); text-transform: uppercase; letter-spacing: .1em; color: var(--muted); }
 .gym-rest .gr-t { font: 800 30px var(--mono); min-width: 92px; text-align: center; }
 .gym-rest button { min-width: 44px; min-height: 44px; border: 0; border-radius: 999px; background: var(--raised); color: var(--fg); font-weight: 700; }
-@media (max-width: 380px) { .gym-rest { gap: 4px; padding-left: 10px; max-width: 100%; } .gym-rest .gr-l { display: none; } .gym-rest .gr-t { min-width: 80px; font-size: 26px; } }
+.gym-rest { max-width: 100%; }
+@media (max-width: 440px) { .gym-rest { gap: 4px; padding-left: 10px; } .gym-rest .gr-l { display: none; } .gym-rest .gr-t { min-width: 80px; font-size: 26px; } }
 .gym-rest.go { background: var(--accent); border-color: var(--accent); } .gym-rest.go .gr-t, .gym-rest.go .gr-l { color: var(--on-accent); }
 .gym-actions { display: grid; gap: 8px; }
+.gym-setrow { display: flex; align-items: center; justify-content: center; gap: 12px; }
+.gym-setrow .gym-reps small { display: block; font-size: 13px; }
+.set-ring { position: relative; width: 52px; height: 52px; flex: none; }
+.set-ring svg { width: 52px; height: 52px; transform: rotate(-90deg); overflow: visible; }
+.set-ring circle { fill: none; stroke: var(--line); stroke-width: 5; stroke-linecap: round; }
+.set-ring circle.ok { stroke: var(--accent); }
+.set-ring circle.cur { stroke: var(--fg); opacity: .55; }
+.set-ring circle.fresh { animation: segIn .45s var(--ease-out, ease-out) both; }
+@keyframes segIn { from { stroke: var(--line); } to { stroke: var(--accent); } }
+.set-ring b { position: absolute; inset: 0; display: grid; place-items: center; font: 800 18px/1 var(--mono); color: var(--fg); }
+.set-ring b small { font-size: 11px; color: var(--muted); font-weight: 700; margin-left: 1px; }
+.set-ring b { grid-auto-flow: column; place-content: center; align-items: baseline; }
+.wstrip { margin: 0 0 12px; }
+.wstrip-h { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; font: 600 12px var(--display); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+.wstrip-h b { color: var(--accent); font-family: var(--mono); letter-spacing: 0; font-size: 13px; }
+.wstrip ol { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+.wstrip li { display: grid; justify-items: center; gap: 4px; font: 600 11px var(--body); color: var(--muted); }
+.wstrip li i { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; font: 700 13px var(--mono); font-style: normal; color: var(--fg); background: var(--surface); border: 1px solid var(--line); }
+.wstrip li.later i { opacity: .55; }
+.wstrip li.got i { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.wstrip li.got i svg { width: 18px; height: 18px; }
+.wstrip li.now span { color: var(--fg); }
+.wstrip li.now i { box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent); }
 .gym-actions .btn { min-height: 52px; font-size: 16px; text-align: center; text-decoration: none; display: grid; place-items: center; }
 .gym-go { min-height: 64px !important; font-family: var(--display); font-size: 22px !important; letter-spacing: .06em; text-transform: uppercase; }
 .gym-nav { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
@@ -1970,12 +1994,24 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
   function slogan(wk) { var i = wk - 1; if (PROG === 'sr' && i === 11) i = 12; return SLOGANS[i] || SLOGANS[0]; }
   // Poster headline: last word in gold on its own line.
   function twoTone(t) { var w = t.split(' '), last = w.pop(); return esc(w.join(' ')) + ' <span class="gold">' + esc(last) + '</span>'; }
+  // Mon–Sun of this calendar week: a gold tick on days with a workout, today ringed.
+  function weekStripHtml() {
+    var now = new Date(), dow = (now.getDay() + 6) % 7, mon = new Date(now.getFullYear(), now.getMonth(), now.getDate() - dow), done = {}, n = 0;
+    Object.keys(dates).forEach(function (k) { done[dates[k]] = (done[dates[k]] || 0) + 1; });
+    var NAMES = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'], cells = '';
+    for (var i = 0; i < 7; i++) {
+      var d = new Date(mon.getFullYear(), mon.getMonth(), mon.getDate() + i), iso = dayISO(d), got = !!done[iso];
+      if (got) n++;
+      cells += '<li class="' + (got ? 'got' : '') + (i === dow ? ' now' : '') + (i > dow ? ' later' : '') + '"><span>' + NAMES[i] + '</span><i>' + (got ? '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 12.5l4 4 8-9" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>' : d.getDate()) + '</i></li>';
+    }
+    return '<div class="wstrip" role="img" aria-label="На этой неделе тренировок: ' + n + ' из 3"><div class="wstrip-h"><span>Эта неделя</span><b>' + n + ' из 3</b></div><ol>' + cells + '</ol></div>';
+  }
   function renderToday() {
     if (locked(current)) { $('today').innerHTML = '<div class="today-head"><div class="rule-title">Неделя ' + current + ' из ' + NW + '</div><h1>Полная <span class="gold">версия</span></h1></div>' + paywallHtml(current); return; }
     var wk = current, ws = weekStats(wk), q = QUOTES[wk - 1];
     var di = nextDay(wk), last = lastDone(), ago = last ? daysSince(last) : null;
     var own = store.get('photo', null), ch = CHAMPS[WEEK_CHAMP[wk - 1]];
-    var h = '<div class="today-card" data-week="' + wk + '"><div class="photo" style="background-image:url(\'' + (own || ch.img) + '\');background-position:' + (own ? 'center' : ch.pos || 'center 22%') + '"></div>';
+    var h = weekStripHtml() + '<div class="today-card" data-week="' + wk + '"><div class="photo" style="background-image:url(\'' + (own || ch.img) + '\');background-position:' + (own ? 'center' : ch.pos || 'center 22%') + '"></div>';
     if (!own) h += '<div class="champ">' + esc(ch.n) + ' · ' + esc(ch.t.split(' · ')[0]) + '</div>';
     h += '<div class="today-head"><div class="rule-title">' + (PROG === 'sr' ? 'Сила и рельеф · ' : '') + 'Неделя ' + wk + ' из ' + NW + '</div><div class="week-type ' + TYPES[wk - 1] + '" style="justify-self:start;margin-top:6px"><b>' + TYPE_INFO[TYPES[wk - 1]][0] + '</b></div>';
     if (di < 0) {
@@ -2834,6 +2870,17 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
     return '<div class="gym-step"><span class="gs-l" id="' + id + '-l">' + label + '</span><div class="gs-row"><button type="button" class="gs-b" data-gx="dec" data-f="' + id + '" data-step="' + step + '" aria-label="Меньше">−</button>' +
       '<output class="gs-v" id="' + id + '" aria-labelledby="' + id + '-l">' + fmtN(val) + '</output><span class="gs-u">' + unit + '</span><button type="button" class="gs-b" data-gx="inc" data-f="' + id + '" data-step="' + step + '" aria-label="Больше">+</button></div></div>';
   }
+  // Sets as ring segments: done ones gold, the current one outlined (like a rep counter in Fitify).
+  var lastRing = '';
+  function setRing(k, total) {
+    var r = 21, C = 2 * Math.PI * r, gap = total > 1 ? 4 : 0, seg = C / total - gap, key = gym ? gym.wk + '|' + gym.di + '|' + gym.idx : '', svg = '';
+    for (var i = 0; i < total; i++) {
+      var cls = i < k - 1 ? 'ok' : i === k - 1 ? 'cur' : '', fresh = i === k - 2 && lastRing === key + '|' + (k - 1);
+      svg += '<circle class="' + cls + (fresh ? ' fresh' : '') + '" cx="26" cy="26" r="' + r + '" stroke-dasharray="' + seg.toFixed(2) + ' ' + (C - seg).toFixed(2) + '" stroke-dashoffset="' + (-(C / total) * i).toFixed(2) + '" style="--seg:' + seg.toFixed(2) + '"/>';
+    }
+    lastRing = key + '|' + k;
+    return '<span class="set-ring" role="img" aria-label="Подход ' + k + ' из ' + total + '"><svg viewBox="0 0 52 52" aria-hidden="true">' + svg + '</svg><b>' + k + '<small>/' + total + '</small></b></span>';
+  }
   function renderGym() {
     if (!gym) return;
     var steps = gymSteps(gym.wk, gym.di), n = steps.length, all = steps.every(stepDone);
@@ -2885,7 +2932,7 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
       mid = (isWarm ? '<span class="gym-tag warm">Разминка ' + (line + 1) + ' из ' + st.warm.length + '</span>' : '') +
         '<div class="gym-kg"><b>' + (cur.kg ? fmtN(cur.kg) : 'на выбор') + '</b>' + (cur.kg ? '<small>кг</small>' : '') + '</div>' +
         (!isWarm && cur.kg && pairDb(e.n) ? '<div class="gym-reps">' + dbNote(e.n, cur.kg) + '</div>' : '') +
-        '<div class="gym-reps">× ' + cur.reps + ' повт.' + (isWarm ? '' : ' · подход <b>' + kn + '</b> из ' + cur.total + (st.sets.length > 1 ? ' · строка ' + (line + 1) + '/' + st.sets.length : '')) + '</div>' +
+        (isWarm ? '<div class="gym-reps">× ' + cur.reps + ' повт.</div>' : '<div class="gym-setrow">' + setRing(kn, cur.total) + '<div class="gym-reps">× ' + cur.reps + ' повт.' + (st.sets.length > 1 ? '<small>строка ' + (line + 1) + '/' + st.sets.length + '</small>' : '') + '</div></div>') +
         (cur.bar ? '<div class="gym-bb">' + barbellHtml(cur.kg) + '</div><div class="gym-side">' + (cur.kg === BAR ? 'Пустой гриф' : 'На сторону: <b>' + platesText(cur.kg) + '</b> · гриф 20 кг') + '</div>' : cur.wave ? '<div class="gym-side">' + esc(cur.wave) + '</div>' : '') +
         (isWarm && line === 0 ? '<div class="gym-side">Перед этим — 5 минут суставной разминки: плечи, локти, кисти.</div>' : '') +
         (!isWarm && st.main && TYPES[gym.wk - 1] === 'test' ? '<div class="gym-side gym-tip">Проверка: не больше 3 тяжёлых попыток, без отказа. Техника поплыла — стоп. Только со страхующим.</div>' : !isWarm && st.main && TYPES[gym.wk - 1] === 'heavy' ? '<div class="gym-side gym-tip">Тяжёлая неделя — работай со страхующим.</div>' : '') +
