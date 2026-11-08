@@ -47,7 +47,7 @@ a { color: inherit; }
 h1, h2, h3 { margin: 0; font-weight: 400; }
 h2 { font: 400 clamp(42px, 11.5vw, 84px)/.92 var(--poster); text-transform: uppercase; }
 .lead { color: var(--muted); font-size: 17px; max-width: 32em; margin: 16px 0 0; }
-section { padding: 80px 0; position: relative; }
+section { padding: 64px 0; position: relative; }
 @media (min-width: 900px) { section { padding: 120px 0; } }
 
 .btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 56px; padding: 0 28px; border-radius: 14px; font: 700 16px/1 var(--display); letter-spacing: .14em; text-transform: uppercase; text-decoration: none; border: 1px solid transparent; transition: transform .15s ease, background .15s ease, box-shadow .2s ease; touch-action: manipulation; }
@@ -203,13 +203,15 @@ input[type=range]::-moz-range-thumb { width: 22px; height: 22px; border-radius: 
 .ticket .tag { font: 600 12px var(--display); letter-spacing: .22em; text-transform: uppercase; color: var(--dim); }
 .ticket.free .tag { color: var(--gold); }
 .ticket .cost { font: 400 clamp(44px, 12vw, 64px)/.95 var(--poster); text-transform: uppercase; margin: 12px 0 4px; }
-.ticket.full .cost { font-size: clamp(30px, 8vw, 40px); }
+.ticket.full .cost { font-size: clamp(30px, 8vw, 40px); line-height: 1.08; }
 .ticket ul { margin: 14px 0 0; padding: 0; list-style: none; display: grid; gap: 8px; color: #e0d9ca; font-size: 15px; }
 .ticket li::before { content: "—"; color: var(--gold); margin-right: 8px; }
 .ticket .btn { width: 100%; margin-top: 22px; }
 .ticket .small { margin: 12px 0 0; color: var(--muted); font-size: 13px; }
 .ticket .small a { color: var(--gold); }
 @media (min-width: 760px) { .offer { grid-template-columns: 1.1fr 1fr; } }
+#price { padding-bottom: 16px; } #faq { padding-top: 40px; }
+@media (min-width: 900px) { #price { padding-bottom: 40px; } #faq { padding-top: 80px; } }
 
 /* FAQ */
 .faq { margin-top: 30px; border-top: 1px solid var(--line); }
@@ -452,7 +454,7 @@ footer a { color: var(--muted); }
   var els = document.querySelectorAll('.fade');
   if (reduce || !('IntersectionObserver' in window)) els.forEach(function (e) { e.classList.add('in'); });
   else {
-    var io = new IntersectionObserver(function (es) { es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }); }, { rootMargin: '0px 0px -8% 0px' });
+    var io = new IntersectionObserver(function (es) { es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }); }, { rootMargin: '0px 0px 40px 0px' });
     els.forEach(function (e) { io.observe(e); });
   }
   var dock = document.getElementById('dock'), hero = document.getElementById('top'), fin = document.getElementById('start');
