@@ -856,6 +856,14 @@ body[data-tab="stats"] .tab-title.t-stats, body[data-tab="club"] .tab-title.t-cl
 .cyc-list { display: grid; gap: 6px; font-size: 14px; }
 .cyc-list div { display: flex; justify-content: space-between; gap: 10px; border-bottom: 1px dashed var(--line); padding-bottom: 6px; }
 .cyc-list span { font-family: var(--mono); }
+.cyc-list .cyc-best { display: block; border: 0; margin-top: -4px; font-size: 13px; color: var(--muted); }
+.resp-list { display: grid; gap: 0; margin-top: 8px; }
+.resp-list div { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 10px; padding: 8px 0; border-bottom: 1px dashed var(--line); font-size: 14px; }
+.resp-list b { font-weight: 600; }
+.resp-list span { font: 700 15px var(--mono); text-align: right; }
+.resp-list em { grid-column: 1 / -1; font-style: normal; font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.resp-list .good span, .resp-list .good em { color: var(--good); }
+.resp-list .low span { color: #ff8a65; }
 .cyc-list .up { color: var(--good); }
 .sum-cmp { font-family: var(--mono); font-size: 14px; text-align: center; margin: 0; }
 .sum-cmp.up { color: var(--good); } .sum-cmp.down { color: #ff8a65; }
@@ -3762,6 +3770,25 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
     return { old: old, best: best, nv: Math.round(best > old ? Math.min(best, old + cap) : old) };
   }
   function weeksDoneN() { var n = 0; for (var i = 1; i <= NW; i++) if (weekDone(i)) n++; return n; }
+  // How the body responds to each exercise: growth of the estimated max from the first to the last logged week.
+  function responses() {
+    var out = [];
+    exNames().forEach(function (n) {
+      var S = exSeries(n), pts = S.pts; if (!S.kg || pts.length < 2) return;
+      var a = pts[0], b = pts[pts.length - 1]; if (b.w - a.w < 2 || !a.v) return;
+      out.push({ n: n, pct: Math.round((b.v - a.v) / a.v * 100), weeks: b.w - a.w });
+    });
+    return out.sort(function (x, y) { return y.pct - x.pct; });
+  }
+  function respHtml() {
+    var rs = responses(), h = '<div class="card" style="margin-top:12px"><h3><i class="ph ph-crosshair" aria-hidden="true"></i>Отклик на упражнения</h3>';
+    if (rs.length < 2) return h + '<p class="hint">Появится после 3 недель записей: покажу, в каких упражнениях сила растёт лучше всего — их стоит оставить в следующем цикле.</p></div>';
+    h += '<div class="resp-list">' + rs.map(function (r) {
+      var c = r.pct >= 5 ? 'good' : r.pct > 0 ? 'mid' : 'low';
+      return '<div class="' + c + '"><b>' + esc(r.n) + '</b><span>' + (r.pct > 0 ? '+' : '') + r.pct + '%</span><em>' + (c === 'good' ? 'хороший отклик' : c === 'mid' ? 'средний' : 'слабый') + '</em></div>';
+    }).join('') + '</div>';
+    return h + '<p class="hint">Рост расчётного максимума (1ПМ) с первой записанной недели. <b>Хороший отклик</b> — эти упражнения тебе подходят: оставь их в следующем цикле, можно поменять порядок или добавить суперсет. <b>Слабый</b> — попробуй замену («Заменить упражнение» под ним) или другой диапазон повторов.</p></div>';
+  }
   function renderCycle() {
     var wd = weeksDoneN();
     var h = '<h2>Цикл ' + CYCLE + '</h2><div class="card"><h3><i class="ph ph-arrows-clockwise" aria-hidden="true"></i>Новый цикл</h3>';
@@ -3770,7 +3797,8 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
     h += '<p class="hint">Новый максимум считается по лучшему подходу из твоих записей, но не больше +5 кг в жиме и +10 кг в приседе и становой за цикл — так рост идёт без срывов.</p>';
     if (PROG !== 'sr') h += '<p class="hint">Направление этого цикла:</p>' + focusChips('data-focus-now', FOCUS) + '<p class="hint">«Объём» — больше повторов, мышцы и выносливость. «Сила» — меньше повторов, больше вес: хорошо после цикла на объём.</p>';
     h += '<button class="btn primary" type="button" data-cycle>Начать цикл ' + (CYCLE + 1) + '</button></div>';
-    if (cycles.length) h += '<div class="card" style="margin-top:12px"><h3><i class="ph ph-ranking" aria-hidden="true"></i>Прошлые циклы</h3><div class="cyc-list">' + cycles.map(function (c) { return '<div><b>Цикл ' + c.c + ' · ' + fmtDate(c.end) + '</b><span>жим ' + c.from.bench + ' → <b class="' + (c.to.bench > c.from.bench ? 'up' : '') + '">' + c.to.bench + '</b></span></div>'; }).join('') + '</div></div>';
+    h += respHtml();
+    if (cycles.length) h += '<div class="card" style="margin-top:12px"><h3><i class="ph ph-ranking" aria-hidden="true"></i>Прошлые циклы</h3><div class="cyc-list">' + cycles.map(function (c) { return '<div><b>Цикл ' + c.c + ' · ' + fmtDate(c.end) + '</b><span>жим ' + c.from.bench + ' → <b class="' + (c.to.bench > c.from.bench ? 'up' : '') + '">' + c.to.bench + '</b></span></div>' + (c.best && c.best.length ? '<div class="cyc-best">Хороший отклик: ' + c.best.map(esc).join(', ') + '</div>' : ''); }).join('') + '</div></div>';
     $('cycle').innerHTML = h;
   }
   $('cycle').addEventListener('click', function (ev) {
@@ -3792,7 +3820,8 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
       var r = results[ctx];
       if (f.e && r && r.reps) hist.push({ c: CYCLE, w: +ctx.split('|')[0], n: f.e.n, kg: r.kg || 0, reps: r.reps, tech: r.tech || '', date: r.date || '' });
     });
-    cycles.push({ c: CYCLE, end: dayISO(new Date()), from: from, to: to });
+    var best = responses().filter(function (r) { return r.pct >= 5; }).slice(0, 6).map(function (r) { return r.n; });
+    cycles.push({ c: CYCLE, end: dayISO(new Date()), from: from, to: to, best: best });
     store.set('hist', hist); store.set('cycles', cycles);
     Object.keys(to).forEach(function (k4) { maxes[k4] = to[k4]; }); store.set('maxes', maxes);
     store.set('cycle', CYCLE + 1);
