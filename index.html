@@ -148,6 +148,8 @@ button { cursor: pointer; -webkit-tap-highlight-color: transparent; }
 .ready { display: grid; gap: 8px; position: relative; }
 .ready > span { font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
 .ready-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.vol .meter { position: relative; } .vol .meter .zone { position: absolute; top: -2px; bottom: -2px; border: 1px dashed var(--accent); border-radius: 4px; background: color-mix(in srgb, var(--accent) 12%, transparent); pointer-events: none; text-decoration: none; }
+.vol .meter i { position: relative; } .vol-lo, .vol-hi { font: 600 11px var(--body); color: var(--muted); }
 .rir-row { align-items: center; margin-top: 6px; } .rir-l { color: var(--muted); font-size: 13px; margin-right: 2px; }
 .chip-btn { border: 1px solid var(--line); background: var(--raised); color: var(--fg); border-radius: 999px; padding: 7px 12px; font-size: 14px; font-weight: 600; }
 .chip-btn.on { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
@@ -328,6 +330,7 @@ button { cursor: pointer; -webkit-tap-highlight-color: transparent; }
 .vol .meter i { display: block; height: 100%; background: var(--fg); opacity: .7; }
 .vol.focus .meter i { background: var(--accent); opacity: 1; }
 .vol-note { font-size: 13px; color: var(--muted); margin: -6px 0 0; }
+.vol .meter { height: 8px; overflow: visible; border-radius: 4px; } .vol .meter i { border-radius: 4px; }
 
 .day { background: var(--surface); border: 1px solid var(--line); border-radius: 20px; overflow: hidden; scroll-margin-top: 130px; }
 .day.is-today { border-color: color-mix(in srgb, var(--accent) 60%, var(--line)); }
@@ -2431,11 +2434,14 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
   function volumeHtml(wk) {
     var sum = {}, max = 0;
     WEEKS[wk - 1].days.forEach(function (day) { items(day).map(head).forEach(function (e) { var m = muscle(e.n); if (m) sum[m] = (sum[m] || 0) + setCount(e); }); });
+    // Target zone per muscle and week (meta-analyses on volume; bodycoach / fitness-pro summaries): 10–20 sets for growth, 8–12 in a strength block.
+    var zone = PROG !== 'sr' && FOCUS === 'strength' ? [8, 12] : [10, 20];
     MUSCLES.forEach(function (m) { max = Math.max(max, sum[m[0]] || 0); });
+    var top = Math.max(max, zone[1] + 2);
     return '<div class="volume">' + MUSCLES.map(function (m) {
-      var v = sum[m[0]] || 0;
-      return '<div class="vol' + (m[0] === 'grud' ? ' focus' : '') + '"><div class="row"><span>' + m[1] + '</span><b>' + v + '</b></div><div class="meter"><i style="width:' + (max ? Math.round(v / max * 100) : 0) + '%"></i></div></div>';
-    }).join('') + '</div><p class="vol-note">Рабочих подходов за неделю по группам мышц.</p>';
+      var v = sum[m[0]] || 0, tag = m[0] === 'press' ? '' : v < zone[0] ? ' <small class="vol-lo">мало</small>' : v > zone[1] ? ' <small class="vol-hi">много</small>' : '';
+      return '<div class="vol' + (m[0] === 'grud' ? ' focus' : '') + '"><div class="row"><span>' + m[1] + '</span><b>' + v + tag + '</b></div><div class="meter"><s class="zone" style="left:' + (zone[0] / top * 100).toFixed(1) + '%;width:' + ((zone[1] - zone[0]) / top * 100).toFixed(1) + '%"></s><i style="width:' + Math.round(v / top * 100) + '%"></i></div></div>';
+    }).join('') + '</div><p class="vol-note">Рабочих подходов за неделю по группам мышц. Золотая рамка — ориентир: ' + zone[0] + '–' + zone[1] + ' подходов на мышцу в неделю.</p>';
   }
   function renderWeek() {
     if (locked(current)) { $('week').innerHTML = '<div class="week-head"><div><div class="eyebrow">Программа</div><h2>' + current + ' неделя</h2><div class="motto">' + esc(WEEKS[current - 1].motto) + '</div></div></div>' + paywallHtml(current); return; }
