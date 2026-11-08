@@ -836,6 +836,11 @@ body[data-tab="stats"] .tab-title.t-stats, body[data-tab="club"] .tab-title.t-cl
 .signal-pill { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; border: 1px solid #ff8a65; background: color-mix(in srgb, #ff8a65 10%, var(--bg)); color: var(--fg); padding: 10px 12px; font: 600 14px var(--body); border-radius: 2px; position: relative; }
 .signal-pill i { color: #ff8a65; font-size: 20px; }
 .lvl { display: grid; gap: 6px; }
+.trend { margin-bottom: 14px; }
+.trend-row { display: flex; align-items: center; gap: 14px; margin-top: 6px; }
+.trend-row b { font: 800 48px/1 var(--mono); color: var(--accent); white-space: nowrap; }
+.trend-row b small { font-size: 18px; color: var(--muted); margin-left: 6px; font-weight: 700; }
+.trend-row span { font-size: 15px; line-height: 1.35; }
 .lvl-row { display: grid; grid-template-columns: 1fr auto; align-items: baseline; gap: 2px 10px; }
 .lvl-row em { grid-row: 1; grid-column: 2; } .lvl-row span { grid-row: 2; grid-column: 1 / -1; }
 .delta.flat { color: var(--muted); }
@@ -1108,8 +1113,8 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
   <section class="wrap block" id="principles">
     <h2>Принципы программы</h2>
     <ol class="rules">
-      <li><div><b>Подбор по волнам.</b> Лёгкая неделя — 15–20 повторений небольшим весом, техника идеальная. Средняя — тяжелее, 10–12 повторений, техника хорошая. Тяжёлая — 6–8 повторений максимальным для них весом, техника свободнее, но без рывков. Вес приложение считает само от твоего рабочего веса на 10–12: лёгкая ≈ −30%, тяжёлая ≈ +15%. Видео и статьи по периодизации — те же диапазоны.</div></li>
-      <li><div><b>Прогрессивная перегрузка.</b> Проценты растут от недели к неделе. В «подборе» записываешь вес — сделал все повторы, и в следующий раз приложение само предложит на шаг больше (гантели +2 кг, штанга и EZ +10 кг).</div></li>
+      <li><div><b>Главный показатель — растут ли веса.</b> Схема программы вторична: и простая линейная программа, и программа с волнами дают рост, если от недели к неделе ты поднимаешь больше. В «подборе» записываешь вес — сделал все повторы, и в следующий раз приложение само предложит на шаг больше (гантели +2 кг, штанга и EZ +10 кг). Встал вес две недели подряд — увидишь «Застой» и что делать. Сколько упражнений растёт — первая строка на вкладке «Прогресс».</div></li>
+      <li><div><b>Волны — чтобы не перегореть.</b> Лёгкая неделя — 15–20 повторений небольшим весом, техника идеальная. Средняя — тяжелее, 10–12 повторений, техника хорошая. Тяжёлая — 6–8 повторений максимальным для них весом, техника свободнее, но без рывков. Вес приложение считает само от твоего рабочего веса на 10–12: лёгкая ≈ −30%, тяжёлая ≈ +15%. Видео и статьи по периодизации — те же диапазоны.</div></li>
       <li><div><b>Жим 3 раза в неделю.</b> Как у Шейко: в тренировку 1 — тяжёлый жим, во 2-ю — скоростной, в 3-ю — техника: умеренный вес по 2–3 повтора с паузой на груди. Частота растит силу в жиме быстрее, чем один тяжёлый день.</div></li>
       <li><div><b>Запас повторов.</b> После подхода со штангой отметь, сколько ещё мог: 0, 1, 2 или 3+. Осталось 3+ при чистой технике — в следующую такую неделю вес больше. Так программа подстраивается под тебя, а не только под таблицу.</div></li>
       <li><div><b>Правильная техника.</b> У базы — подсказка по технике. После подхода отмечаешь «Чисто / Терпимо / Ломалась»; подходы с плохой техникой не идут в расчёт максимума. Ломается техника — вес не прибавляешь.</div></li>
@@ -1121,7 +1126,7 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
       <li><div><b>Со страхующим — больше и безопаснее.</b> Тяжёлые недели и проверку максимума делай с напарником: он подстрахует и поможет дожать.</div></li>
       <li><div><b>Контроль прогресса.</b> Смотри не только на вес: график расчётного максимума, качество техники и самочувствие. Растёт максимум, техника чистая, восстанавливаешься — всё идёт правильно.</div></li>
     </ol>
-    <p class="hint"><b>Главное:</b> систематичность, постепенное увеличение нагрузки, грамотная периодизация и достаточное восстановление.</p>
+    <p class="hint"><b>Главное:</b> прогрессия нагрузки, старание, восстановление и питание. Схема программы вторична.</p>
   </section>
 
   <section class="wrap block" id="codex">
@@ -2448,9 +2453,26 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
     if (dl && confirm('Удалить запись от ' + fmtDate(dl.getAttribute('data-bdel')) + '?')) { var dd = dl.getAttribute('data-bdel'); body = body.filter(function (x) { return x.date !== dd; }); store.set('body', body); renderBody(); }
   });
 
+  // The main indicator: in how many exercises the estimated max grew (now vs ~4 weeks ago, or vs the start).
+  function trendHtml() {
+    var grew = [], flat = [], short = false;
+    exNames().forEach(function (n) {
+      var S = exSeries(n), pts = S.pts; if (!S.kg || pts.length < 2) return;
+      var last = pts[pts.length - 1], ref = null;
+      pts.forEach(function (p) { if (p.w <= last.w - 3) ref = p; });
+      if (!ref) { ref = pts[0]; short = true; }
+      if (ref === last) return;
+      (last.v > ref.v ? grew : flat).push(n);
+    });
+    var m = grew.length + flat.length, h = '<div class="progress-card trend"><div class="eyebrow">Главный показатель</div>';
+    if (!m) return h + '<p class="empty">Запиши вес и повторы хотя бы двух недель — здесь появится главное: растут ли веса.</p></div>';
+    h += '<div class="trend-row"><b>' + grew.length + '<small>из ' + m + '</small></b><span>' + (short ? 'упражнений, где вес вырос с начала программы' : 'упражнений, где вес вырос за последние 4 недели') + '</span></div>';
+    if (flat.length) h += '<p class="hint">Без роста: ' + flat.slice(0, 3).map(esc).join(', ') + (flat.length > 3 ? ' и ещё ' + (flat.length - 3) : '') + '</p>';
+    return h + '<p class="hint">Сравниваю расчётный максимум (1ПМ) по лучшему подходу недели — так видно рост и в лёгкие, и в тяжёлые недели.</p></div>';
+  }
   function renderProgress() {
     renderCal();
-    var pts = benchSeries(), base = +maxes.bench || 0, h = '<div class="progress-card">' + goalHtml() + '<div class="eyebrow">Расчётный максимум в жиме</div>';
+    var pts = benchSeries(), base = +maxes.bench || 0, h = trendHtml() + '<div class="progress-card">' + goalHtml() + '<div class="eyebrow">Расчётный максимум в жиме</div>';
     if (!pts.length) {
       h += '<p class="empty">Записывай повторы последнего подхода в жиме лёжа — здесь появится график, как растёт твой максимум. Стартовый максимум: ' + (base || '—') + ' кг.</p></div>';
       $('progress').innerHTML = h; renderCharts(); return;
