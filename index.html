@@ -1839,6 +1839,11 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
       var ps = parseSets(e.s);
       if (si === ps.length - 1) kg = Math.max(BAR, loadable(mx * f * 1.05, true));
       else { var nx = setKg(e, ctx, si + 1, ps[si + 1]); if (nx && kg >= nx) kg = Math.max(BAR, stepDown(nx)); }
+    } else {
+      // A heavier percentage must give a heavier weight: rounding to the plates can merge sets (85% and 90% → the same kg).
+      // Then this set goes one plate step below the next one.
+      var ps2 = parseSets(e.s), q = ps2[si + 1];
+      if (q && q[0] > p[0] && !overrides[ctx + '|' + (si + 1)]) { var nx2 = setKg(e, ctx, si + 1, q); if (nx2 && kg >= nx2) kg = Math.max(BAR, stepDown(nx2)); }
     }
     return kg;
   }
@@ -2253,8 +2258,27 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
     o += diff > 0 ? '<span class="up">+' + diff + ' к плану</span>' : diff < 0 ? '<span class="down">' + diff + ' к плану</span>' : 'ровно по плану';
     return o;
   }
+  // Max test week: the result is the heaviest clean single, picked from the attempts.
+  function isTest(e, ctx) { return e.t === 'b' && TYPES[+ctx.split('|')[0] - 1] === 'test'; }
+  function testOpts(e, ctx) {
+    var out = []; parseSets(e.s).forEach(function (p, i) { if (p[0] >= 85) { var kg = setKg(e, ctx, i, p); if (kg && out.indexOf(kg) < 0) out.push(kg); } });
+    return out.sort(function (a, b) { return a - b; });
+  }
+  function testBest(name) {
+    var best = 0;
+    Object.keys(results).forEach(function (ctx) { var r = results[ctx]; if (!r || !r.test) return; var f; try { f = findEx(ctx); } catch (er) { return; } if (f.e && f.e.n === name) best = Math.max(best, r.kg || 0); });
+    return best;
+  }
+  function testLogHtml(e, ctx) {
+    var r = results[ctx] || {};
+    return '<div class="log" data-log="' + ctx + '"><label>Какой вес взял чисто?</label><div class="ready-row maxpick" role="group" aria-label="Взятый вес">' +
+      testOpts(e, ctx).map(function (kg) { var on = !!(r.test && r.kg === kg); return '<button type="button" class="chip-btn' + (on ? ' on' : '') + '" data-maxpick="' + kg + '" aria-pressed="' + on + '">' + fmtN(kg) + ' кг</button>'; }).join('') + '</div>' +
+      '<span class="out">' + (r.test ? 'Новый максимум — <b>' + fmtN(r.kg) + ' кг</b>. С ним начнётся следующий цикл.' : 'Отметь последний вес, который пошёл чисто. Не взял ни одной тяжёлой попытки — ничего не отмечай, максимум останется прежним.') + '</span>' +
+      '<button type="button" class="chart-btn" data-chart="' + esc(e.n) + '"><i class="ph ph-chart-line-up" aria-hidden="true"></i>График</button></div>';
+  }
   function logHtml(e, ctx) {
     if (e.t === 'x' || e.t === 'r' || !e.s) return '';
+    if (isTest(e, ctx)) return testLogHtml(e, ctx);
     var r = results[ctx] || {}, h = '<div class="log" data-log="' + ctx + '"><label>' + (e.amrap != null ? 'Подход «+»' : e.t === 'k' ? (pairDb(e.n) ? 'Вес двух гантелей вместе и повторы' : 'Вес и повторы') : 'Последний подход') + '</label>';
     if (e.t === 'k' && waveFor(e, +ctx.split('|')[0]) && !r.kg && !lastRec(e.n, ctx, true)) h += '<span class="log-hint">Сделал подходы — впиши вес и сколько повторов вышло в последнем. Со следующей тренировки вес посчитается сам.</span>';
     if (e.t === 'b') {
@@ -2691,6 +2715,15 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
   }
   $('week').addEventListener('input', function (ev) { var box = ev.target.closest('[data-log]'); if (box) saveLog(box); });
   $('week').addEventListener('click', function (ev) {
+    var mp = ev.target.closest('[data-maxpick]');
+    if (mp) {
+      var mbx = mp.closest('[data-log]'), mcx = mbx.getAttribute('data-log'), kgp = +mp.getAttribute('data-maxpick'), was = results[mcx];
+      if (was && was.test && was.kg === kgp) delete results[mcx]; else results[mcx] = { kg: kgp, reps: 1, tech: 'good', test: 1, date: dayISO(new Date()) };
+      store.set('results2', results);
+      var me = findEx(mcx).e; mbx.outerHTML = testLogHtml(me, mcx); renderProgress();
+      if (results[mcx] && me.n === 'Жим штанги лёжа' && kgp > (+maxes.bench || 0)) celebrate('Новый <span>максимум</span>', 'Жим — ' + fmtN(kgp) + ' кг. Было ' + (+maxes.bench || 0) + ' кг.', 'ph-trophy');
+      return;
+    }
     var rb = ev.target.closest('[data-rir]');
     if (rb) {
       var bx = rb.closest('[data-log]'), cx = bx.getAttribute('data-log'), rr = results[cx] || {};
@@ -2955,6 +2988,12 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
       var r0 = results[st.ctx] || {}, plan = e.t === 'b' ? lastPart(e)[1] : lastPart(e)[0];
       if (gym.lr == null) gym.lr = r0.date === dayISO(new Date()) && r0.reps ? r0.reps : plan;
       if (gym.lk == null) gym.lk = e.t === 'b' ? setKg(e, st.ctx, logIdx(e), lastPart(e)) : (r0.kg || lastKg(e.n, st.ctx) || 0);
+      if (isTest(e, st.ctx)) {
+        mid = '<div class="gym-logq">Какой вес взял чисто?</div><div class="ready-row maxpick" role="group" aria-label="Взятый вес">' + testOpts(e, st.ctx).map(function (kg) { var on = !!(gym.mp && gym.lk === kg); return '<button type="button" class="chip-btn' + (on ? ' on' : '') + '" data-gx="maxpick" data-v="' + kg + '" aria-pressed="' + on + '">' + fmtN(kg) + ' кг</button>'; }).join('') + '</div>' +
+          '<p class="gym-side">' + (gym.mp ? 'Новый максимум — <b>' + fmtN(gym.lk) + ' кг</b>.' : 'Последний вес, который пошёл чисто. Не взял — нажми «Не записывать».') + '</p>';
+        act = '<button class="btn primary gym-go" type="button" data-gx="save"' + (gym.mp ? '' : ' disabled') + '>Записать</button><button class="btn" type="button" data-gx="nolog">Не записывать</button>';
+        $('gym').innerHTML = top + '<div class="gym-body">' + head + mid + '</div>' + rest + '<div class="gym-actions">' + act + '</div>'; paintGymRest(); return;
+      }
       mid = '<div class="gym-logq">' + (e.amrap != null ? 'Подход «+»: сколько повторов сделал?' : 'Последний подход: сколько сделал?') + '</div>' +
         (e.t === 'k' ? stepper('g-lk', gym.lk, stepOf(e.n), pairDb(e.n) ? 'Две гантели вместе' : 'Вес', 'кг') : '<div class="gym-reps">' + gym.lk + ' кг · по плану ' + plan + ' повт.</div>') +
         stepper('g-lr', gym.lr, 1, 'Повторы', 'повт.') +
@@ -2999,14 +3038,14 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
     $('gym').innerHTML = h; paintGymRest();
   }
   function gymNext() {
-    gym.log = false; gym.lr = gym.lk = gym.lt = gym.lrir = null;
+    gym.log = false; gym.lr = gym.lk = gym.lt = gym.lrir = gym.mp = null;
     var steps = gymSteps(gym.wk, gym.di);
     for (var i = gym.idx + 1; i < steps.length; i++) if (!stepDone(steps[i])) { gym.idx = i; return renderGym(); }
     if (steps.every(stepDone)) return renderGym();
     if (gym.idx < steps.length - 1) { gym.idx++; return renderGym(); }
     gym.finished = true; renderGym();
   }
-  function afterStep(st) { if (st.log && !loggedToday(st.ctx)) { gym.log = true; gym.lr = gym.lk = gym.lt = gym.lrir = null; renderGym(); } else gymNext(); }
+  function afterStep(st) { if (st.log && !loggedToday(st.ctx)) { gym.log = true; gym.lr = gym.lk = gym.lt = gym.lrir = gym.mp = null; renderGym(); } else gymNext(); }
   function tickEx(kk) { var box = document.getElementById('c' + kk); if (box && !box.checked) { box.checked = true; box.dispatchEvent(new Event('change', { bubbles: true })); } }
   document.addEventListener('click', function (ev) {
     var g = ev.target.closest('[data-gym]'); if (g) { ev.preventDefault(); openGym(g.getAttribute('data-gym')); }
@@ -3032,9 +3071,11 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
       renderGym(); var again = $('gym').querySelector('[data-gx="' + a + '"][data-f="' + f + '"]'); if (again) again.focus(); return;
     }
     if (a === 'tech') { gym.lt = b2.getAttribute('data-v'); renderGym(); return; }
+    if (a === 'maxpick') { gym.lk = +b2.getAttribute('data-v'); gym.mp = 1; renderGym(); return; }
     if (a === 'rir') { gym.lrir = +b2.getAttribute('data-v'); renderGym(); return; }
     if (a === 'save') {
       var e = st.e, r = { reps: gym.lr, kg: e.t === 'b' ? setKg(e, st.ctx, logIdx(e), lastPart(e)) : gym.lk, date: dayISO(new Date()) };
+      if (isTest(e, st.ctx)) { if (!gym.mp) return; r = { kg: gym.lk, reps: 1, tech: 'good', test: 1, date: r.date }; }
       if (e.t === 'b' && gym.lt) r.tech = gym.lt;
       if (e.t === 'b' && gym.lrir != null) r.rir = gym.lrir;
       if (r.reps || r.kg) results[st.ctx] = r;
@@ -3045,7 +3086,7 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
       return gymNext();
     }
     if (a === 'nolog') { tickEx(st.kk); return gymNext(); }
-    if (a === 'ex') { if (st.log && !loggedToday(st.ctx) && !stepDone(st)) { gym.log = true; gym.lr = gym.lk = gym.lt = gym.lrir = null; return renderGym(); } if (!stepDone(st)) tickEx(st.kk); return gymNext(); }
+    if (a === 'ex') { if (st.log && !loggedToday(st.ctx) && !stepDone(st)) { gym.log = true; gym.lr = gym.lk = gym.lt = gym.lrir = gym.mp = null; return renderGym(); } if (!stepDone(st)) tickEx(st.kk); return gymNext(); }
     if (a === 'warm') { gym.warm[b2.getAttribute('data-ref')] = 1; startTimer(60); try { navigator.vibrate && navigator.vibrate(10); } catch (er) {} return renderGym(); }
     if (a === 'nowarm') { st.warm.forEach(function (w) { gym.warm[w.ref] = 1; }); return renderGym(); }
     if (a === 'undo') {
@@ -3210,6 +3251,8 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
   // Goal → program and focus; experience → a softer start after a break; aches → exercise swaps; place → an honest warning.
   function myName() { try { var me = (profiles || []).filter(function (p) { return p.id === PROFILE; })[0]; return me && me.name && me.name !== 'Я' ? me.name : ''; } catch (er) { return ''; } }
   var QI = {
+    plate: '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="24" cy="24" r="17"/><circle cx="24" cy="24" r="4"/><path d="M24 11v3M24 34v3M11 24h3M34 24h3"/></svg>',
+    ask: '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="24" cy="24" r="17"/><path d="M19 19a5 5 0 1 1 7 4.6c-1.4.6-2 1.7-2 3.2V28"/><path d="M24 33.5v.5"/></svg>',
     str: '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 24h40"/><rect x="8" y="13" width="5" height="22" rx="1.5"/><rect x="13" y="16" width="4" height="16" rx="1.5"/><rect x="35" y="13" width="5" height="22" rx="1.5"/><rect x="31" y="16" width="4" height="16" rx="1.5"/></svg>',
     mass: '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 38c-2-8 1-15 7-19l3-7c1-2 4-2 5 0l1 4-4 5"/><path d="M17 19c6-3 14-2 18 3 4 5 2 13-5 15-7 2-14 1-20 1"/><path d="M26 27c2 1 4 1 6 0"/></svg>',
     cut: '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M24 4c3 7 12 11 12 23a12 12 0 0 1-24 0c0-6 3-9 5-12 1 4 3 6 5 6-2-6 0-12 2-17z"/><path d="M24 42a5 5 0 0 1-5-5c0-4 5-6 5-10 2 3 5 6 5 10a5 5 0 0 1-5 5z"/></svg>',
@@ -3231,12 +3274,13 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
     { k: 'goal', q: 'Что для тебя главное?', sub: 'От этого зависит программа и повторы.', o: [['strength', 'str', 'Сила в жиме и базе', 'Меньше повторов, больше вес'], ['mass', 'mass', 'Масса и сила', 'Больше повторов, рост мышц'], ['cut', 'cut', 'Рельеф и сушка', 'Сила 5/3/1 + питание на сушке']] },
     { k: 'exp', q: 'Какой у тебя опыт со штангой?', sub: 'Поможет подобрать нагрузку.', o: [['never', 'db1', 'Только начинаю', ''], ['back', 'back', 'Возвращаюсь после перерыва', ''], ['y1', 'db2', 'До 1 года', ''], ['y2', 'db3', '1–2 года', ''], ['y3', 'bb', 'Больше 2 лет', '']] },
     { k: 'lim', multi: true, q: 'Что-то беспокоит?', sub: 'Заменю упражнения, чтобы тренировки были безопаснее. Можно выбрать несколько.', o: [['no', 'ok', 'Ничего не беспокоит', ''], ['spine', 'spine', 'Спина иногда побаливает', 'Становая → румынская тяга с гантелями'], ['knee', 'knee', 'Болят колени', 'Присед → гоблет-присед'], ['shoulder', 'shoulder', 'Плечи', 'Жим стоя → жим гантелей сидя']] },
-    { k: 'place', q: 'Где тренируешься?', sub: 'Программа сделана для зала со штангой.', o: [['gym', 'gym', 'В зале', 'Штанга, блины, скамья, гантели'], ['home', 'home', 'Дома с гантелями', ''], ['none', 'none', 'Без инвентаря', '']] }
+    { k: 'place', q: 'Где тренируешься?', sub: 'Программа сделана для зала со штангой.', o: [['gym', 'gym', 'В зале', 'Штанга, блины, скамья, гантели'], ['home', 'home', 'Дома с гантелями', ''], ['none', 'none', 'Без инвентаря', '']] },
+    { k: 'plates', q: 'Есть в зале блины по 2,5 кг?', sub: 'С ними вес растёт шагом 5 кг вместо 10 — веса точнее, прогресс ровнее. Почти в каждом зале они есть.', o: [['yes', 'plate', 'Есть', 'Шаг веса — 5 кг'], ['no', 'ask', 'Нет или не знаю', 'Шаг 10 кг. Поменять можно в «Блинах в зале»']] }
   ];
   var QZ = null;
   function openQuiz() {
     var prev = {}; try { prev = JSON.parse(localStorage.getItem(store.k('quiz').replace(/@sr$/, ''))) || {}; } catch (er) {}
-    QZ = { i: 0, a: { name: myName(), goal: prev.goal || '', exp: prev.exp || '', lim: prev.lim || [], place: prev.place || '' } };
+    QZ = { i: 0, a: { name: myName(), goal: prev.goal || '', exp: prev.exp || '', lim: prev.lim || [], place: prev.place || '', plates: prev.plates || '' } };
     $('onb').hidden = false; document.body.classList.add('onb-on');
     renderQuiz();
   }
@@ -3292,7 +3336,8 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
     var a = QZ.a, plan = quizPlan(), pfx = 'club150:' + (PROFILE !== 'main' ? PROFILE + ':' : '');
     try {
       if (a.name) { profiles.forEach(function (p2) { if (p2.id === PROFILE) p2.name = a.name.slice(0, 24); }); if (!profiles.some(function (p2) { return p2.id === PROFILE; })) profiles.push({ id: PROFILE, name: a.name }); store.set('profiles', profiles); }
-      localStorage.setItem(pfx + 'quiz', JSON.stringify({ goal: a.goal, exp: a.exp, lim: a.lim, place: a.place }));
+      localStorage.setItem(pfx + 'quiz', JSON.stringify({ goal: a.goal, exp: a.exp, lim: a.lim, place: a.place, plates: a.plates }));
+      if (a.plates) { var pc = plateCounts(), had = +pc[2.5] || 0; if (a.plates === 'yes' && had < 1) { pc[2.5] = 2; localStorage.setItem('club150:plates', JSON.stringify(pc)); } if (a.plates === 'no' && had) { pc[2.5] = 0; localStorage.setItem('club150:plates', JSON.stringify(pc)); } plateMap = null; }
       if (a.goal) {
         localStorage.setItem(pfx + 'prog', JSON.stringify(plan.prog));
         if (plan.prog === 'club') localStorage.setItem(pfx + 'focus', plan.focus);
@@ -3778,7 +3823,8 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
   }
   // New max: best estimate from this cycle's records, capped at +5 kg bench / +10 kg legs and back.
   function suggestMax(lift, name) {
-    var old = +maxes[lift] || 0, best = liftBest(name), cap = lift === 'bench' ? 5 : 10;
+    var old = +maxes[lift] || 0, best = liftBest(name), cap = lift === 'bench' ? 5 : 10, tb = testBest(name);
+    if (tb) return { old: old, best: Math.max(best, tb), nv: tb };
     return { old: old, best: best, nv: Math.round(best > old ? Math.min(best, old + cap) : old) };
   }
   function weeksDoneN() { var n = 0; for (var i = 1; i <= NW; i++) if (weekDone(i)) n++; return n; }
