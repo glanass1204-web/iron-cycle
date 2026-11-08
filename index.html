@@ -489,6 +489,7 @@ section.block > h2 { font-size: clamp(30px, 8vw, 44px); }
 .how-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; font-size: 13px; }
 .how-l { display: inline-flex; align-items: center; gap: 5px; color: var(--muted); letter-spacing: .04em; } .how-l i { font-size: 18px; color: var(--accent); }
 .how-row .how { min-height: 32px; padding: 0 10px; border: 1px solid var(--line); border-radius: 999px; font-weight: 600; }
+.how-row .how.how-alt { min-height: 28px; padding: 0 8px; border-color: transparent; color: var(--muted); font-weight: 500; font-size: 12px; text-decoration: underline; text-underline-offset: 3px; }
 .how-row .how:active { transform: scale(.97); }
 .gym-ex .how-row { justify-content: center; margin-top: 10px; }
 .prof-btn { display: inline-flex; align-items: center; gap: 4px; }
@@ -1935,13 +1936,15 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
     var list = warmList(e, ctx); if (!list.length) return '';
     return '<div class="warm"><span class="warm-label">Разминка</span><div class="sets">' + list.map(function (w) { return '<button type="button" class="set warm-set" data-warm="' + w[0] + '|' + w[1] + '"><span class="kg">' + w[0] + ' кг × ' + w[1] + '</span><span class="sub">' + (w[0] === BAR ? 'пустой гриф' : 'сторона ' + platesText(w[0])) + '</span></button>'; }).join('') + '</div></div>';
   }
-  // Technique videos: one YouTube search, in the language of the interface.
+  // Technique videos: YouTube search in the language of the interface, RuTube as a small spare.
   function howLinks(name) {
     var base = name.replace(/\s*\(.*?\)/g, '').replace(/ ·.*$/, ''), L = window.LANG || 'ru';
     var shown = L !== 'ru' && window.tr ? tr(base) : base;
     var q = encodeURIComponent(shown + ({ ru: ' техника выполнения', uk: ' техніка виконання', en: ' proper form' })[L]);
     return '<div class="how-row"><span class="how-l"><i class="ph ph-play-circle" aria-hidden="true"></i> Как делать:</span>' +
-      '<a class="how" href="https://www.youtube.com/results?search_query=' + q + '" target="_blank" rel="noopener">YouTube</a></div>';
+      '<a class="how" href="https://www.youtube.com/results?search_query=' + q + '" target="_blank" rel="noopener">YouTube</a>' +
+      // Spare link for Russia, where YouTube often does not open without a VPN.
+      '<a class="how how-alt" href="https://rutube.ru/search/?query=' + encodeURIComponent(base + ' техника выполнения') + '" target="_blank" rel="noopener" title="Если YouTube не открывается">RuTube</a></div>';
   }
   function bodyHtml(e, isMain, ctx) {
     var tech = isMain && e.t === 'b' && TECH[e.lift] && !/жим штанги стоя/i.test(e.n) ? '<p class="tech"><b>Техника:</b> ' + TECH[e.lift] + ' Если техника ломается — вес не прибавляй.</p>' : '';
