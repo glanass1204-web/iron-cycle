@@ -1833,7 +1833,19 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
     if (e.rng) { var lm = liveMax(e, ctx), lim = Math.max(mx, lm) * f / (1 + e.rng[0] / 30); if (kg > lim) kg = Math.max(BAR, loadable(lim, !(lm > mx))); }
     // Peak week: nearest weight to the %, but never above what the max allows for these reps.
     if (e.wt === 'peak') { kg = loadable(mx * p[0] / 100 * f); var l2 = mx * f / (1 + p[1] / 30); if (kg > l2) kg = Math.max(BAR, loadable(l2, true)); }
+    // Max test: rounding to the plates must not repeat a weight. The last attempt is the heaviest weight within +5% of the max,
+    // every earlier set is at least one plate step below the next one.
+    if (TYPES[+c[0] - 1] === 'test') {
+      var ps = parseSets(e.s);
+      if (si === ps.length - 1) kg = Math.max(BAR, loadable(mx * f * 1.05, true));
+      else { var nx = setKg(e, ctx, si + 1, ps[si + 1]); if (nx && kg >= nx) kg = Math.max(BAR, stepDown(nx)); }
+    }
     return kg;
+  }
+  function stepDown(kg) {
+    if (!plateMap) buildPlates();
+    var best = -Infinity; Object.keys(plateMap).forEach(function (side) { var t = BAR + 2 * side; if (t < kg - 1e-9 && t > best) best = t; });
+    return best > -Infinity ? best : kg;
   }
   // Best estimated max of this exercise from earlier medium/heavy weeks of the cycle: reps + reps in reserve (up to 3), clean technique only.
   function liveMax(e, ctx) {
