@@ -1246,6 +1246,12 @@ main > section.tab-in > *:nth-child(n+5) { animation-delay:100ms; }
 .cmap { margin:0 0 4px !important; }
 .rail { padding-bottom:8px !important; }
 .today { padding-top:10px !important; }
+
+.rep-ask { width:100%; max-width:420px; display:grid; gap:6px; }
+.rep-ask > span { font-size:13px; color:var(--muted); }
+.rep-ask .ready-row { display:flex; gap:6px; justify-content:center; flex-wrap:wrap; }
+.rep-ask .chip-btn { min-width:42px; min-height:40px; font:700 15px var(--mono) !important; }
+.sets-reps { display:block; font-size:13px; color:var(--muted); margin-top:4px; }
 /* a done set: the ring shows a tick */
 .set-ring .tk { position:absolute; inset:0; display:grid; place-items:center; color:var(--good); pointer-events:none; animation:tkPop .9s var(--motion-ease, ease-out) both; }
 .set-ring .tk svg { width:26px; height:26px; }
@@ -1879,7 +1885,7 @@ main > section.tab-in > *:nth-child(n+5) { animation-delay:100ms; }
 
   // ---------- storage ----------
   // A new cycle starts with clean marks; results of past cycles live on in 'hist'.
-  var CYC_KEYS = { alt2: 1, done2: 1, sets2: 1, dates2: 1, ready2: 1, wclosed: 1, weights2: 1, open2: 1, results2: 1, week: 1 }, CYCLE = 1;
+  var CYC_KEYS = { alt2: 1, done2: 1, sets2: 1, dates2: 1, ready2: 1, wclosed: 1, weights2: 1, open2: 1, results2: 1, week: 1, setreps: 1 }, CYCLE = 1;
   var store = {
     // Each program keeps its own marks and results; maxes, photo and the program choice are shared.
     // Profiles: the first athlete keeps the plain keys, others get "p…:" prefixes. Plates are shared by everyone in the gym.
@@ -2146,6 +2152,10 @@ main > section.tab-in > *:nth-child(n+5) { animation-delay:100ms; }
   function barKg(pct, lift) { var mx = +maxes[lift]; return mx > 0 ? loadable(mx * pct / 100, pct >= 85) : null; }
   // Sets done per chip: ref "wk|di|ei|a|si" → count.
   var setsDone = store.get('sets2', {});
+  // Reps of every working set: «ctx|line» → [5, 5, 3]. The weight never goes up past the weakest set.
+  var setReps = store.get('setreps', {});
+  function setsOf(ctx2, e2) { return setReps[ctx2 + '|' + logIdx(e2)] || null; }
+  function effReps(ctx2, r, e2) { var m = r.reps, arr = setsOf(ctx2, e2); if (arr) arr.forEach(function (v) { if (v > 0 && v < m) m = v; }); return m; }
   function setMark(ref, total) { var n = setsDone[ref] || 0; return n ? ' <b class="sd">✓ ' + n + '/' + total + '</b>' : ''; }
   function setCls(ref, total) { return (setsDone[ref] || 0) >= total ? ' sdone' : ''; }
   // Weight changed by hand for one set line: key "wk|di|ei|a|si" → kg.
@@ -2210,7 +2220,7 @@ main > section.tab-in > *:nth-child(n+5) { animation-delay:100ms; }
       var w = +k2.split('|')[0], r = results[k2];
       if (w >= wk || TYPES[w - 1] !== t || !r || !r.kg || !r.reps) return;
       var f2; try { f2 = findEx(k2); } catch (er) { return; }
-      if (f2 && f2.e && f2.e.n === e.n) list.push({ w: w, kg: r.kg, reps: r.reps });
+      if (f2 && f2.e && f2.e.n === e.n) list.push({ w: w, kg: r.kg, reps: effReps(k2, r, f2.e) });
     });
     list.sort(function (a, b2) { return a.w - b2.w; });
     var a1 = list[list.length - 2], a2 = list[list.length - 1];
@@ -2220,15 +2230,16 @@ main > section.tab-in > *:nth-child(n+5) { animation-delay:100ms; }
   // (12 of 10–12, 8 of 6–8, 20 of 15–20) → this week +10 kg on top of that weight.
   function barUp(e, ctx) {
     if (!e.rng || !results) return 0;
-    var wk = +ctx.split('|')[0], t = TYPES[wk - 1], best = null, bestW = 0;
+    var wk = +ctx.split('|')[0], t = TYPES[wk - 1], best = null, bestW = 0, bestCtx = '';
     if (t === 'light') return 0; // light weeks stay light: no weight added from them
     Object.keys(results).forEach(function (k2) {
       var w = +k2.split('|')[0], r = results[k2];
       if (w >= wk || w < bestW || TYPES[w - 1] !== t || !r || !r.kg || !r.reps) return;
       var f; try { f = findEx(k2); } catch (er) { return; }
-      if (f && f.e && f.e.n === e.n) { best = r; bestW = w; }
+      if (f && f.e && f.e.n === e.n) { best = r; bestW = w; bestCtx = k2; }
     });
-    return best && best.tech !== 'bad' && (best.reps >= e.rng[1] || (best.rir >= 3 && best.reps >= e.rng[0])) ? best.kg + barStep() : 0;
+    var er = best ? effReps(bestCtx, best, e) : 0;
+    return best && best.tech !== 'bad' && (er >= e.rng[1] || (best.rir >= 3 && er >= e.rng[0])) ? best.kg + barStep() : 0;
   }
 
   // ---------- muscles ----------
@@ -2492,7 +2503,7 @@ main > section.tab-in > *:nth-child(n+5) { animation-delay:100ms; }
         (rv === 'tired' ? '<p class="ready-note">Веса этой тренировки снижены на 10%. Лучше сделать чисто и восстановиться, чем сорвать прогресс.</p>' : rv === 'bad' ? '<p class="ready-note warn">Лучше перенести тренировку на завтра. Если идёшь — веса снижены на 20%, подход «+» не делай.</p>' : '') + '</div>';
       if (ts) {
         var tsi = parseSets(main.s).map(String).indexOf(String(ts)), kg = setKg(main, wk + '|' + di + '|' + mi + '|a', tsi, ts);
-        h += '<div class="topset"><div class="ts-ex"><span>' + esc(main.n) + '</span><button type="button" class="why-btn" data-why="' + wk + '|' + di + '|' + mi + '|a|' + tsi + '">Почему ' + kg + ' кг?</button></div><div class="topset-row"><div class="big">' + kg + ' <small>кг</small></div>' +
+        h += '<div class="topset"><div class="ts-ex"><span>' + esc(main.n) + '</span><button type="button" class="why-btn" data-why="' + wk + '|' + di + '|' + mi + '|a|' + tsi + '">Почему ' + fmtN(kg) + ' кг?</button></div><div class="topset-row"><div class="big">' + fmtN(kg) + ' <small>кг</small></div>' +
           '<div class="ts-reps"><span><b>' + repTxt(main, ts) + '</b> повт.</span><span><b>' + ts[2] + '</b> ' + plural(ts[2], 'подход', 'подхода', 'подходов') + '</span></div></div>' +
           '<div class="what">' + (overrides[wk + '|' + di + '|' + mi + '|a|' + tsi] ? 'вес изменён вручную · ' : '') + 'самый тяжёлый подход · ' + fmtN(ts[0]) + '% от ' + (+maxes[main.lift] || '—') + ' кг</div>' +
           '</div>';
@@ -2525,7 +2536,7 @@ main > section.tab-in > *:nth-child(n+5) { animation-delay:100ms; }
       if (e.t === 'b') {
         var kg = setKg(e, ctx, si, p), ov = !!overrides[ctx + '|' + si];
         if (!kg) return '<span class="set plain">' + p[0] + '% × ' + repTxt(e, p) + ' × ' + p[2] + '</span>';
-        return '<button type="button" class="set' + (ov ? ' edited' : '') + setCls(ctx + '|' + si, p[2]) + '" data-set="' + ctx + '|' + si + '"><span class="kg">' + kg + ' кг × ' + repTxt(e, p) + ' × ' + p[2] + setMark(ctx + '|' + si, p[2]) + '</span><span class="sub">' + (ov ? 'свой вес · ' : barUp(e, ctx) ? 'вес прибавлен · ' : barDown(e, ctx) ? 'вес снижен — 2 раза не добрал · ' : fmtN(p[0]) + '% · ') + 'сторона ' + platesText(kg) + '</span></button>';
+        return '<button type="button" class="set' + (ov ? ' edited' : '') + setCls(ctx + '|' + si, p[2]) + '" data-set="' + ctx + '|' + si + '"><span class="kg">' + fmtN(kg) + ' кг × ' + repTxt(e, p) + ' × ' + p[2] + setMark(ctx + '|' + si, p[2]) + '</span><span class="sub">' + (ov ? 'свой вес · ' : barUp(e, ctx) ? 'вес прибавлен · ' : barDown(e, ctx) ? 'вес снижен — 2 раза не добрал · ' : fmtN(p[0]) + '% · ') + 'сторона ' + platesText(kg) + '</span></button>';
       }
       if (e.t === 'k') {
         var wn = waveFor(e, +ctx.split('|')[0]), reps = wn ? WAVE[wn].r.join('–') : p[0], nk = wn ? nextKg(e.n, ctx) : null;
@@ -2682,6 +2693,8 @@ main > section.tab-in > *:nth-child(n+5) { animation-delay:100ms; }
       var rb = e.rng, o1 = r.kg ? '≈ 1ПМ <b>' + e1rm(r.kg, r.reps) + ' кг</b> · ' : '';
       var lt = ctx && TYPES[+ctx.split('|')[0] - 1] === 'light';
       if (r.tech === 'bad') return '<span class="down">техника ломалась — вес не прибавляем, сначала чистые повторы</span>';
+      var rr = ctx ? effReps(ctx, r, e) : r.reps;
+      if (rr < r.reps && rr < rb[1]) return o1 + '<span class="down">слабый подход — ' + rr + ' повт.: вес не прибавляем, нужно ' + rb[1] + ' во всех подходах</span>';
       if (lt && r.reps >= rb[0]) return o1 + '<span class="up">лёгкая неделя выполнена ✓ — вес не прибавляем, это разгрузка</span>';
       var easy = r.reps < rb[1] && r.rir >= 3 && r.reps >= rb[0] && r.tech !== 'bad';
       if (!lt && (easy || r.reps >= rb[1])) {
@@ -2732,6 +2745,8 @@ main > section.tab-in > *:nth-child(n+5) { animation-delay:100ms; }
     h += '<input type="number" inputmode="numeric" min="0" max="99" placeholder="повт" aria-label="Повторения" data-f="reps" value="' + (r.reps || '') + '">';
     if (e.t === 'b') h += '<div class="ready-row" role="group" aria-label="Техника">' + [['good', 'Чисто'], ['ok', 'Терпимо'], ['bad', 'Ломалась']].map(function (o) { return '<button type="button" class="chip-btn' + (r.tech === o[0] ? ' on' : '') + '" data-tech="' + o[0] + '">' + o[1] + '</button>'; }).join('') + '</div>';
     if (e.t === 'b' && e.rng) h += '<div class="ready-row rir-row" role="group" aria-label="Повторов в запасе"><span class="rir-l">В запасе:</span>' + [['0', '0 — отказ'], ['1', '1'], ['2', '2'], ['3', '3+']].map(function (o) { return '<button type="button" class="chip-btn' + (String(r.rir) === o[0] ? ' on' : '') + '" data-rir="' + o[0] + '" aria-pressed="' + (String(r.rir) === o[0]) + '">' + o[1] + '</button>'; }).join('') + '</div>';
+    var sarr = e.t === 'b' ? setsOf(ctx, e) : null;
+    if (sarr && sarr.filter(function (v) { return v > 0; }).length > 1) h += '<span class="sets-reps"><span>По подходам:</span> <b>' + sarr.filter(function (v) { return v > 0; }).join(' / ') + '</b> <span>всего ' + sarr.reduce(function (a, v) { return a + (v > 0 ? v : 0); }, 0) + '</span></span>';
     h += '<span class="out">' + logOut(e, r, ctx) + '</span><button type="button" class="chart-btn" data-chart="' + esc(e.n) + '"><i class="ph ph-chart-line-up" aria-hidden="true"></i>График</button></div>';
     return h;
   }
@@ -2744,7 +2759,8 @@ main > section.tab-in > *:nth-child(n+5) { animation-delay:100ms; }
     r.reps = parseInt(rIn.value, 10) || 0;
     if (e.t === 'b') r.kg = setKg(e, ctx, logIdx(e), lastPart(e)); else if (kIn) r.kg = parseFloat(kIn.value) || 0;
     r.date = dayISO(new Date());
-    if (e.t === 'b') { var lp = lastPart(e); r.pct = lp[0]; if (e.rng) r.rng = e.rng; r.focus = PROG === 'sr' ? 'sr' : FOCUS; }
+    if (e.t === 'b') { var lp = lastPart(e); r.pct = lp[0]; if (e.rng) r.rng = e.rng; r.focus = PROG === 'sr' ? 'sr' : FOCUS;
+      var wref = ctx + '|' + logIdx(e), wa = setReps[wref]; if (wa && wa.length && r.reps) { wa[(setsDone[wref] || wa.length) - 1] = r.reps; store.set('setreps', setReps); } }
     if (!r.reps && !r.kg) delete results[ctx]; else results[ctx] = r;
     store.set('results2', results);
     box.querySelector('.out').innerHTML = logOut(e, r, ctx);
@@ -3399,6 +3415,14 @@ main > section.tab-in > *:nth-child(n+5) { animation-delay:100ms; }
     lastRing = key + '|' + k;
     return '<span class="set-ring' + (tick ? ' tick' : '') + '" role="img" aria-label="Подход ' + k + ' из ' + total + '"><svg viewBox="0 0 52 52" aria-hidden="true">' + svg + '</svg><b>' + k + '<small>/' + total + '</small></b>' + (tick ? '<i class="tk" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></i>' : '') + '</span>';
   }
+  // «Подход 2: сколько сделал?» — chips from the top of the plan down; the plan is assumed until changed.
+  function repAskHtml(cur, kn) {
+    var dn = kn - 1; if (dn < 1 || !cur.reps) return '';
+    var pr = String(cur.reps).split(/[–-]/).map(Number), hi = pr[pr.length - 1], lo = pr[0]; if (!hi) return '';
+    var arr = setReps[cur.ref] || [], got = arr[dn - 1], opts = [];
+    for (var v = hi; v >= Math.max(1, lo - 3) && opts.length < 7; v--) opts.push(v);
+    return '<div class="rep-ask"><span>Подход ' + dn + ': сколько сделал?</span><div class="ready-row">' + opts.map(function (v) { return '<button type="button" class="chip-btn' + (got === v ? ' on' : '') + '" data-gx="sr" data-ref="' + cur.ref + '" data-i="' + (dn - 1) + '" data-v="' + v + '" aria-pressed="' + (got === v) + '">' + v + '</button>'; }).join('') + '</div></div>';
+  }
   function renderGym() {
     if (!gym) return;
     var steps = gymSteps(gym.wk, gym.di), n = steps.length, all = steps.every(stepDone);
@@ -3460,14 +3484,14 @@ main > section.tab-in > *:nth-child(n+5) { animation-delay:100ms; }
         (isWarm ? '<div class="gym-reps">× ' + cur.reps + ' повт.</div>' :
           '<div class="gym-score"><div class="gs-t gs-set">' + setRing(kn, cur.total) + '<span>подход</span></div><div class="gs-t"><b>' + cur.reps + '</b><span>повторы</span></div>' +
           (cur.bar ? '<div class="gs-t"><b>' + (cur.kg === BAR ? 'гриф' : platesText(cur.kg)) + '</b><span>на сторону</span></div>' : '') + '</div>' +
-          (st.sets.length > 1 ? '<div class="gym-side">строка ' + (line + 1) + '/' + st.sets.length + '</div>' : '')) +
+          (st.sets.length > 1 ? '<div class="gym-side">строка ' + (line + 1) + '/' + st.sets.length + '</div>' : '') + repAskHtml(cur, kn)) +
         (cur.bar ? '<div class="gym-bb">' + barbellHtml(cur.kg, 'gym') + '</div>' + (isWarm ? '<div class="gym-side">' + (cur.kg === BAR ? 'Пустой гриф' : 'На сторону: <b>' + platesText(cur.kg) + '</b> · гриф 20 кг') + '</div>' : '') : cur.wave ? '<div class="gym-side">' + esc(cur.wave) + '</div>' : '') +
         (isWarm && line === 0 ? '<div class="gym-side">Перед этим — 5 минут суставной разминки: плечи, локти, кисти.</div>' : '') +
         (!isWarm && st.main && TYPES[gym.wk - 1] === 'test' ? '<div class="gym-side gym-tip">Проверка: не больше 3 тяжёлых попыток, без отказа. Техника поплыла — стоп. Только со страхующим.</div>' : !isWarm && st.main && TYPES[gym.wk - 1] === 'heavy' ? '<div class="gym-side gym-tip">Тяжёлая неделя — работай со страхующим.</div>' : '') +
         (!isWarm && kn >= 2 ? '<div class="gym-side gym-tip">Не идут повторы — отдохни на 1–2 минуты дольше (+30), вес не снижай.</div>' : '');
       act = isWarm
         ? '<button class="btn primary gym-go" type="button" data-gx="warm" data-ref="' + cur.ref + '">Сделал разминку</button><button class="btn" type="button" data-gx="nowarm">Без разминки</button>'
-        : '<button class="btn primary gym-go" type="button" data-gx="set" data-ref="' + cur.ref + '" data-total="' + cur.total + '" data-rest="' + st.rest + '">Сделал подход</button>' +
+        : '<button class="btn primary gym-go" type="button" data-gx="set" data-ref="' + cur.ref + '" data-total="' + cur.total + '" data-rest="' + st.rest + '" data-plan="' + esc(String(cur.reps)) + '">Сделал подход</button>' +
           ((setsDone[cur.ref] || 0) > 0 || line > 0 ? '<button class="btn" type="button" data-gx="undo">Отменить последний подход</button>' : '');
       var key2 = cur.ref + ':' + kn;
       if (gym.spoken !== key2) {
@@ -3523,6 +3547,7 @@ main > section.tab-in > *:nth-child(n+5) { animation-delay:100ms; }
     if (a === 'save') {
       var e = st.e, r = { reps: gym.lr, kg: e.t === 'b' ? setKg(e, st.ctx, logIdx(e), lastPart(e)) : gym.lk, date: dayISO(new Date()) };
       if (isTest(e, st.ctx)) { if (!gym.mp) return; r = { kg: gym.lk, reps: 1, tech: 'good', test: 1, date: r.date }; }
+      else if (e.t === 'b' && r.reps) { var lref = st.ctx + '|' + logIdx(e), la = setReps[lref] || [], ln = setsDone[lref] || la.length || 1; la[ln - 1] = r.reps; setReps[lref] = la; store.set('setreps', setReps); }
       if (e.t === 'b' && gym.lt) r.tech = gym.lt;
       if (e.t === 'b' && gym.lrir != null) r.rir = gym.lrir;
       if (r.reps || r.kg) results[st.ctx] = r;
@@ -3536,13 +3561,15 @@ main > section.tab-in > *:nth-child(n+5) { animation-delay:100ms; }
     if (a === 'ex') { if (st.log && !loggedToday(st.ctx) && !stepDone(st)) { gym.log = true; gym.lr = gym.lk = gym.lt = gym.lrir = gym.mp = null; return renderGym(); } if (!stepDone(st)) tickEx(st.kk); return gymNext(); }
     if (a === 'warm') { gym.warm[b2.getAttribute('data-ref')] = 1; startTimer(60); try { navigator.vibrate && navigator.vibrate(10); } catch (er) {} return renderGym(); }
     if (a === 'nowarm') { st.warm.forEach(function (w) { gym.warm[w.ref] = 1; }); return renderGym(); }
+    if (a === 'sr') { var sref = b2.getAttribute('data-ref'), si2 = +b2.getAttribute('data-i'), arr2 = setReps[sref] || []; arr2[si2] = +b2.getAttribute('data-v'); setReps[sref] = arr2; store.set('setreps', setReps); renderWeek(); return renderGym(); }
     if (a === 'undo') {
-      for (var i = st.sets.length - 1; i >= 0; i--) if ((setsDone[st.sets[i].ref] || 0) > 0) { setsDone[st.sets[i].ref]--; break; }
+      for (var i = st.sets.length - 1; i >= 0; i--) if ((setsDone[st.sets[i].ref] || 0) > 0) { setsDone[st.sets[i].ref]--; if (setReps[st.sets[i].ref]) { setReps[st.sets[i].ref].length = setsDone[st.sets[i].ref]; store.set('setreps', setReps); } break; }
       store.set('sets2', setsDone); renderWeek(); return renderGym();
     }
     if (a === 'set') {
       var ref = b2.getAttribute('data-ref'), tot = +b2.getAttribute('data-total');
       setsDone[ref] = Math.min(tot, (setsDone[ref] || 0) + 1); store.set('sets2', setsDone);
+      var pr = String(b2.getAttribute('data-plan') || '').split(/[–-]/).map(Number), sra = setReps[ref] || []; if (pr[0] && sra[setsDone[ref] - 1] == null) { sra[setsDone[ref] - 1] = pr[pr.length - 1]; setReps[ref] = sra; store.set('setreps', setReps); }
       try { navigator.vibrate && navigator.vibrate(15); } catch (er) {}
       renderWeek(); autoCheck(ref);
       var st2 = gymSteps(gym.wk, gym.di)[gym.idx];
