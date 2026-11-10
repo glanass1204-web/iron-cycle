@@ -190,7 +190,6 @@ button { cursor: pointer; -webkit-tap-highlight-color: transparent; }
 /* Today */
 .today { padding-block: 20px 8px; display: grid; gap: 18px; }
 .today-card { position: relative; overflow: hidden; border-radius: 22px; background: var(--surface); border: 1px solid var(--line); padding: 18px; display: grid; gap: 14px; isolation: isolate; }
-.today-card { padding-top: 210px; }
 .today-card .photo { position: absolute; inset: 0 0 auto 0; height: 340px; z-index: -1; background-size: cover; background-position: center 22%; filter: saturate(.9) contrast(1.05); }
 .today-card .photo::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(23,26,32,0) 0%, rgba(23,26,32,.15) 40%, rgba(34,38,46,.85) 72%, var(--surface) 100%); }
 .today-card .champ { position: absolute !important; top: 168px; left: 16px; right: 16px; width: max-content; max-width: calc(100% - 32px); background: rgba(0,0,0,.55); padding: 5px 10px; border-radius: 999px; backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
@@ -291,7 +290,7 @@ button { cursor: pointer; -webkit-tap-highlight-color: transparent; }
 
 /* Barbell drawing */
 .barbell-svg { display: block; width: 100%; max-width: 360px; height: auto; margin: 4px auto 0; overflow: visible; }
-.barbell-svg.fresh .pl { animation: plateOn .5s cubic-bezier(.2,.8,.2,1) both; animation-delay: var(--d); }
+.barbell-svg.fresh .pl:not(.kept) { animation: plateOn .5s cubic-bezier(.2,.8,.2,1) both; animation-delay: var(--d); }
 @keyframes plateOn { from { transform: translateX(var(--dx)); opacity: 0; } to { transform: none; opacity: 1; } }
 .barbell { display: flex; align-items: center; justify-content: center; height: 76px; gap: 0; }
 .barbell .shaft { height: 6px; background: linear-gradient(#a7acb3, #6d727a); flex: 0 0 70px; border-radius: 2px; }
@@ -558,7 +557,7 @@ section.block > h2 { font-size: clamp(30px, 8vw, 44px); }
 /* ---------- Poster theme: near-black, muted gold, condensed two-tone headlines ---------- */
 h1, h2 { font-family: var(--poster); font-weight: 400; letter-spacing: .005em; }
 .brand { font-family: var(--poster); font-size: 24px; letter-spacing: .06em; }
-.today-card { padding: 300px 20px 20px; border-radius: 4px; border: 1px solid var(--line); background: var(--bg); }
+.today-card { padding: 0; border-radius: 4px; border: 1px solid var(--line); background: var(--bg); }
 .today-card .photo { height: 100%; filter: grayscale(1) sepia(.18) contrast(1.15) brightness(.9); background-position: center 15%; }
 .today-card .photo::after { background: linear-gradient(180deg, rgba(11,11,11,.05) 0%, rgba(11,11,11,.25) 30%, rgba(11,11,11,.88) 52%, #0b0b0b 72%); }
 .today-card .champ { top: 16px !important; left: auto !important; right: 16px; background: none !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important; padding: 0 !important; font-size: 11px; letter-spacing: .22em; color: var(--fg) !important; text-align: right; max-width: 60% !important; text-shadow: 0 1px 8px #000; }
@@ -602,7 +601,7 @@ h1, h2 { font-family: var(--poster); font-weight: 400; letter-spacing: .005em; }
 .rail button { font-family: var(--poster); font-weight: 400; }
 .install { text-transform: uppercase; letter-spacing: .12em; font-family: var(--display); }
 .brand-foot span { color: var(--accent); letter-spacing: .3em; font-size: 11px; text-transform: uppercase; font-weight: 700; }
-@media (max-width: 600px) { .today-card { padding-top: 190px; } .today-card .photo::after { background: linear-gradient(180deg, rgba(11,11,11,.05) 0px, rgba(11,11,11,.45) 110px, rgba(11,11,11,.9) 230px, #0b0b0b 420px); } }
+@media (max-width: 600px) { .today-card .photo::after { background: linear-gradient(180deg, rgba(11,11,11,.05) 0px, rgba(11,11,11,.45) 110px, rgba(11,11,11,.9) 230px, #0b0b0b 420px); } }
 
 
 /* ---------- motion (tokens: 100/150/200/300ms, ease-out enter) ---------- */
@@ -959,7 +958,7 @@ body { background-image:radial-gradient(ellipse at 50% -180px, color-mix(in srgb
 .rail button.locked { opacity:.6; }
 .maxchip, .install { border-radius:999px !important; }
 .today { gap:22px; padding-top:22px; }
-.today-card { border-radius:24px; padding:245px 24px 24px; background:var(--surface); box-shadow:0 14px 45px #00000014; }
+.today-card { border-radius:24px; padding:0; background:var(--surface); box-shadow:0 14px 45px #00000014; }
 .today-card .photo { height:100%; filter:grayscale(.75) contrast(1.06); }
 .today-card .photo::after { background:linear-gradient(180deg,#10121505 0%,#10121540 130px,color-mix(in srgb,var(--surface) 96%,transparent) 260px,var(--surface) 390px); }
 .today-card .champ { top:20px !important; right:20px; font:600 10px/1.6 var(--body); letter-spacing:.06em; }
@@ -1055,7 +1054,7 @@ main > section.tab-in > *:nth-child(n+5) { animation-delay:100ms; }
 @keyframes motionMedal { from { opacity:0; transform:translateY(12px) scale(.8); } to { opacity:1; transform:none; } }
 @keyframes motionSaved { 0% { opacity:0; transform:translate(-50%,8px) scale(.96); } 15%,75% { opacity:1; transform:translate(-50%,0) scale(1); } 100% { opacity:0; transform:translate(-50%,-4px); } }
 @media(max-width:600px) {
-  .today-card { padding:185px 18px 20px; border-radius:22px; }
+  .today-card { padding:0; border-radius:22px; }
   .today-card .photo::after { background:linear-gradient(180deg,#10121505 0%,#10121540 90px,color-mix(in srgb,var(--surface) 96%,transparent) 205px,var(--surface) 330px); }
   .today-card .champ { max-width:70% !important; font-size:9px; }
   .ready-row { gap:5px; }
@@ -1104,7 +1103,7 @@ main > section.tab-in > *:nth-child(n+5) { animation-delay:100ms; }
 .rail .wp-grid button { width:100% !important; height:42px !important; border-radius:10px !important; font:700 15px var(--mono); }
 @keyframes wpIn { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:none; } }
 /* Today: smaller photo, weight first */
-.today-card { padding:84px 22px 22px !important; }
+.today-card { padding:0 !important; }
 .today-card .photo { height:140px !important; }
 .today-card .today-head { gap:4px !important; }
 .today-card .cta { margin-top:2px; }
@@ -1132,7 +1131,105 @@ main > section.tab-in > *:nth-child(n+5) { animation-delay:100ms; }
 .today-card .ready > span { font-size:12px; color:var(--muted); }
 .today-card .ready-note { font-size:12px; }
 .today .wstrip { margin:0; }
-@media (max-width:600px) { .today-card { padding:70px 16px 18px !important; } .today-card .photo { height:124px !important; } .wprog { margin-top:8px; } .topset { padding:12px 14px 10px !important; } }
+@media (max-width:600px) { .wprog { margin-top:8px; } .topset { padding:12px 14px 10px !important; } }
+
+.cmap { margin:2px 0 14px; }
+.cm-top { display:flex; justify-content:space-between; align-items:baseline; gap:10px; margin-bottom:8px; font-size:13px; color:var(--muted); }
+.cm-top b { color:var(--fg); font-size:14px; white-space:nowrap; } .cm-top span { text-align:right; }
+.cm-bars { display:grid; grid-template-columns:repeat(var(--n), 1fr); gap:4px; align-items:end; height:74px; }
+.cm-b { position:relative; height:100%; border:0; background:none; padding:0 0 18px; display:flex; align-items:flex-end; cursor:pointer; }
+.cm-b i { display:block; width:100%; height:var(--h); border-radius:5px 5px 2px 2px; background:color-mix(in srgb, var(--fg) 22%, transparent); transition:height .5s var(--motion-ease, ease-out); }
+.cm-b.t-volume i, .cm-b.t-moderate i { background:color-mix(in srgb, var(--fg) 42%, transparent); }
+.cm-b.t-heavy i { background:color-mix(in srgb, var(--accent) 70%, transparent); }
+.cm-b.t-peak i { background:var(--accent); }
+.cm-b.t-test i { background:none; border:2px dashed var(--accent); }
+.cm-b span { position:absolute; left:0; right:0; bottom:0; text-align:center; font:700 11px var(--mono); color:var(--muted); }
+.cm-b.done span { color:var(--good); }
+.cm-b.done::after { content:""; position:absolute; left:50%; top:-8px; width:6px; height:6px; margin-left:-3px; border-radius:50%; background:var(--good); }
+.cm-b.cur i { outline:2px solid var(--fg); outline-offset:2px; }
+.cm-b.cur span { color:var(--fg); }
+.cm-b.cur span::before { content:"▲"; position:absolute; left:0; right:0; top:-2px; transform:translateY(-100%); font-size:0; }
+.cm-goal { margin:8px 0 0; font-size:14px; line-height:1.5; color:var(--fg); padding:10px 12px; border-radius:12px; background:var(--surface); border:1px solid var(--line); }
+.why-btn { display:inline-block; margin-top:4px; font-size:13px !important; border:0; background:none; padding:0; color:var(--accent); font:inherit; text-decoration:underline; text-underline-offset:3px; cursor:pointer; }
+.why-list { margin:6px 0 14px; padding-left:20px; display:grid; gap:8px; font-size:15px; line-height:1.5; }
+.wave-card { margin-top:14px; padding:14px 16px; border-radius:16px; border:1px solid color-mix(in srgb, var(--good) 45%, var(--line)); background:color-mix(in srgb, var(--good) 7%, var(--surface)); }
+.wave-card h3 { margin:2px 0 6px; font-size:20px; }
+.wv-ex { font-size:13px; color:var(--muted); }
+.wv-rows { display:grid; gap:4px; margin:8px 0; }
+.wv-rows div { display:flex; gap:10px; align-items:baseline; font-size:15px; }
+.wv-rows span { width:78px; color:var(--muted); } .wv-rows b { font:800 17px var(--mono); }
+.wv-rows em { font-style:normal; font-size:12px; color:var(--good); } .wv-rows em.bad { color:#ff8a65; }
+.wv-v { margin:4px 0; font-size:15px; font-weight:600; }
+.gym-goal { font-size:15px; line-height:1.45; color:var(--fg); padding:8px 12px; border-radius:12px; background:color-mix(in srgb, var(--accent) 10%, var(--surface)); border:1px solid color-mix(in srgb, var(--accent) 30%, var(--line)); max-width:34ch; }
+
+body[data-tab="today"] #rail { display:none !important; }
+.cmap { margin-top:10px; }
+.fin-photo { margin:0 0 6px; width:100%; max-width:420px; }
+.fin-photo .fp-img { height:200px; border-radius:18px; background-size:cover; filter:grayscale(.6) contrast(1.05); box-shadow:inset 0 -60px 60px -20px var(--bg); }
+.fin-photo figcaption { margin-top:8px; font-size:13px; color:var(--muted); line-height:1.5; }
+.fin-photo figcaption b { color:var(--fg); }
+.fin-photo figcaption small { display:block; font-size:11px; }
+.fin-photo figcaption a { color:inherit; }
+
+.topset-bb { margin-top:8px; }
+.topset-bb .barbell-svg { max-height:96px; width:100%; }
+.topset-bb .plate-legend { margin-top:2px; }
+.ready.compact { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+.ready.compact > span { flex:none; }
+.ready.compact .ready-row { flex:1; display:grid; grid-template-columns:repeat(3, 1fr); gap:6px; }
+.ready.compact .ready-note { flex-basis:100%; margin:0; }
+.tap-tick { position:fixed; z-index:200; width:44px; height:44px; margin:-22px 0 0 -22px; border-radius:50%; display:grid; place-items:center; color:#0b1a11; background:var(--good); pointer-events:none; animation:tapTick .7s cubic-bezier(.22,1,.36,1) both; }
+.tap-tick svg { width:24px; height:24px; }
+@keyframes tapTick { 0% { opacity:0; transform:scale(.3); } 30% { opacity:1; transform:scale(1.05); } 70% { opacity:1; transform:translateY(-14px) scale(1); } 100% { opacity:0; transform:translateY(-26px) scale(.9); } }
+
+.cmap { margin:6px 0 8px !important; }
+.cm-top { margin-bottom:4px !important; font-size:12px !important; }
+.cm-bars { height:58px !important; }
+.cm-b { padding-bottom:16px !important; }
+.cm-b.done::after { top:-6px !important; width:5px !important; height:5px !important; }
+.cm-goal { margin-top:4px !important; padding:0 !important; background:none !important; border:0 !important; font-size:13px !important; color:var(--muted) !important; }
+.today-card.no-photo { padding:14px 16px 16px !important; }
+.today-card .today-head h1 { font-size:clamp(28px, 7.6vw, 40px) !important; }
+.wprog { margin-top:6px !important; }
+.wprog-t { margin-bottom:4px !important; font-size:12px !important; }
+.topset { padding:12px 14px 10px !important; }
+.topset .big { font-size:clamp(60px, 17vw, 84px) !important; }
+.topset .what .why-btn { margin:0 0 0 4px; font-size:12px !important; }
+.topset-bb { margin-top:4px !important; }
+.topset-bb .barbell-svg { max-height:70px !important; }
+.topset-bb .plate-legend { font-size:12px; }
+.today { gap:12px !important; }
+
+.ts-ex { display:flex; flex-wrap:wrap; justify-content:space-between; align-items:baseline; gap:2px 10px; }
+.ts-ex span { min-width:0; }
+.ts-ex .why-btn { flex:none; margin:0 !important; font-size:12px !important; font-weight:500; }
+.ready.compact .chip-btn { padding:8px 4px !important; font-size:12px !important; white-space:nowrap; min-height:38px; }
+.ready.compact > span { font-size:12px; }
+
+/* gym as a scoreboard */
+.gym-bb .barbell-svg { max-height:112px; }
+.gym-ex h2 { font-size:clamp(26px, 7vw, 40px) !important; }
+.gym-ex .gym-goal { margin:8px auto 0; font-size:14px; padding:6px 12px; }
+.gym-ex .how-row { margin-top:8px; }
+.gym-score { display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:8px; width:100%; max-width:420px; }
+.gs-t { display:grid; justify-items:center; align-content:center; gap:4px; padding:10px 6px; border-radius:16px; background:var(--surface); border:1px solid var(--line); min-height:86px; }
+.gs-t b { font:800 clamp(20px, 6vw, 26px)/1 var(--mono); color:var(--fg); white-space:nowrap; }
+.gs-t span { font-size:12px; color:var(--muted); }
+.gs-set .set-ring { width:46px; height:46px; } .gs-set .set-ring svg { width:46px; height:46px; }
+@media (max-height:720px) { .gs-t { min-height:72px; padding:6px; } }
+
+/* Today cover: one element sets the photo height */
+.today-card.has-cover { padding:0 !important; gap:0 !important; overflow:hidden; }
+.today-card .cover { position:relative; width:100%; height:clamp(110px, 18dvh, 165px); background-size:cover; background-repeat:no-repeat; border-radius:22px 22px 0 0; filter:grayscale(.55) contrast(1.05); }
+.today-card .cover::after { content:""; position:absolute; inset:0; border-radius:inherit; background:linear-gradient(180deg, transparent 40%, rgba(10,11,13,.35) 62%, rgba(10,11,13,.82) 100%); }
+.today-card .cover-name { position:absolute; left:14px; right:14px; bottom:9px; z-index:1; display:flex; flex-wrap:wrap; align-items:baseline; gap:2px 8px; color:#fff; font-size:13px; line-height:1.3; text-shadow:0 1px 4px rgba(0,0,0,.6); }
+.today-card .cover-name b { font-weight:700; }
+.today-card .cover-name span { font-size:11px; opacity:.85; }
+.today-card .tc-body { display:grid; gap:10px; padding:12px 16px 14px; }
+.today-card .tc-body .credit { font-size:10px; }
+@media (min-width:601px) { .today-card .cover { height:clamp(150px, 24vh, 240px); } .today-card .tc-body { padding:16px 22px 20px; gap:12px; } }
+.today-card .cta { margin:0 !important; }
+.today-card .topset { margin:0; }
 /* a done set: the ring shows a tick */
 .set-ring .tk { position:absolute; inset:0; display:grid; place-items:center; color:var(--good); pointer-events:none; animation:tkPop .9s var(--motion-ease, ease-out) both; }
 .set-ring .tk svg { width:26px; height:26px; }
@@ -1326,10 +1423,10 @@ main > section.tab-in > *:nth-child(n+5) { animation-delay:100ms; }
     <p class="hint">Листай ряды вбок. 27 чемпионов: жим, бодибилдинг, стронгмен и тяжёлая атлетика.</p>
     <div id="hall-list"></div>
     <div class="photo-row">
-      <label class="btn" for="own-photo">Своё фото на фон</label><input type="file" id="own-photo" accept="image/*">
+      <label class="btn" for="own-photo">Своё фото для итога тренировки</label><input type="file" id="own-photo" accept="image/*">
       <button class="btn" type="button" id="own-photo-clear" hidden>Убрать своё фото</button>
     </div>
-    <p class="hint">Поставь на фон главного экрана фото кумира — например, Кирилла Сарычева — или своё. Фото хранится только в этом браузере и никуда не загружается. Фото чемпионов — из Wikimedia Commons под свободными лицензиями, авторы указаны на карточках.</p>
+    <p class="hint">Фото кумира — например, Кирилла Сарычева — или своё покажется на экране итога тренировки. Фото хранится только в этом браузере и никуда не загружается. Фото чемпионов — из Wikimedia Commons под свободными лицензиями, авторы указаны на карточках.</p>
   </section>
 
   <section class="wrap block" id="principles">
@@ -1341,7 +1438,7 @@ main > section.tab-in > *:nth-child(n+5) { animation-delay:100ms; }
       <li><div><b>Запас повторов.</b> После подхода со штангой отметь, сколько ещё мог: 0, 1, 2 или 3+. Осталось 3+ при чистой технике — в следующую такую неделю вес больше. Так программа подстраивается под тебя, а не только под таблицу.</div></li>
       <li><div><b>Правильная техника.</b> У базы — подсказка по технике. После подхода отмечаешь «Чисто / Терпимо / Ломалась»; подходы с плохой техникой не идут в расчёт максимума. Ломается техника — вес не прибавляешь.</div></li>
       <li><div><b>Восстановление.</b> Между тренировками минимум день отдыха — приложение подскажет. Пропустил больше недели — продолжаешь с той же тренировки, пропущенное не наверстываешь, веса на первую тренировку −10%.</div></li>
-      <li><div><b>Периодизация.</b> Тяжёлые, умеренные и облегчённые недели чередуются: 4-я и 8-я — облегчённые (−10% веса, вдвое меньше подходов), перед проверкой максимума — подводка. Тип недели считается из реальной нагрузки (проценты × повторы × подходы) и написан в её начале вместе со шкалой нагрузки.</div></li>
+      <li><div><b>Периодизация.</b> Тяжёлые, умеренные и облегчённые недели чередуются: 4-я и 8-я — облегчённые: у штанги вес ниже и меньше подходов, у подсобки — вдвое меньше подходов. 12-я — подводка к проверке максимума, тоже с половиной подсобки. Тип недели считается из реальной нагрузки (проценты × повторы × подходы) и написан в её начале вместе со шкалой нагрузки.</div></li>
       <li><div><b>Тяжёлые дни — на свежую голову.</b> Перед тренировкой отмечаешь самочувствие. «Устал» — веса −10%, «Плохо» — лучше перенести или −20%. Тяжёлую неделю планируй на время, когда высыпаешься.</div></li>
       <li><div><b>Береги плечи.</b> В жиме лопатки сведены, небольшой мост, хват средний: слишком широкий хват чаще всего травмирует плечо. Больно — меняй хват; не помогло — жми с пола или со стоек-ограничителей, чтобы локти не уходили ниже параллели. Болит и так — замени упражнение другим на ту же мышцу. Через боль не жми. После тренировки — растяжка груди, плеч и спины по минуте; раз-два в неделю — вис на турнике 3×30 секунд и вращения плеча с резиной 2–3×20.</div></li>
       <li><div><b>Сон и еда.</b> Без них программа не работает: спи 7–8 часов, меньше 6 — уже «Устал». Ешь регулярно, белка 1,6–2,2 г на кг своего веса (при 80 кг — 130–175 г: мясо, рыба, яйца, творог).</div></li>
@@ -1608,6 +1705,7 @@ main > section.tab-in > *:nth-child(n+5) { animation-delay:100ms; }
           (e.t === 'ss' ? [e.a, e.c] : [e]).forEach(function (x) {
             var isMain = ei === mi; ei++;
             (x.t === 'or' ? [x.a, x.c] : [x]).forEach(function (it) {
+              if (it.t === 'k' && t === 'light' && wi > 0 && it.s) { it.s = it.s.split(';').map(function (q) { var a = q.trim().split('x'); if (a.length > 1) a[a.length - 1] = String(Math.max(2, Math.floor(+a[a.length - 1] / 2))); return a.join('x'); }).join('; '); it.deload = 1; return; }
               if (it.t !== 'b') return;
               if (t === 'peak' && isMain) {
                 it.s = it.lift === D ? '85x2x3; 90x1x1' : '85x3x3; 90x1x2'; it.rng = null; it.wt = 'peak';
@@ -1714,6 +1812,9 @@ main > section.tab-in > *:nth-child(n+5) { animation-delay:100ms; }
   // «Сила и рельеф» opens with the aesthetics row.
   if (PROG === 'sr') HALL_GROUPS.unshift(HALL_GROUPS.splice(2, 1)[0]);
   // Week → champion on the main screen; weeks 4 and 5 match the quote's author.
+  // Frame of each athlete on the wide Today cover: the face stays whole at 110–165 px of height.
+  var COVER = { arnold: 'center 0%', haney: 'center 16%', yates: 'center 0%', coleman: 'center 20%', cutler: 'center 8%', heath: 'center 57%', jackson: 'center 10%', rhoden: 'center 0%', levrone: 'center 0%', wheeler: 'center 32%' };
+  Object.keys(COVER).forEach(function (k) { if (CHAMPS[k]) CHAMPS[k].cover = COVER[k]; });
   var WEEK_CHAMP = PROG === 'sr'
     ? ['jackson', 'rhoden', 'levrone', 'wheeler', 'jackson', 'rhoden', 'levrone', 'wheeler', 'jackson', 'rhoden', 'levrone', 'wheeler']
     : ['arnold', 'haney', 'yates', 'coleman', 'arnold', 'cutler', 'heath', 'haney', 'yates', 'coleman', 'cutler', 'heath', 'arnold'];
@@ -2104,7 +2205,7 @@ main > section.tab-in > *:nth-child(n+5) { animation-delay:100ms; }
       var f; try { f = findEx(k2); } catch (er) { return; }
       if (f && f.e && f.e.n === e.n) { best = r; bestW = w; }
     });
-    return best && (best.reps >= e.rng[1] || (best.rir >= 3 && best.reps >= e.rng[0] && best.tech !== 'bad')) ? best.kg + barStep() : 0;
+    return best && best.tech !== 'bad' && (best.reps >= e.rng[1] || (best.rir >= 3 && best.reps >= e.rng[0])) ? best.kg + barStep() : 0;
   }
 
   // ---------- muscles ----------
@@ -2181,9 +2282,11 @@ main > section.tab-in > *:nth-child(n+5) { animation-delay:100ms; }
   // Side view of a loaded bar: knurled steel shaft, chrome sleeves, bumper plates sized by weight; plates slide on.
   var PLATE = { 20: { t: 22, h: 118, c: '#2f6fe0' }, 15: { t: 19, h: 110, c: '#e3b52f' }, 10: { t: 16, h: 98, c: '#3a9e5c' }, 5: { t: 12, h: 78, c: '#f3f1ea' }, 2.5: { t: 9, h: 60, c: '#d7261e' } };
   var bbId = 0;
-  var lastBar = {};
+  var lastBar = {}, lastPl = {};
   function barbellHtml(kg, key) {
-    var fresh = !key || lastBar[key] !== kg; if (key) lastBar[key] = kg;
+    var fresh = !key || lastBar[key] !== kg, keep = 0;
+    if (key && fresh && lastPl[key]) { var nl = platesList(kg), ol = lastPl[key]; while (keep < nl.length && keep < ol.length && nl[keep] === ol[keep]) keep++; }
+    if (key) { lastBar[key] = kg; lastPl[key] = platesList(kg); }
     var id = 'bb' + (++bbId), list = platesList(kg), H = 140, cy = 70, shaft = 92, collar = 8, gap = 2;
     var T = list.reduce(function (a, p) { return a + PLATE[p].t + gap; }, 0), sleeve = Math.max(T + 16, 40);
     var W = 2 * (shaft + collar + sleeve), cx = W / 2;
@@ -2213,7 +2316,7 @@ main > section.tab-in > *:nth-child(n+5) { animation-delay:100ms; }
       var x = sg < 0 ? cx - shaft - collar : cx + shaft + collar;
       list.forEach(function (p, i) {
         var pl = PLATE[p], px = sg < 0 ? x - pl.t - gap : x + gap, y = cy - pl.h / 2; // plates sit tight: one gap each, up to 300 kg fits the sleeve
-        g += '<g class="pl" style="--dx:' + (sg * 46) + 'px;--d:' + (120 + i * Math.max(60, 110 - list.length * 6)) + 'ms">' +
+        g += '<g class="pl' + (i < keep ? ' kept' : '') + '" style="--dx:' + (sg * 46) + 'px;--d:' + (120 + Math.max(0, i - keep) * Math.max(60, 110 - list.length * 6)) + 'ms">' +
           '<rect x="' + px + '" y="' + y + '" width="' + pl.t + '" height="' + pl.h + '" rx="4" fill="url(#' + id + 'p' + p + ')" stroke="rgba(0,0,0,.6)" stroke-width="1"/>' +
           '<rect x="' + (px + 2) + '" y="' + (y + 3) + '" width="' + (pl.t - 4) + '" height="3" rx="1.5" fill="rgba(255,255,255,.25)"/>' +
           '<rect x="' + (px + 1) + '" y="' + (cy - 11) + '" width="' + (pl.t - 2) + '" height="22" rx="2" fill="url(#' + id + 'c)" opacity=".9"/>' +
@@ -2252,13 +2355,101 @@ main > section.tab-in > *:nth-child(n+5) { animation-delay:100ms; }
     }
     return '<div class="wstrip" role="img" aria-label="На этой неделе тренировок: ' + n + ' из 3"><div class="wstrip-h"><span>Эта неделя</span><b>' + n + ' из 3</b></div><ol>' + cells + '</ol></div>';
   }
+
+  // ---------- the cycle explained: map, week goal, why this weight, wave summary ----------
+  var WGOAL = {
+    intro: 'Первая неделя: работаем легко, ставим технику. Не стремись к рекорду — выполни план с запасом.',
+    light: 'Лёгкая неделя: не стремись к рекорду. Задача — выполнить план с запасом 3+ повтора и восстановиться.',
+    deload: 'Разгрузка: всё легко, подходов меньше. Задача — восстановиться к следующей волне.',
+    volume: 'Средняя неделя: копим объём. Все подходы ровно, без отказа, техника хорошая.',
+    moderate: 'Средняя неделя: копим объём. Все подходы ровно, без отказа, техника хорошая.',
+    heavy: 'Тяжёлая неделя: большой вес, мало повторов. Страхующий рядом, 1–2 повтора в запасе.',
+    peak: 'Выход на пик: тройки и одиночные, без отказа. Длинный отдых, свежая голова.',
+    test: 'Проверка максимума: после разминки не больше 3 тяжёлых попыток. Техника поплыла — стоп.'
+  };
+  function weekGoal(wk) { var t = TYPES[wk - 1]; return wk === 1 && t === 'light' ? WGOAL.intro : t === 'light' && wk === NW - 1 ? 'Подводка к проверке: всё легко, подсобки вдвое меньше. Задача — прийти на проверку свежим.' : WGOAL[t] || ''; }
+  function typeShort(t) { return { light: 'лёгкая', deload: 'разгрузка', intro: 'лёгкая', volume: 'средняя', moderate: 'средняя', heavy: 'тяжёлая', peak: 'пик', test: 'проверка' }[t] || ''; }
+  function cycleMapHtml(wk) {
+    var bars = '', nextLight = 0, peakW = 0;
+    for (var i = 1; i <= NW; i++) {
+      var t = TYPES[i - 1], ld = LOADS[i - 1] || { load: 0 }, h = t === 'test' ? 100 : Math.max(18, Math.round(ld.load / (MAXLOAD || 1) * 100));
+      if (i > wk && !nextLight && (t === 'light' || t === 'deload')) nextLight = i;
+      if (t === 'peak') peakW = i;
+      bars += '<button type="button" class="cm-b t-' + t + (weekDone(i) ? ' done' : '') + (i === wk ? ' cur' : '') + '" data-mapw="' + i + '" style="--h:' + h + '%" aria-label="Неделя ' + i + ', ' + typeShort(t) + (weekDone(i) ? ', завершена' : '') + (i === wk ? ', ты здесь' : '') + '"><i></i><span>' + i + '</span></button>';
+    }
+    var notes = [];
+    if (nextLight) notes.push('разгрузка — неделя ' + nextLight);
+    else if (TYPES[NW - 1] === 'test' && NW > wk) notes.push('проверка — неделя ' + NW);
+    return '<div class="cmap" role="group" aria-label="Карта цикла"><div class="cm-top"><b>Неделя ' + wk + ' · ' + typeShort(TYPES[wk - 1]) + '</b><span>' + notes.join(' · ') + '</span></div><div class="cm-bars" style="--n:' + NW + '">' + bars + '</div><p class="cm-goal">' + weekGoal(wk) + '</p></div>';
+  }
+  function whyLines(e, ctx, si, p) {
+    var c = ctx.split('|'), mx = +maxes[e.lift], f = dayFactor(c[0], c[1]), kg = setKg(e, ctx, si, p), L = [];
+    if (overrides[ctx + '|' + si]) return ['Ты изменил вес этого подхода вручную: ' + fmtN(kg) + ' кг. Кнопка «Вернуть вес программы» в листе подхода вернёт расчёт.'];
+    var t = TYPES[+c[0] - 1], raw = mx * p[0] / 100;
+    L.push('По плану цикла (' + typeShort(t) + ' неделя): ' + fmtN(p[0]) + '% от максимума ' + mx + ' кг = ' + fmtN(Math.round(raw * 10) / 10) + ' кг.');
+    if (f < 1) L.push('Самочувствие или перерыв: −' + Math.round((1 - f) * 100) + '% → ' + fmtN(Math.round(raw * f * 10) / 10) + ' кг.');
+    if (barUp(e, ctx)) L.push('Прибавка после прошлого результата: на прошлой такой неделе ты сделал все повторы чисто — вес на шаг больше.');
+    else if (!barUp(e, ctx) && barDown(e, ctx)) L.push('Снижение: два раза подряд не добрал повторы — вес на шаг меньше.');
+    if (t === 'test') L.push('Проверка максимума: последняя попытка — до +5% к максимуму, каждая предыдущая на шаг блинов ниже.');
+    if (t === 'peak') L.push('Выход на пик: ближайший вес к проценту, но не выше того, что максимум позволяет на эти повторы.');
+    L.push('Округлено под твои блины (шаг ' + barStep() + ' кг)' + (p[0] >= 85 ? ', в тяжёлых подходах — только вниз, чтобы не было тяжелее плана' : '') + '. Итог: ' + fmtN(kg) + ' кг.');
+    return L;
+  }
+  function openWhy(ctx, si) {
+    var f = findEx(ctx), e = f.e, ps = parseSets(e.s), p = ps[si];
+    $('sheet-root').innerHTML = '<div class="scrim" data-close></div><div class="sheet" role="dialog" aria-label="Почему этот вес"><div class="grab"></div><div class="what">Почему ' + fmtN(setKg(e, ctx, si, p)) + ' кг?</div><ol class="why-list">' + whyLines(e, ctx, si, p).map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</ol><button class="btn" type="button" data-close>Понятно</button></div>';
+  }
+  // A wave is done: compare the main bench with the previous week of the same type.
+  function benchRec(w) {
+    var best = null;
+    Object.keys(results).forEach(function (k2) {
+      if (+k2.split('|')[0] !== w) return; var r = results[k2]; if (!r || !r.kg || !r.reps) return;
+      var f; try { f = findEx(k2); } catch (er) { return; }
+      if (f && f.e && f.e.n === 'Жим штанги лёжа' && (!best || e1rm(r.kg, r.reps) > e1rm(best.kg, best.reps))) best = r;
+    });
+    return best;
+  }
+  function waveCardHtml(wk) {
+    var w = wk - 1; if (w < 1 || !weekDone(w) || weekStats(wk).got > 0) return '';
+    var t = TYPES[w - 1], a = benchRec(w); if (!a) return '';
+    var pw = 0; for (var i = w - 1; i >= 1; i--) if (TYPES[i - 1] === t && benchRec(i)) { pw = i; break; }
+    var b0 = pw ? benchRec(pw) : null, rows = '', verdict = '';
+    if (b0) rows += '<div><span>Неделя ' + pw + '</span><b>' + fmtN(b0.kg) + ' × ' + b0.reps + '</b></div>';
+    rows += '<div><span>Неделя ' + w + '</span><b>' + fmtN(a.kg) + ' × ' + a.reps + '</b>' + (a.tech === 'good' ? '<em>техника чистая</em>' : a.tech === 'bad' ? '<em class="bad">техника ломалась</em>' : '') + '</div>';
+    if (b0) {
+      var e0 = e1rm(b0.kg, b0.reps), e1 = e1rm(a.kg, a.reps);
+      verdict = a.kg === b0.kg && a.reps > b0.reps ? 'На том же весе — на ' + (a.reps - b0.reps) + ' ' + plural(a.reps - b0.reps, 'повтор', 'повтора', 'повторов') + ' больше. Это рост силы, даже без новых блинов.'
+        : a.kg > b0.kg && a.reps >= b0.reps ? 'Вес вырос на ' + fmtN(a.kg - b0.kg) + ' кг, повторов не меньше.'
+        : e1 > e0 ? 'Расчётный максимум вырос: ' + e0 + ' → ' + e1 + ' кг.'
+        : e1 === e0 ? 'На уровне прошлой такой недели. Нормально: сила растёт волнами.' : 'Чуть ниже прошлой такой недели. Бывает — проверь сон и еду, следующая волна покажет.';
+    } else verdict = 'Первая такая неделя в цикле — с ней будем сравнивать следующую.';
+    var nt = TYPES[wk - 1];
+    return '<div class="wave-card"><div class="eyebrow">Итог волны</div><h3>' + TYPE_INFO[t][0] + ' завершена</h3><div class="wv-ex">Жим штанги лёжа, лучший записанный подход</div><div class="wv-rows">' + rows + '</div><p class="wv-v">' + verdict + '</p><p class="hint"><span>Дальше — ' + typeShort(nt) + ' неделя.</span> <span>' + weekGoal(wk) + '</span></p></div>';
+  }
+  // One line at the bar: what this set is for.
+  function setGoal(e, wk, isMain) {
+    var t = TYPES[wk - 1];
+    if (/скоростной/i.test(e.n)) return 'Цель подхода — скорость: опускай подконтрольно, выжимай максимально быстро.';
+    if (/техника/i.test(e.n)) return 'Цель подхода — техника: пауза 1 секунду на груди, без отбива.';
+    if (!isMain) return '';
+    return { light: 'Цель подхода — легко, с запасом 3+ повтора.', deload: 'Цель подхода — легко, с запасом 3+ повтора.', volume: 'Цель подхода — все повторы ровно, без отказа.', moderate: 'Цель подхода — все повторы ровно, без отказа.', heavy: 'Цель подхода — тяжело, но чисто: 1–2 повтора в запасе.', peak: 'Цель подхода — одиночные и тройки без отказа.' }[t] || '';
+  }
+  // The barbell of the home screen flies into its place in the gym (FLIP), the weight number never animates.
+  function flyBar(fr) {
+    if (!fr || !fr.width || calm()) return;
+    requestAnimationFrame(function () {
+      var to = document.querySelector('#gym .gym-bb .barbell-svg'); if (!to || !to.animate) return;
+      var tr = to.getBoundingClientRect(); if (!tr.width) return;
+      var sx = fr.width / tr.width, dx = fr.left - tr.left, dy = fr.top - tr.top;
+      to.animate([{ transformOrigin: '0 0', transform: 'translate(' + dx + 'px,' + dy + 'px) scale(' + sx + ')' }, { transformOrigin: '0 0', transform: 'none' }], { duration: 480, easing: 'cubic-bezier(.22,1,.36,1)' });
+    });
+  }
   function renderToday() {
     if (locked(current)) { $('today').innerHTML = '<div class="today-head"><div class="rule-title">Неделя ' + current + ' из ' + NW + '</div><h1>Полная <span class="gold">версия</span></h1></div>' + paywallHtml(current); return; }
     var wk = current, ws = weekStats(wk), q = QUOTES[wk - 1];
     var di = nextDay(wk), last = lastDone(), ago = last ? daysSince(last) : null;
     var own = store.get('photo', null), ch = CHAMPS[WEEK_CHAMP[wk - 1]];
-    var h = '<div class="today-card" data-week="' + wk + '"><div class="photo" style="background-image:url(\'' + (own || ch.img) + '\');background-position:' + (own ? 'center' : ch.pos || 'center 22%') + '"></div>';
-    if (!own) h += '<div class="champ">' + esc(ch.n) + ' · ' + esc(ch.t.split(' · ')[0]) + '</div>';
+    var h = cycleMapHtml(wk) + '<div class="today-card has-cover" data-week="' + wk + '"><div class="cover" role="img" aria-label="' + esc(own ? 'Твоё фото' : ch.n) + '" style="background-image:url(\'' + (own || ch.img) + '\');background-position:' + (own ? 'center 30%' : ch.cover || ch.pos || 'center 22%') + '">' + (own ? '' : '<div class="cover-name"><b>' + esc(ch.n) + '</b><span>' + esc(ch.t.split(' · ')[0]) + '</span></div>') + '</div><div class="tc-body">';
     h += '<div class="today-head">' + (PROG === 'sr' ? '<div class="rule-title">Сила и рельеф</div>' : '');
     if (di < 0) {
       h += '<h1>Неделя <span>завершена</span></h1><div class="sub">' + (weekDate(wk) ? 'Закрыта ' + fmtDate(weekDate(wk)) + '. ' : '') + 'Отдыхай и готовься к следующей</div></div>';
@@ -2274,16 +2465,17 @@ main > section.tab-in > *:nth-child(n+5) { animation-delay:100ms; }
       if (nW >= 3 && (!lb || daysSince(lb) >= 7)) notes += '<a class="signal-pill" href="#backup" style="border-color:var(--accent)"><i class="ph ph-warning" aria-hidden="true" style="color:var(--accent)"></i><span>Записи хранятся только в этом телефоне. ' + (lb ? 'Копия была ' + daysSince(lb) + ' дн. назад' : 'Копии ещё нет') + ' — сохрани её →</span></a>';
       if (ago !== null) notes += '<div class="rest-note' + (ago < 1 || ago >= 10 ? ' warn' : '') + '">' + (ago === 0 ? 'Сегодня уже была тренировка. Следующую — после дня отдыха.' : ago === 1 ? 'Прошлая тренировка вчера. Если мышцы ещё забиты — отдохни ещё день.' : ago >= 10 ? 'Перерыв ' + ago + ' дн. Пропущенное не наверстывай: продолжай с этой тренировки, веса на неё снижены на 10%.' : 'Прошлая тренировка ' + ago + ' дн. назад — можно в зал.') + '</div>';
       var rv = ready[rk] || 'ok';
-      var rdy = '<div class="ready"><span>Самочувствие сегодня</span><div class="ready-row">' + [['ok', 'Отлично'], ['tired', 'Устал · −10%'], ['bad', 'Плохо · −20%']].map(function (o) { return '<button type="button" class="chip-btn' + (rv === o[0] ? ' on' : '') + '" data-ready="' + o[0] + '" data-rk="' + rk + '">' + o[1] + '</button>'; }).join('') + '</div>' +
-        (rv === 'tired' ? '<p class="ready-note">Веса этой тренировки снижены на 10%. Лучше сделать чисто и восстановиться, чем сорвать прогресс.</p>' : rv === 'bad' ? '<p class="ready-note warn">Лучше перенести тренировку на завтра. Если идёшь — веса снижены на 20%, подход «+» не делай.</p>' : '<p class="ready-note">Спал меньше 6 часов — выбирай «Устал».</p>') + '</div>';
+      var rdy = '<div class="ready compact"><span>Самочувствие</span><div class="ready-row">' + [['ok', 'Отлично'], ['tired', 'Устал · −10%'], ['bad', 'Плохо · −20%']].map(function (o) { return '<button type="button" class="chip-btn' + (rv === o[0] ? ' on' : '') + '" data-ready="' + o[0] + '" data-rk="' + rk + '" aria-pressed="' + (rv === o[0]) + '">' + o[1] + '</button>'; }).join('') + '</div>' +
+        (rv === 'tired' ? '<p class="ready-note">Веса этой тренировки снижены на 10%. Лучше сделать чисто и восстановиться, чем сорвать прогресс.</p>' : rv === 'bad' ? '<p class="ready-note warn">Лучше перенести тренировку на завтра. Если идёшь — веса снижены на 20%, подход «+» не делай.</p>' : '') + '</div>';
       if (ts) {
         var tsi = parseSets(main.s).map(String).indexOf(String(ts)), kg = setKg(main, wk + '|' + di + '|' + mi + '|a', tsi, ts);
-        h += '<div class="topset"><div class="ts-ex">' + esc(main.n) + '</div><div class="topset-row"><div class="big">' + kg + ' <small>кг</small></div>' +
+        h += '<div class="topset"><div class="ts-ex"><span>' + esc(main.n) + '</span><button type="button" class="why-btn" data-why="' + wk + '|' + di + '|' + mi + '|a|' + tsi + '">Почему ' + kg + ' кг?</button></div><div class="topset-row"><div class="big">' + kg + ' <small>кг</small></div>' +
           '<div class="ts-reps"><span><b>' + repTxt(main, ts) + '</b> повт.</span><span><b>' + ts[2] + '</b> ' + plural(ts[2], 'подход', 'подхода', 'подходов') + '</span></div></div>' +
-          '<div class="what">' + (overrides[wk + '|' + di + '|' + mi + '|a|' + tsi] ? 'вес изменён вручную · ' : '') + 'самый тяжёлый подход · ' + fmtN(ts[0]) + '% от ' + (+maxes[main.lift] || '—') + ' кг</div></div>';
+          '<div class="what">' + (overrides[wk + '|' + di + '|' + mi + '|a|' + tsi] ? 'вес изменён вручную · ' : '') + 'самый тяжёлый подход · ' + fmtN(ts[0]) + '% от ' + (+maxes[main.lift] || '—') + ' кг</div>' +
+          '</div>';
         var bbx = '<div class="topset-bb">' + barbellHtml(kg, 'today') + legendHtml(kg) + '</div>';
       } else { h += '<div class="topset"><div class="ts-ex">' + esc(items(day)[0].n) + '</div></div>'; var bbx = ''; }
-      h += '<div class="cta"><button class="btn primary gym-cta" type="button" data-gym="' + di + '"><i class="ph ph-play-circle" aria-hidden="true"></i> Начать тренировку</button></div>' + bbx + rdy + '<button class="btn open-day" type="button" data-goday="' + di + '">Открыть тренировку</button>';
+      h += '<div class="cta"><button class="btn primary gym-cta" type="button" data-gym="' + di + '"><i class="ph ph-play-circle" aria-hidden="true"></i> Начать в зале</button></div>' + rdy + waveCardHtml(wk) + bbx + '<button class="btn open-day" type="button" data-goday="' + di + '">Открыть тренировку</button>';
       var sg = stalls();
       h += notes;
       if (sg.length) h += '<a class="signal-pill" href="#signals"><i class="ph ph-warning" aria-hidden="true"></i><span>Застой: ' + esc(sg[0].n) + (sg.length > 1 ? ' и ещё ' + (sg.length - 1) : '') + '. Что делать →</span></a>';
@@ -2295,7 +2487,7 @@ main > section.tab-in > *:nth-child(n+5) { animation-delay:100ms; }
     }
     h += '</div>';
     if (!own) h += '<div class="credit">Фото: ' + esc(ch.by) + ', <a href="' + ch.page + '" target="_blank" rel="noopener">' + ch.lic + '</a></div>';
-    h += '</div>';
+    h += '</div></div>';
     h += weekStripHtml();
     h += '<div class="icon-row"><div><i class="ph ph-barbell" aria-hidden="true"></i><b>Сила <span>по плану</span></b><small>Точные веса и повторы</small></div><div><i class="ph ph-crosshair" aria-hidden="true"></i><b>Фокус <span>на технике</span></b><small>Чисто — значит в зачёт</small></div><div><i class="ph ph-lightning" aria-hidden="true"></i><b>Рост <span>каждую неделю</span></b><small>Записывай результат</small></div></div>';
     h += '<blockquote class="quote quote-anim"><p>«' + esc(q.ru) + '»</p>' + (q.orig && window.LANG !== 'en' ? '<div class="orig">' + esc(q.orig) + '</div>' : '') + '<cite><b>' + esc(q.who) + '</b> · ' + esc(q.src) + '</cite></blockquote>';
@@ -2465,6 +2657,8 @@ main > section.tab-in > *:nth-child(n+5) { animation-delay:100ms; }
     if (!wn && e.t === 'b' && e.rng) {
       var rb = e.rng, o1 = r.kg ? '≈ 1ПМ <b>' + e1rm(r.kg, r.reps) + ' кг</b> · ' : '';
       var lt = ctx && TYPES[+ctx.split('|')[0] - 1] === 'light';
+      if (r.tech === 'bad') return '<span class="down">техника ломалась — вес не прибавляем, сначала чистые повторы</span>';
+      if (lt && r.reps >= rb[0]) return o1 + '<span class="up">лёгкая неделя выполнена ✓ — вес не прибавляем, это разгрузка</span>';
       var easy = r.reps < rb[1] && r.rir >= 3 && r.reps >= rb[0] && r.tech !== 'bad';
       if (!lt && (easy || r.reps >= rb[1])) {
         // Say what the next week of this type will really give, not a promise the plates can't keep.
@@ -2526,6 +2720,7 @@ main > section.tab-in > *:nth-child(n+5) { animation-delay:100ms; }
     r.reps = parseInt(rIn.value, 10) || 0;
     if (e.t === 'b') r.kg = setKg(e, ctx, logIdx(e), lastPart(e)); else if (kIn) r.kg = parseFloat(kIn.value) || 0;
     r.date = dayISO(new Date());
+    if (e.t === 'b') { var lp = lastPart(e); r.pct = lp[0]; if (e.rng) r.rng = e.rng; r.focus = PROG === 'sr' ? 'sr' : FOCUS; }
     if (!r.reps && !r.kg) delete results[ctx]; else results[ctx] = r;
     store.set('results2', results);
     box.querySelector('.out').innerHTML = logOut(e, r, ctx);
@@ -2909,6 +3104,8 @@ main > section.tab-in > *:nth-child(n+5) { animation-delay:100ms; }
     window.scrollTo({ top: 0 });
   });
   $('today').addEventListener('click', function (ev) {
+    var mw = ev.target.closest('[data-mapw]'); if (mw) { current = +mw.getAttribute('data-mapw'); store.set('week', current); renderAll(); return; }
+    var wy = ev.target.closest('[data-why]'); if (wy) { var wp = wy.getAttribute('data-why').split('|'); openWhy(wp.slice(0, 4).join('|'), +wp[4]); return; }
     var rb = ev.target.closest('[data-ready]');
     if (rb) { ready[rb.getAttribute('data-rk')] = rb.getAttribute('data-ready'); store.set('ready2', ready); renderToday(); renderWeek(); return; }
     var gd = ev.target.closest('[data-goday]'), gw = ev.target.closest('[data-goweek]');
@@ -2933,6 +3130,8 @@ main > section.tab-in > *:nth-child(n+5) { animation-delay:100ms; }
   });
   function weekCelebrate(wk) {
     var n = 0; for (var i = 1; i <= NW; i++) if (weekDone(i)) n++;
+    var lt = TYPES[wk - 1] === 'light' || TYPES[wk - 1] === 'deload';
+    if (lt && wk > 1 && wk < NW) { celebrate('Разгрузка <span>по плану</span>', 'Лёгкая неделя сделана правильно — это тоже работа на результат: мышцы и суставы восстановились. Завершено недель: ' + n + ' из ' + NW + '. Дальше — неделя ' + (wk + 1) + '.', 'ph-trophy'); return; }
     celebrate('Неделя ' + wk + ' <span>завершена</span>', 'Завершено недель: ' + n + ' из ' + NW + '.' + (wk < NW ? ' Дальше — неделя ' + (wk + 1) + '.' : ' Программа пройдена!'), 'ph-trophy', '<button class="btn primary" type="button" data-share-week="' + wk + '">Поделиться итогами недели</button>');
   }
   $('week').addEventListener('input', function (ev) { var box = ev.target.closest('[data-log]'); if (box) saveLog(box); });
@@ -3197,7 +3396,8 @@ main > section.tab-in > *:nth-child(n+5) { animation-delay:100ms; }
     if ((all || gym.finished) && !gym.log) {
       var ton = dayTonnage(gym.wk, gym.di), sets = 0;
       steps.forEach(function (s) { s.sets.forEach(function (x) { sets += Math.min(setsDone[x.ref] || 0, x.total); }); });
-      h = top + '<div class="gym-body gym-fin"><i class="ph ph-flag-checkered" aria-hidden="true"></i><h2 id="gym-title">Тренировка <span>закрыта</span></h2>' +
+      var fown = store.get('photo', null), fch = CHAMPS[WEEK_CHAMP[gym.wk - 1]];
+      h = top + '<div class="gym-body gym-fin"><figure class="fin-photo"><div class="fp-img" style="background-image:url(\'' + (fown || fch.img) + '\');background-position:' + (fown ? 'center' : fch.pos || 'center 22%') + '"></div>' + (fown ? '' : '<figcaption><b>' + esc(fch.n) + '</b> · ' + esc(fch.t.split(' · ')[0]) + '<small>Фото: ' + esc(fch.by) + ', <a href="' + fch.page + '" target="_blank" rel="noopener">' + fch.lic + '</a></small></figcaption>') + '</figure><h2 id="gym-title">Тренировка <span>закрыта</span></h2>' +
         '<div class="gym-stats"><div><b>' + (ton ? (ton / 1000).toFixed(1).replace('.', ',') : '—') + '</b><small>тонн поднято</small></div><div><b>' + sets + '</b><small>подходов</small></div><div><b>' + (bestBench() || '—') + '</b><small>1ПМ в жиме</small></div></div>' +
         gymRecordsHtml(gym.wk, gym.di, ton) + '<p class="gym-slogan">' + esc(slogan(gym.wk)) + '</p></div>' +
         '<div class="gym-actions">' + (gym.stretched ? '' : '<button class="btn primary gym-go" type="button" data-gx="stretch">Растяжка · 3 минуты</button>') + '<button class="btn' + (gym.stretched ? ' primary gym-go' : '') + '" type="button" data-gx="share-day">Поделиться итогом</button><button class="btn" type="button" data-gx="close">Готово</button></div>';
@@ -3205,7 +3405,7 @@ main > section.tab-in > *:nth-child(n+5) { animation-delay:100ms; }
       $('gym').innerHTML = h; paintGymRest(); return;
     }
     var st = steps[gym.idx], e = st.e;
-    var head = '<div class="gym-ex">' + (st.main ? '<span class="gym-tag">Главное</span>' : '') + '<h2 id="gym-title">' + esc(e.n) + '</h2>' + howLinks(e.n) + (st.alt ? '<button type="button" class="chip-btn" data-gx="alt" data-k="' + st.ak + '">Заменить на «' + esc(st.alt) + '»</button>' : '') + '</div>';
+    var head = '<div class="gym-ex">' + (st.main ? '<span class="gym-tag">Главное</span>' : '') + '<h2 id="gym-title">' + esc(e.n) + '</h2>' + (setGoal(e, gym.wk, st.main) ? '<div class="gym-goal">' + setGoal(e, gym.wk, st.main) + '</div>' : '') + howLinks(e.n) + (st.alt ? '<button type="button" class="chip-btn" data-gx="alt" data-k="' + st.ak + '">Заменить на «' + esc(st.alt) + '»</button>' : '') + '</div>';
     var mid, act;
     if (gym.log) {
       var r0 = results[st.ctx] || {}, plan = e.t === 'b' ? lastPart(e)[1] : lastPart(e)[0];
@@ -3236,8 +3436,11 @@ main > section.tab-in > *:nth-child(n+5) { animation-delay:100ms; }
       mid = (isWarm ? '<span class="gym-tag warm">Разминка ' + (line + 1) + ' из ' + st.warm.length + '</span>' : '') +
         '<div class="gym-kg"><b>' + (cur.kg ? fmtN(cur.kg) : 'на выбор') + '</b>' + (cur.kg ? '<small>кг</small>' : '') + '</div>' +
         (!isWarm && cur.kg && pairDb(e.n) ? '<div class="gym-reps">' + dbNote(e.n, cur.kg) + '</div>' : '') +
-        (isWarm ? '<div class="gym-reps">× ' + cur.reps + ' повт.</div>' : '<div class="gym-setrow">' + setRing(kn, cur.total) + '<div class="gym-reps">× ' + cur.reps + ' повт.' + (st.sets.length > 1 ? '<small>строка ' + (line + 1) + '/' + st.sets.length + '</small>' : '') + '</div></div>') +
-        (cur.bar ? '<div class="gym-bb">' + barbellHtml(cur.kg, 'gym') + '</div><div class="gym-side">' + (cur.kg === BAR ? 'Пустой гриф' : 'На сторону: <b>' + platesText(cur.kg) + '</b> · гриф 20 кг') + '</div>' : cur.wave ? '<div class="gym-side">' + esc(cur.wave) + '</div>' : '') +
+        (isWarm ? '<div class="gym-reps">× ' + cur.reps + ' повт.</div>' :
+          '<div class="gym-score"><div class="gs-t gs-set">' + setRing(kn, cur.total) + '<span>подход</span></div><div class="gs-t"><b>' + cur.reps + '</b><span>повторы</span></div>' +
+          (cur.bar ? '<div class="gs-t"><b>' + (cur.kg === BAR ? 'гриф' : platesText(cur.kg)) + '</b><span>на сторону</span></div>' : '') + '</div>' +
+          (st.sets.length > 1 ? '<div class="gym-side">строка ' + (line + 1) + '/' + st.sets.length + '</div>' : '')) +
+        (cur.bar ? '<div class="gym-bb">' + barbellHtml(cur.kg, 'gym') + '</div>' + (isWarm ? '<div class="gym-side">' + (cur.kg === BAR ? 'Пустой гриф' : 'На сторону: <b>' + platesText(cur.kg) + '</b> · гриф 20 кг') + '</div>' : '') : cur.wave ? '<div class="gym-side">' + esc(cur.wave) + '</div>' : '') +
         (isWarm && line === 0 ? '<div class="gym-side">Перед этим — 5 минут суставной разминки: плечи, локти, кисти.</div>' : '') +
         (!isWarm && st.main && TYPES[gym.wk - 1] === 'test' ? '<div class="gym-side gym-tip">Проверка: не больше 3 тяжёлых попыток, без отказа. Техника поплыла — стоп. Только со страхующим.</div>' : !isWarm && st.main && TYPES[gym.wk - 1] === 'heavy' ? '<div class="gym-side gym-tip">Тяжёлая неделя — работай со страхующим.</div>' : '') +
         (!isWarm && kn >= 2 ? '<div class="gym-side gym-tip">Не идут повторы — отдохни на 1–2 минуты дольше (+30), вес не снижай.</div>' : '');
@@ -3271,7 +3474,7 @@ main > section.tab-in > *:nth-child(n+5) { animation-delay:100ms; }
   function afterStep(st) { if (st.log && !loggedToday(st.ctx)) { gym.log = true; gym.lr = gym.lk = gym.lt = gym.lrir = gym.mp = null; renderGym(); } else gymNext(); }
   function tickEx(kk) { var box = document.getElementById('c' + kk); if (box && !box.checked) { box.checked = true; box.dispatchEvent(new Event('change', { bubbles: true })); } }
   document.addEventListener('click', function (ev) {
-    var g = ev.target.closest('[data-gym]'); if (g) { ev.preventDefault(); openGym(g.getAttribute('data-gym')); }
+    var g = ev.target.closest('[data-gym]'); if (g) { ev.preventDefault(); var from = document.querySelector('#today .topset-bb .barbell-svg'), fr = from && from.getBoundingClientRect(); openGym(g.getAttribute('data-gym')); flyBar(fr); }
   });
   $('gym').addEventListener('click', function (ev) {
     var b2 = ev.target.closest('[data-gx]'); if (!b2 || !gym) return;
@@ -4239,9 +4442,9 @@ main > section.tab-in > *:nth-child(n+5) { animation-delay:100ms; }
     });
     svg += '</svg>';
     var cw = data[current - 1];
-    el.innerHTML = '<h2>Нагрузка по неделям</h2><div class="card wl-chart">' + svg +
+    el.innerHTML = '<h2>Нагрузка штанги по неделям</h2><div class="card wl-chart">' + svg +
       '<div class="wl-legend"><span><i style="background:#a9c79c"></i>лёгкая</span><span><i style="background:var(--fg)"></i>средняя</span><span><i style="background:var(--accent)"></i>тяжёлая и пик</span><span><i style="border:1.5px solid var(--muted)"></i>план</span></div>' +
-      '<p class="hint">Тоннаж штанги: контур — план, заливка — сделанные подходы. Нагрузка должна идти волной: лёгкая неделя ниже, тяжёлая выше. Неделя ' + current + ': сделано ' + fmtN(Math.round(cw.done / 100) / 10) + ' т из ' + fmtN(Math.round(cw.plan / 100) / 10) + ' т, подъёмов ' + cw.liftsDone + ' из ' + cw.lifts + '.</p></div>';
+      '<p class="hint">Расчётный тоннаж штанги: вес × нижняя граница повторов × подходы. Подсобка сюда не входит, её объём — в графике по мышцам. Контур — план, заливка — сделанные подходы. Нагрузка должна идти волной: лёгкая неделя ниже, тяжёлая выше. Неделя ' + current + ': сделано ' + fmtN(Math.round(cw.done / 100) / 10) + ' т из ' + fmtN(Math.round(cw.plan / 100) / 10) + ' т, подъёмов ' + cw.liftsDone + ' из ' + cw.lifts + '.</p></div>';
   }
   // cycle focus switch (cycle card + new-cycle sheet)
   function focusKey() { return 'club150:' + (PROFILE !== 'main' ? PROFILE + ':' : '') + 'focus'; }
@@ -4416,6 +4619,11 @@ main > section.tab-in > *:nth-child(n+5) { animation-delay:100ms; }
       var weight = document.querySelector('#today .topset .big');
       animate(weight, [ { opacity: .5, transform: 'translateY(5px)' }, { opacity: 1, transform: 'none' } ], { duration: 230 });
     });
+    if ((gx === 'set' || target.hasAttribute('data-done')) && !preference.matches && event.clientX) {
+      var tk = document.createElement('div'); tk.className = 'tap-tick'; tk.setAttribute('aria-hidden', 'true'); tk.style.left = event.clientX + 'px'; tk.style.top = event.clientY + 'px';
+      tk.innerHTML = '<svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+      document.body.appendChild(tk); setTimeout(function () { tk.remove(); }, 750);
+    }
     if (gx === 'set' || target.hasAttribute('data-done')) {
       requestAnimationFrame(function () {
         var ring = document.querySelector('.gym .set-ring');
