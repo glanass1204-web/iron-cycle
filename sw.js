@@ -1,5 +1,5 @@
 // Offline support for «Железный цикл». Bump VERSION on every release so phones pick up the new page.
-var VERSION = 'iron-v47';
+var VERSION = 'iron-v48';
 var MUST = ['./', './index.html'];
 var CORE = ['./i18n/uk.js', './i18n/en.js', './about.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './icon-512-maskable.png', './icon-180.png', './fonts/Phosphor.woff2'];
 var PHOTOS = ['./img/arnold.jpg', './img/haney.jpg', './img/yates.png', './img/coleman.jpg', './img/cutler.jpg', './img/heath.jpg', './img/zane.jpg', './img/jackson.jpg', './img/rhoden.jpg', './img/levrone.jpg', './img/wheeler.jpg', './img/bigramy.jpg', './img/choopan.jpg', './img/lunsford.jpg', './img/bumstead.jpg', './img/ferrigno.jpg', './img/maddox.jpg', './img/kazmaier.jpg', './img/malanichev.jpg', './img/pudzianowski.jpg', './img/savickas.jpg', './img/shaw.jpg', './img/hall.jpg', './img/bjornsson.jpg', './img/vlasov.jpg', './img/alekseyev.jpg'];

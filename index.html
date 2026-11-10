@@ -1255,6 +1255,12 @@ body[data-tab="stats"] #rail, body[data-tab="club"] #rail, body[data-tab="food"]
 .rep-ask .chip-btn { min-width:42px; min-height:40px; font:700 15px var(--mono) !important; }
 .sets-reps { display:block; font-size:13px; color:var(--muted); margin-top:4px; }
 
+
+.fd-ask { display:grid; gap:8px; padding:12px 14px; border-radius:16px; border:1px solid color-mix(in srgb, var(--accent) 40%, var(--line)); background:color-mix(in srgb, var(--accent) 8%, var(--surface)); margin:6px 0 10px; }
+.fd-ask p { margin:0; font-size:14px; } .fd-ask p span { color:var(--muted); }
+.fd-ask-b { display:grid; grid-template-columns:1fr 1fr; gap:8px; } .fd-ask-b .btn { min-height:44px; font-size:14px; }
+.fd-ask small { color:var(--muted); font-size:12px; }
+.today-card .fd-ask { margin:0; }
 /* tab bar with five tabs */
 .tabbar-in { grid-template-columns:repeat(5, 1fr) !important; }
 .tabbar button .tb-svg { display:block; width:24px; height:24px; } .tabbar button .tb-svg svg { width:24px; height:24px; display:block; }
@@ -4383,7 +4389,7 @@ body[data-tab="stats"] #rail, body[data-tab="club"] #rail, body[data-tab="food"]
     var el = $('diary'); if (!el) return;
     var d = dayOf(fdDay), t = sum(d.it), g = goalFor(fdDay), today = dayISO(new Date()), yest = addDays(fdDay, -1), yd = dayOf(yest);
     var head = fdDay === today ? 'Сегодня' : fdDay === addDays(today, -1) ? 'Вчера' : fmtDate(fdDay);
-    var h = '<h2>Еда</h2><div class="fd-nav"><button type="button" class="wp-arr" data-fd-day="-1" aria-label="Предыдущий день">‹</button><b>' + head + '</b><button type="button" class="wp-arr" data-fd-day="1" aria-label="Следующий день"' + (fdDay >= today ? ' disabled' : '') + '>›</button></div>';
+    var h = '<h2>Еда</h2>' + (fdDay === today ? askYesterday() : '') + '<div class="fd-nav"><button type="button" class="wp-arr" data-fd-day="-1" aria-label="Предыдущий день">‹</button><b>' + head + '</b><button type="button" class="wp-arr" data-fd-day="1" aria-label="Следующий день"' + (fdDay >= today ? ' disabled' : '') + '>›</button></div>';
     // what is left today
     h += '<div class="card fd-sum">';
     if (g) {
@@ -4420,11 +4426,21 @@ body[data-tab="stats"] #rail, body[data-tab="club"] #rail, body[data-tab="food"]
     h += '<div class="card fd-weeks"><h3>Неделя рядом с тренировками</h3>' + (rows || '<p class="hint">Здесь появятся средние за неделю: калории и белок по заполненным дням, средний утренний вес и лучший подход в жиме.</p>') + adaptHint() + '</div>';
     el.innerHTML = h;
   }
+  function askYesterday() {
+    var y = addDays(dayISO(new Date()), -1), d = fdlog[y]; if (!d || !d.it || !d.it.length || d.full || d.nf) return '';
+    return '<div class="fd-ask"><p><b>Вчера записано ' + sum(d.it).k + ' ккал.</b> <span>День заполнен?</span></p><div class="fd-ask-b"><button type="button" class="btn primary" data-fd-y="1">Да, всё</button><button type="button" class="btn" data-fd-y="0">Нет, не всё</button></div><small>Незаполненные дни не идут в средние за неделю.</small></div>';
+  }
+  document.addEventListener('click', function (ev) {
+    var b3 = ev.target.closest('[data-fd-y]'); if (!b3) return;
+    var y = addDays(dayISO(new Date()), -1), d = dayOf(y);
+    if (b3.getAttribute('data-fd-y') === '1') { d.full = 1; delete d.nf; } else { d.nf = 1; delete d.full; }
+    fdlog[y] = d; saveFd(); renderDiary(); renderToday();
+  });
   window.__fdRender = renderDiary; window.__fdWeek = fdWeek;
   // One line on «Сегодня»: what is left, and a quiet note when yesterday was clearly short.
   window.__fdLine = function () {
     var today = dayISO(new Date()), g = goalFor(today); if (!g) return '';
-    var t = sum(dayOf(today).it), y = dayOf(addDays(today, -1)), yt = sum(y.it), out = '';
+    var t = sum(dayOf(today).it), y = dayOf(addDays(today, -1)), yt = sum(y.it), out = askYesterday();
     out += '<a class="fd-today" href="#diary"><span>Еда сегодня</span><b>' + (t.k ? (g.k - t.k >= 0 ? 'осталось ' + (g.k - t.k) + ' ккал · ' + fmtN(Math.max(0, r1(g.p - t.p))) + ' г белка' : 'сверх цели ' + (t.k - g.k) + ' ккал') : 'цель ' + g.k + ' ккал · белок ' + g.p + ' г') + '</b></a>';
     if (y.full && (yt.k < g.k * 0.7 || yt.p < g.p * 0.5)) out += '<p class="fd-warn">Вчера было мало еды' + (yt.p < g.p * 0.5 ? ' и белка' : '') + '. Если сегодня тяжело — выбери «Устал».</p>';
     return out;
@@ -4525,7 +4541,7 @@ body[data-tab="stats"] #rail, body[data-tab="club"] #rail, body[data-tab="food"]
     if (b2.hasAttribute('data-fd-del')) { var d = dayOf(fdDay); d.it.splice(+b2.getAttribute('data-fd-del'), 1); fdlog[fdDay] = d; saveFd(); renderDiary(); renderToday(); return; }
     if (b2.hasAttribute('data-fd-repeat')) { var m = b2.getAttribute('data-fd-repeat'), y = dayOf(addDays(fdDay, -1)), d2 = dayOf(fdDay); y.it.filter(function (x) { return x.m === m; }).forEach(function (x) { d2.it.push(JSON.parse(JSON.stringify(x))); }); fdlog[fdDay] = d2; saveFd(); renderDiary(); renderToday(); return; }
     if (b2.hasAttribute('data-fd-copyday')) { var y2 = dayOf(addDays(fdDay, -1)), d3 = dayOf(fdDay); d3.it = JSON.parse(JSON.stringify(y2.it)); fdlog[fdDay] = d3; saveFd(); renderDiary(); renderToday(); return; }
-    if (b2.hasAttribute('data-fd-full')) { var d4 = dayOf(fdDay); if (b2.checked) d4.full = 1; else delete d4.full; fdlog[fdDay] = d4; saveFd(); renderDiary(); renderToday(); return; }
+    if (b2.hasAttribute('data-fd-full')) { var d4 = dayOf(fdDay); if (b2.checked) { d4.full = 1; delete d4.nf; } else delete d4.full; fdlog[fdDay] = d4; saveFd(); renderDiary(); renderToday(); return; }
     if (b2.hasAttribute('data-fd-goal')) { openGoal(); return; }
     if (b2.hasAttribute('data-fd-dish')) { openDish(); return; }
     if (b2.hasAttribute('data-fd-dish-del')) { if (!confirm('Удалить блюдо?')) return; fdish.splice(+b2.getAttribute('data-fd-dish-del'), 1); store.set('fddish', fdish); renderDiary(); return; }
