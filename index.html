@@ -1,3 +1,4 @@
+<!doctype html>
 <html lang="ru">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -928,7 +929,9 @@ html { overflow-x: clip; }
 html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited .sub { display: block !important; color: var(--accent); }
 #nutrition .food-in { grid-template-columns: repeat(2, minmax(0, 1fr)); margin-bottom: 12px; }
 </style>
+<link rel="stylesheet" href="motion.css">
 
+<body>
 <header class="appbar">
   <div class="wrap appbar-top">
     <div class="brand">Железный <b>цикл</b></div>
@@ -2651,8 +2654,8 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
   function calm() { return window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches; }
   function burst(host) {
     if (!host || calm()) return;
-    var b = document.createElement('div'); b.className = 'done-burst'; b.setAttribute('aria-hidden', 'true'); b.textContent = '✓';
-    document.body.appendChild(b); setTimeout(function () { b.remove(); }, 700);
+    var b = document.createElement('div'); b.className = 'done-burst'; b.setAttribute('aria-hidden', 'true'); b.textContent = host.id === 'gym' ? 'Подход записан' : 'Готово';
+    document.body.appendChild(b); setTimeout(function () { b.remove(); }, 1050);
   }
   function confetti() {
     if (calm()) return;
@@ -2668,16 +2671,9 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
       if (k < 1) requestAnimationFrame(frame); else cv.remove();
     })(t0);
   }
-  // The weight of the day «runs up» to its value the first time it is shown.
-  var counted = {};
-  window.__countUp = function (r) { countUp(r); };
-  function countUp(root) {
-    (root || document).querySelectorAll('[data-count]').forEach(function (el) {
-      var to = +el.getAttribute('data-count'), key = el.getAttribute('data-count-key') || to; if (!el.offsetParent) return; if (!(to > 0) || counted[key] || calm()) { counted[key] = 1; return; }
-      counted[key] = 1; var t0 = performance.now(), num = el.firstChild;
-      (function step(t) { var k = Math.min(1, (t - t0) / 700), e = 1 - Math.pow(1 - k, 3); num.nodeValue = String(Math.round(to * e)); if (k < 1) requestAnimationFrame(step); else num.nodeValue = String(to); })(t0);
-    });
-  }
+  // Keep lifting weights accurate throughout transitions. Motion changes opacity, never the number.
+  window.__countUp = function () {};
+  function countUp() {}
   function renderAll() { renderRail(); renderToday(); renderProgress(); renderWeek(); $('chip-max').textContent = maxes.bench || '—'; }
 
   // ---------- events ----------
@@ -4072,18 +4068,9 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
   }
   var still = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
   function countUp(root) {
-    if (still) return;
+    if ((window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) || !root.animate) return;
     root.querySelectorAll('.topset .big, .goal-row b, .goal-meta b, .week-head .pct, .val').forEach(function (el) {
-      var node = el.firstChild; if (!node || node.nodeType !== 3) return;
-      var m = /^(\D*?)(\d+(?:[.,]\d+)?)(.*)$/.exec(node.nodeValue); if (!m) return;
-      var end = parseFloat(m[2].replace(',', '.')), dec = (m[2].split(/[.,]/)[1] || '').length, sep = m[2].indexOf(',') >= 0 ? ',' : '.';
-      if (!end) return;
-      var t0 = performance.now(), D = 300;
-      (function step(now) {
-        var k = Math.min(1, (now - t0) / D), e = 1 - Math.pow(1 - k, 3), v = (end * e).toFixed(dec).replace('.', sep);
-        if (el.firstChild === node) node.nodeValue = m[1] + v + m[3];
-        if (k < 1) requestAnimationFrame(step);
-      })(t0);
+      el.animate([{ opacity: .45, transform: 'translateY(5px)' }, { opacity: 1, transform: 'none' }], { duration: 260, easing: 'cubic-bezier(.22,1,.36,1)' });
     });
   }
   function tabOf(el) { var s = el && el.closest && el.closest('main > section[data-tab]'); return s ? s.getAttribute('data-tab') : null; }
@@ -4104,3 +4091,8 @@ html.simple .ex:not(.more-open) .sets .set.edited .sub, html.simple .set.edited 
   setTab(start, false);
 })();
 </script>
+
+<script src="motion.js"></script>
+
+</body>
+</html>
