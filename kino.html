@@ -169,7 +169,11 @@ input[type=range]::-moz-range-thumb { width: 22px; height: 22px; border-radius: 
 .step h3 { font: 600 22px/1.15 var(--display); text-transform: uppercase; letter-spacing: .02em; margin: 6px 0 4px; }
 .step p { margin: 0 0 16px; color: var(--muted); font-size: 15px; }
 .phone { position: relative; width: 100%; aspect-ratio: 390 / 664; border-radius: 32px; padding: 8px; background: linear-gradient(160deg, #2e2b25, #141310 60%); box-shadow: 0 0 0 1px #3a372f, 0 40px 70px -30px rgba(0,0,0,.95), 0 0 60px -24px rgba(220,168,60,.35); }
-.phone img { width: 100%; height: 100%; object-fit: cover; object-position: top; border-radius: 25px; background: #0b0b0b; }
+.phone img, .phone video { width: 100%; height: 100%; object-fit: cover; object-position: top; border-radius: 25px; background: #0b0b0b; }
+.demo { max-width: 290px; margin: 34px auto 0; }
+.demo .phone { aspect-ratio: 390 / 780; }
+.demo figcaption { margin-top: 14px; text-align: center; color: var(--muted); font-size: 14px; line-height: 1.5; }
+.demo figcaption b { color: var(--fg); font-weight: 600; }
 .swipe { color: var(--dim); font-size: 13px; margin: 0; }
 @media (min-width: 900px) {
   .steps { grid-auto-flow: row; grid-template-columns: repeat(3, 1fr); overflow: visible; gap: 34px; }
@@ -328,7 +332,7 @@ footer a { color: var(--muted); }
 
   <div class="nums" role="list">
     <div role="listitem" class="fade"><b>13</b><span>недель от старта до нового максимума</span></div>
-    <div role="listitem" class="fade"><b>37</b><span>тренировок: 3 в неделю, в любые дни</span></div>
+    <div role="listitem" class="fade"><b>37</b><span>тренировок: 12 недель по 3 в любые дни + проверка максимума на 13-й</span></div>
     <div role="listitem" class="fade"><b>1</b><span>кнопка в зале: «Сделал подход»</span></div>
     <div role="listitem" class="fade"><b>0</b><span>расчётов в голове и на бумажке</span></div>
   </div>
@@ -337,6 +341,10 @@ footer a { color: var(--muted); }
     <div class="wrap">
       <p class="kicker fade">Как это в зале</p>
       <h2 class="fade">Открыл. Пожал. <span class="out">Записал.</span></h2>
+      <figure class="demo fade">
+        <div class="phone"><video src="img/demo-gym.mp4" poster="img/demo-gym.jpg" autoplay muted loop playsinline preload="metadata" aria-label="Запись экрана: подход, отдых, запись результата, следующее упражнение"></video></div>
+        <figcaption>Запись экрана, 20 секунд: <b>подход</b> → <b>отдых</b> → <b>запись повторов</b> → <b>следующий вес</b></figcaption>
+      </figure>
       <div class="steps">
         <div class="step fade"><div class="no">01</div><h3>Вес уже готов</h3><p>Открываешь «Сегодня» — там самый тяжёлый подход и блины. Ещё до зала.</p><div class="phone"><img src="img/promo-today.webp" alt="Экран «Сегодня»: 90 кг, 78% от максимума 110 кг, блины 20 и 15 кг на сторону" width="660" height="1124" decoding="async"></div></div>
         <div class="step fade"><div class="no">02</div><h3>Одна кнопка</h3><p>«Сделал подход» — отдых пошёл сам, голос подскажет следующий вес, экран не гаснет.</p><div class="phone"><img src="img/promo-gym.webp" alt="Режим зала: жим штанги лёжа 90 кг, подход 1 из 4, кнопка «Сделал подход»" width="660" height="1124" decoding="async"></div></div>
