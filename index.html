@@ -291,7 +291,7 @@ button { cursor: pointer; -webkit-tap-highlight-color: transparent; }
 
 /* Barbell drawing */
 .barbell-svg { display: block; width: 100%; max-width: 360px; height: auto; margin: 4px auto 0; overflow: visible; }
-.barbell-svg .pl { animation: plateOn .5s cubic-bezier(.2,.8,.2,1) both; animation-delay: var(--d); }
+.barbell-svg.fresh .pl { animation: plateOn .5s cubic-bezier(.2,.8,.2,1) both; animation-delay: var(--d); }
 @keyframes plateOn { from { transform: translateX(var(--dx)); opacity: 0; } to { transform: none; opacity: 1; } }
 .barbell { display: flex; align-items: center; justify-content: center; height: 76px; gap: 0; }
 .barbell .shaft { height: 6px; background: linear-gradient(#a7acb3, #6d727a); flex: 0 0 70px; border-radius: 2px; }
@@ -1068,6 +1068,78 @@ main > section.tab-in > *:nth-child(n+5) { animation-delay:100ms; }
   .done-burst { transform:translateX(-50%); }
 }
 
+</style>
+
+<style>
+/* Calm pass: graphite, light text, amber accent, green = done. Weight first, plain readable type. */
+:root { --bg:#14161a; --surface:#1c1f24; --raised:#252930; --fg:#f2f1ec; --muted:#a9adb4; --accent:#f0b75a; --on-accent:#1f1606; --good:#5fc98c; }
+/* done = green */
+.wstrip li.got i { background:var(--good); border-color:var(--good); color:#0b1a11; }
+.set-ring circle.ok { stroke:var(--good); }
+@keyframes segIn { from { stroke:var(--line); } to { stroke:var(--good); } }
+.progress13 i.full { background:var(--good); }
+.progress13 i.part { background:linear-gradient(90deg, var(--good) var(--w), var(--line) var(--w)); }
+/* plain type: the narrow font stays in the logo and short headings */
+.eyebrow, .rule-title, .week-type b, .what, .ready > span, .gym-logq, .signal-pill, .rest-note, .ts-ex, .wstrip-h, .card h3, .progress-card .eyebrow, .lvl-row em { font-family:var(--body) !important; text-transform:none !important; letter-spacing:0 !important; }
+.eyebrow { font-size:13px; font-weight:600; color:var(--muted); }
+.gym-logq { font-size:19px; font-weight:700; }
+/* week picker */
+.rail { display:block !important; overflow:visible !important; padding-top:6px !important; padding-bottom:12px !important; }
+.wpick > * { min-width:0; }
+.rail .wp-cur span, .rail .wp-cur small { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.wpick { display:grid; grid-template-columns:48px 1fr 48px; gap:8px; align-items:stretch; }
+.rail .wpick button { width:auto !important; height:auto !important; min-height:52px; border-radius:14px !important; border:1px solid var(--line); background:var(--surface); color:var(--fg); font:600 15px var(--body); box-shadow:none !important; }
+.rail .wpick button::after { display:none !important; }
+.rail .wp-arr { display:grid; place-items:center; }
+.rail .wp-arr svg { width:20px; height:20px; }
+.rail .wp-next svg { transform:scaleX(-1); }
+.rail .wp-arr:disabled { opacity:.35; }
+.rail .wp-cur { display:grid !important; grid-template-columns:1fr auto; grid-template-rows:auto auto; align-items:center; text-align:left; padding:6px 14px; column-gap:10px; }
+.rail .wp-cur span { font-size:16px; } .rail .wp-cur span b { font:800 17px var(--mono); color:var(--accent); }
+.rail .wp-cur small { grid-row:2; font-size:12px; color:var(--muted); font-weight:500; }
+.rail .wp-cur .wp-dd { grid-row:1 / 3; grid-column:2; width:20px; height:20px; color:var(--muted); transition:transform .25s; }
+.rail .wp-cur[aria-expanded="true"] .wp-dd { transform:rotate(180deg); }
+.wp-grid { display:grid; grid-template-columns:repeat(7, 1fr); gap:6px; margin-top:10px; padding:10px; border:1px solid var(--line); border-radius:16px; background:var(--surface); animation:wpIn .22s var(--motion-ease, ease-out) both; }
+.wp-grid[hidden] { display:none; }
+.rail .wp-grid button { width:100% !important; height:42px !important; border-radius:10px !important; font:700 15px var(--mono); }
+@keyframes wpIn { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:none; } }
+/* Today: smaller photo, weight first */
+.today-card { padding:84px 22px 22px !important; }
+.today-card .photo { height:140px !important; }
+.today-card .today-head { gap:4px !important; }
+.today-card .cta { margin-top:2px; }
+.today-card .open-day { width:100%; }
+.topset-bb { margin-top:-4px; }
+.today-card .photo::after { background:linear-gradient(180deg, color-mix(in srgb,var(--surface) 10%,transparent) 0, color-mix(in srgb,var(--surface) 60%,transparent) 64px, var(--surface) 140px) !important; }
+.today-head h1 { font-size:clamp(30px, 8.4vw, 46px) !important; line-height:1.02 !important; }
+.today-head h1 br { display:none; }
+.today-head h1 span { display:inline !important; margin:0 !important; }
+.wprog { margin-top:12px; }
+.wprog-t { display:flex; justify-content:space-between; align-items:baseline; font-size:13px; color:var(--muted); margin-bottom:6px; }
+.wprog-t b { font:700 14px var(--mono); color:var(--fg); }
+.wprog-bar { height:6px; border-radius:6px; background:var(--line); overflow:hidden; }
+.wprog-bar i { display:block; height:100%; width:var(--p); border-radius:6px; background:var(--good); transition:width .6s var(--motion-ease, ease-out); }
+.topset { padding:16px 16px 12px !important; }
+.ts-ex { font-size:15px; font-weight:700; color:var(--fg); margin-bottom:2px; }
+.topset-row { align-items:center !important; flex-wrap:nowrap !important; }
+.topset .big { font-size:clamp(64px, 19vw, 92px) !important; line-height:1 !important; }
+.topset .big { display:flex !important; align-items:baseline; gap:6px; }
+.topset .big small { position:static !important; font-size:22px !important; margin:0 !important; }
+.ts-reps { display:grid; gap:2px; text-align:right; font-size:14px; color:var(--muted); }
+.ts-reps b { font:800 20px var(--mono); color:var(--fg); }
+.topset .what { font-size:12px !important; color:var(--muted) !important; margin-top:4px; }
+.today-card .ready { margin-top:4px; }
+.today-card .ready > span { font-size:12px; color:var(--muted); }
+.today-card .ready-note { font-size:12px; }
+.today .wstrip { margin:0; }
+@media (max-width:600px) { .today-card { padding:70px 16px 18px !important; } .today-card .photo { height:124px !important; } .wprog { margin-top:8px; } .topset { padding:12px 14px 10px !important; } }
+/* a done set: the ring shows a tick */
+.set-ring .tk { position:absolute; inset:0; display:grid; place-items:center; color:var(--good); pointer-events:none; animation:tkPop .9s var(--motion-ease, ease-out) both; }
+.set-ring .tk svg { width:26px; height:26px; }
+.set-ring.tick b { animation:tkNum .9s ease both; }
+@keyframes tkPop { 0% { opacity:0; transform:scale(.4); } 25% { opacity:1; transform:scale(1.1); } 60% { opacity:1; transform:scale(1); } 100% { opacity:0; transform:scale(.9); } }
+@keyframes tkNum { 0%, 55% { opacity:0; } 100% { opacity:1; } }
+@media (prefers-reduced-motion: reduce) { .set-ring .tk, .set-ring.tick b { animation:none !important; } .set-ring .tk { display:none; } }
 </style>
 
 <body>
@@ -2109,7 +2181,9 @@ main > section.tab-in > *:nth-child(n+5) { animation-delay:100ms; }
   // Side view of a loaded bar: knurled steel shaft, chrome sleeves, bumper plates sized by weight; plates slide on.
   var PLATE = { 20: { t: 22, h: 118, c: '#2f6fe0' }, 15: { t: 19, h: 110, c: '#e3b52f' }, 10: { t: 16, h: 98, c: '#3a9e5c' }, 5: { t: 12, h: 78, c: '#f3f1ea' }, 2.5: { t: 9, h: 60, c: '#d7261e' } };
   var bbId = 0;
-  function barbellHtml(kg) {
+  var lastBar = {};
+  function barbellHtml(kg, key) {
+    var fresh = !key || lastBar[key] !== kg; if (key) lastBar[key] = kg;
     var id = 'bb' + (++bbId), list = platesList(kg), H = 140, cy = 70, shaft = 92, collar = 8, gap = 2;
     var T = list.reduce(function (a, p) { return a + PLATE[p].t + gap; }, 0), sleeve = Math.max(T + 16, 40);
     var W = 2 * (shaft + collar + sleeve), cx = W / 2;
@@ -2151,7 +2225,7 @@ main > section.tab-in > *:nth-child(n+5) { animation-delay:100ms; }
       var lx = sg < 0 ? x - gap - 7 : x + gap;
       g += '<g class="pl" style="--dx:' + (sg * 46) + 'px;--d:' + (180 + list.length * Math.max(60, 110 - list.length * 6)) + 'ms"><rect x="' + lx + '" y="' + (cy - 13) + '" width="7" height="26" rx="2" fill="#1a1a1a" stroke="var(--accent)" stroke-width="1.5"/></g>';
     });
-    return '<svg class="barbell-svg" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Штанга ' + kg + ' кг">' + d + g + '</svg>';
+    return '<svg class="barbell-svg' + (fresh ? ' fresh' : '') + '" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Штанга ' + kg + ' кг">' + d + g + '</svg>';
   }
   function legendHtml(kg) {
     var cnt = {};
@@ -2183,29 +2257,35 @@ main > section.tab-in > *:nth-child(n+5) { animation-delay:100ms; }
     var wk = current, ws = weekStats(wk), q = QUOTES[wk - 1];
     var di = nextDay(wk), last = lastDone(), ago = last ? daysSince(last) : null;
     var own = store.get('photo', null), ch = CHAMPS[WEEK_CHAMP[wk - 1]];
-    var h = weekStripHtml() + '<div class="today-card" data-week="' + wk + '"><div class="photo" style="background-image:url(\'' + (own || ch.img) + '\');background-position:' + (own ? 'center' : ch.pos || 'center 22%') + '"></div>';
+    var h = '<div class="today-card" data-week="' + wk + '"><div class="photo" style="background-image:url(\'' + (own || ch.img) + '\');background-position:' + (own ? 'center' : ch.pos || 'center 22%') + '"></div>';
     if (!own) h += '<div class="champ">' + esc(ch.n) + ' · ' + esc(ch.t.split(' · ')[0]) + '</div>';
-    h += '<div class="today-head"><div class="rule-title">' + (PROG === 'sr' ? 'Сила и рельеф · ' : '') + 'Неделя ' + wk + ' из ' + NW + '</div><div class="week-type ' + TYPES[wk - 1] + '" style="justify-self:start;margin-top:6px"><b>' + TYPE_INFO[TYPES[wk - 1]][0] + '</b></div>';
+    h += '<div class="today-head">' + (PROG === 'sr' ? '<div class="rule-title">Сила и рельеф</div>' : '');
     if (di < 0) {
       h += '<h1>Неделя <span>завершена</span></h1><div class="sub">' + (weekDate(wk) ? 'Закрыта ' + fmtDate(weekDate(wk)) + '. ' : '') + 'Отдыхай и готовься к следующей</div></div>';
       h += '<div class="cta">' + (wk < NW ? '<button class="btn primary" type="button" data-goweek="' + (wk + 1) + '">Перейти к неделе ' + (wk + 1) + '</button>' : '') + '</div>';
     } else {
       var day = WEEKS[wk - 1].days[di], mi = mainIndex(day, di), main = mi >= 0 ? items(day).map(head)[mi] : null, ts = topSet(main);
-      h += '<div class="eyebrow">' + (myName() ? esc(myName()) + ' · ' : '') + 'Тренировка ' + (di + 1) + ' из 3</div><h1>' + twoTone(DAYS[di]) + '</h1><div class="sub">' + (main ? esc(main.n) : esc(items(day)[0].n)) + '</div></div>';
-      var rk = wk + '-' + di;
+      var dsx = dayStats(wk, di), dpc = dsx.n ? Math.round(dsx.got / dsx.n * 100) : 0;
+      h += '<div class="eyebrow">' + (myName() ? esc(myName()) + ' · ' : '') + 'Тренировка ' + (di + 1) + ' из 3</div><h1>' + twoTone(DAYS[di]) + '</h1>' +
+        '<div class="wprog" role="progressbar" aria-label="Упражнений сделано" aria-valuemin="0" aria-valuemax="' + dsx.n + '" aria-valuenow="' + dsx.got + '"><div class="wprog-t"><span>Упражнений сделано</span><b>' + dsx.got + ' из ' + dsx.n + '</b></div><div class="wprog-bar"><i style="--p:' + dpc + '%"></i></div></div></div>';
+      var rk = wk + '-' + di, notes = '';
       if (ago !== null && ago >= 10 && !ready[rk]) { ready[rk] = 'tired'; store.set('ready2', ready); }
       var lb = (function () { try { return localStorage.getItem('club150:lastBackup'); } catch (er) { return null; } })(), nW = Object.keys(dates).length;
-      if (nW >= 3 && (!lb || daysSince(lb) >= 7)) h += '<a class="signal-pill" href="#backup" style="border-color:var(--accent)"><i class="ph ph-warning" aria-hidden="true" style="color:var(--accent)"></i><span>Записи хранятся только в этом телефоне. ' + (lb ? 'Копия была ' + daysSince(lb) + ' дн. назад' : 'Копии ещё нет') + ' — сохрани её →</span></a>';
-      if (ago !== null) h += '<div class="rest-note' + (ago < 1 || ago >= 10 ? ' warn' : '') + '">' + (ago === 0 ? 'Сегодня уже была тренировка. Следующую — после дня отдыха.' : ago === 1 ? 'Прошлая тренировка вчера. Если мышцы ещё забиты — отдохни ещё день.' : ago >= 10 ? 'Перерыв ' + ago + ' дн. Пропущенное не наверстывай: продолжай с этой тренировки, веса на неё снижены на 10%.' : 'Прошлая тренировка ' + ago + ' дн. назад — можно в зал.') + '</div>';
+      if (nW >= 3 && (!lb || daysSince(lb) >= 7)) notes += '<a class="signal-pill" href="#backup" style="border-color:var(--accent)"><i class="ph ph-warning" aria-hidden="true" style="color:var(--accent)"></i><span>Записи хранятся только в этом телефоне. ' + (lb ? 'Копия была ' + daysSince(lb) + ' дн. назад' : 'Копии ещё нет') + ' — сохрани её →</span></a>';
+      if (ago !== null) notes += '<div class="rest-note' + (ago < 1 || ago >= 10 ? ' warn' : '') + '">' + (ago === 0 ? 'Сегодня уже была тренировка. Следующую — после дня отдыха.' : ago === 1 ? 'Прошлая тренировка вчера. Если мышцы ещё забиты — отдохни ещё день.' : ago >= 10 ? 'Перерыв ' + ago + ' дн. Пропущенное не наверстывай: продолжай с этой тренировки, веса на неё снижены на 10%.' : 'Прошлая тренировка ' + ago + ' дн. назад — можно в зал.') + '</div>';
       var rv = ready[rk] || 'ok';
-      h += '<div class="ready"><span>Самочувствие сегодня</span><div class="ready-row">' + [['ok', 'Отлично'], ['tired', 'Устал · −10%'], ['bad', 'Плохо · −20%']].map(function (o) { return '<button type="button" class="chip-btn' + (rv === o[0] ? ' on' : '') + '" data-ready="' + o[0] + '" data-rk="' + rk + '">' + o[1] + '</button>'; }).join('') + '</div>' +
+      var rdy = '<div class="ready"><span>Самочувствие сегодня</span><div class="ready-row">' + [['ok', 'Отлично'], ['tired', 'Устал · −10%'], ['bad', 'Плохо · −20%']].map(function (o) { return '<button type="button" class="chip-btn' + (rv === o[0] ? ' on' : '') + '" data-ready="' + o[0] + '" data-rk="' + rk + '">' + o[1] + '</button>'; }).join('') + '</div>' +
         (rv === 'tired' ? '<p class="ready-note">Веса этой тренировки снижены на 10%. Лучше сделать чисто и восстановиться, чем сорвать прогресс.</p>' : rv === 'bad' ? '<p class="ready-note warn">Лучше перенести тренировку на завтра. Если идёшь — веса снижены на 20%, подход «+» не делай.</p>' : '<p class="ready-note">Спал меньше 6 часов — выбирай «Устал».</p>') + '</div>';
       if (ts) {
         var tsi = parseSets(main.s).map(String).indexOf(String(ts)), kg = setKg(main, wk + '|' + di + '|' + mi + '|a', tsi, ts);
-        h += '<div class="topset"><div class="topset-row"><div class="big" data-count="' + kg + '" data-count-key="' + wk + '-' + di + '-' + kg + '">' + kg + ' <small>кг</small></div><div class="what">' + (overrides[wk + '|' + di + '|' + mi + '|a|' + tsi] ? 'вес изменён вручную · ' : '') + 'самый тяжёлый подход · ' + fmtN(ts[0]) + '% от ' + (+maxes[main.lift] || '—') + ' кг × ' + repTxt(main, ts) + ' × ' + ts[2] + '</div></div>' + barbellHtml(kg) + legendHtml(kg) + '</div>';
-      }
-      h += '<div class="cta"><button class="btn primary gym-cta" type="button" data-gym="' + di + '"><i class="ph ph-play-circle" aria-hidden="true"></i> Начать в зале</button><button class="btn" type="button" data-goday="' + di + '">Открыть тренировку</button></div>';
+        h += '<div class="topset"><div class="ts-ex">' + esc(main.n) + '</div><div class="topset-row"><div class="big">' + kg + ' <small>кг</small></div>' +
+          '<div class="ts-reps"><span><b>' + repTxt(main, ts) + '</b> повт.</span><span><b>' + ts[2] + '</b> ' + plural(ts[2], 'подход', 'подхода', 'подходов') + '</span></div></div>' +
+          '<div class="what">' + (overrides[wk + '|' + di + '|' + mi + '|a|' + tsi] ? 'вес изменён вручную · ' : '') + 'самый тяжёлый подход · ' + fmtN(ts[0]) + '% от ' + (+maxes[main.lift] || '—') + ' кг</div></div>';
+        var bbx = '<div class="topset-bb">' + barbellHtml(kg, 'today') + legendHtml(kg) + '</div>';
+      } else { h += '<div class="topset"><div class="ts-ex">' + esc(items(day)[0].n) + '</div></div>'; var bbx = ''; }
+      h += '<div class="cta"><button class="btn primary gym-cta" type="button" data-gym="' + di + '"><i class="ph ph-play-circle" aria-hidden="true"></i> Начать тренировку</button></div>' + bbx + rdy + '<button class="btn open-day" type="button" data-goday="' + di + '">Открыть тренировку</button>';
       var sg = stalls();
+      h += notes;
       if (sg.length) h += '<a class="signal-pill" href="#signals"><i class="ph ph-warning" aria-hidden="true"></i><span>Застой: ' + esc(sg[0].n) + (sg.length > 1 ? ' и ещё ' + (sg.length - 1) : '') + '. Что делать →</span></a>';
     }
     h += '<div class="progress13" role="img" aria-label="Прогресс программы: неделя ' + wk + ' из ' + NW + '">';
@@ -2216,6 +2296,7 @@ main > section.tab-in > *:nth-child(n+5) { animation-delay:100ms; }
     h += '</div>';
     if (!own) h += '<div class="credit">Фото: ' + esc(ch.by) + ', <a href="' + ch.page + '" target="_blank" rel="noopener">' + ch.lic + '</a></div>';
     h += '</div>';
+    h += weekStripHtml();
     h += '<div class="icon-row"><div><i class="ph ph-barbell" aria-hidden="true"></i><b>Сила <span>по плану</span></b><small>Точные веса и повторы</small></div><div><i class="ph ph-crosshair" aria-hidden="true"></i><b>Фокус <span>на технике</span></b><small>Чисто — значит в зачёт</small></div><div><i class="ph ph-lightning" aria-hidden="true"></i><b>Рост <span>каждую неделю</span></b><small>Записывай результат</small></div></div>';
     h += '<blockquote class="quote quote-anim"><p>«' + esc(q.ru) + '»</p>' + (q.orig && window.LANG !== 'en' ? '<div class="orig">' + esc(q.orig) + '</div>' : '') + '<cite><b>' + esc(q.who) + '</b> · ' + esc(q.src) + '</cite></blockquote>';
     $('today').innerHTML = h; countUp($('today'));
@@ -2760,16 +2841,21 @@ main > section.tab-in > *:nth-child(n+5) { animation-delay:100ms; }
     });
     $('week').innerHTML = h;
   }
+  // Week picker: «‹ Неделя 3 из 13 ›», tap the middle for the list of all weeks.
+  var railOpen = false;
   function renderRail() {
-    var h = '';
+    var cells = '';
     for (var i = 1; i <= NW; i++) {
-      var s = weekStats(i), dn = weekDone(i);
-      h += '<button type="button" data-w="' + i + '"' + (i === current ? ' aria-current="true"' : '') + (dn ? ' class="done"' : s.got ? ' class="part" style="--f:' + (s.got / s.n).toFixed(2) + '"' : '') + ' aria-label="Неделя ' + i + (dn ? ', завершена' : '') + '">' + i + '</button>';
+      var st = weekStats(i), dn = weekDone(i);
+      cells += '<button type="button" data-w="' + i + '"' + (i === current ? ' aria-current="true"' : '') + (dn ? ' class="done"' : st.got ? ' class="part" style="--f:' + (st.got / st.n).toFixed(2) + '"' : '') + ' aria-label="Неделя ' + i + (dn ? ', завершена' : '') + '">' + i + '</button>';
     }
-    $('rail').innerHTML = h;
+    var ws = weekStats(current), pc = ws.n ? Math.round(ws.got / ws.n * 100) : 0, chev = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    $('rail').innerHTML = '<div class="wpick">' +
+      '<button type="button" class="wp-arr"' + (current > 1 ? ' data-w="' + (current - 1) + '"' : ' disabled') + ' aria-label="Предыдущая неделя">' + chev + '</button>' +
+      '<button type="button" class="wp-cur" data-wopen aria-expanded="' + railOpen + '" aria-controls="wp-grid"><span>Неделя <b>' + current + '</b> из ' + NW + '</span><small>' + TYPE_INFO[TYPES[current - 1]][0] + (weekDone(current) ? ' · завершена' : pc ? ' · ' + pc + '%' : '') + '</small><svg class="wp-dd" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>' +
+      '<button type="button" class="wp-arr wp-next"' + (current < NW ? ' data-w="' + (current + 1) + '"' : ' disabled') + ' aria-label="Следующая неделя">' + chev + '</button></div>' +
+      '<div class="wp-grid" id="wp-grid"' + (railOpen ? '' : ' hidden') + '>' + cells + '</div>';
     $('rail').querySelectorAll('[data-w]').forEach(function (b2) { if (locked(+b2.getAttribute('data-w'))) b2.classList.add('locked'); });
-    var cur = $('rail').querySelector('[aria-current]');
-    if (cur) $('rail').scrollLeft = cur.offsetLeft - $('rail').clientWidth / 2 + cur.clientWidth / 2;
   }
   // Planned tonnage of a workout: % lifts with their bar weight, «подбор» with the weight written down.
   function dayTonnage(wk, di) {
@@ -2817,8 +2903,9 @@ main > section.tab-in > *:nth-child(n+5) { animation-delay:100ms; }
 
   // ---------- events ----------
   $('rail').addEventListener('click', function (ev) {
+    if (ev.target.closest('[data-wopen]')) { railOpen = !railOpen; renderRail(); return; }
     var btn = ev.target.closest('[data-w]'); if (!btn) return;
-    current = +btn.getAttribute('data-w'); store.set('week', current); renderAll();
+    railOpen = false; current = +btn.getAttribute('data-w'); store.set('week', current); renderAll();
     window.scrollTo({ top: 0 });
   });
   $('today').addEventListener('click', function (ev) {
@@ -3088,8 +3175,9 @@ main > section.tab-in > *:nth-child(n+5) { animation-delay:100ms; }
       var cls = i < k - 1 ? 'ok' : i === k - 1 ? 'cur' : '', fresh = i === k - 2 && lastRing === key + '|' + (k - 1);
       svg += '<circle class="' + cls + (fresh ? ' fresh' : '') + '" cx="26" cy="26" r="' + r + '" stroke-dasharray="' + seg.toFixed(2) + ' ' + (C - seg).toFixed(2) + '" stroke-dashoffset="' + (-(C / total) * i).toFixed(2) + '" style="--seg:' + seg.toFixed(2) + '"/>';
     }
+    var tick = lastRing === key + '|' + (k - 1);
     lastRing = key + '|' + k;
-    return '<span class="set-ring" role="img" aria-label="Подход ' + k + ' из ' + total + '"><svg viewBox="0 0 52 52" aria-hidden="true">' + svg + '</svg><b>' + k + '<small>/' + total + '</small></b></span>';
+    return '<span class="set-ring' + (tick ? ' tick' : '') + '" role="img" aria-label="Подход ' + k + ' из ' + total + '"><svg viewBox="0 0 52 52" aria-hidden="true">' + svg + '</svg><b>' + k + '<small>/' + total + '</small></b>' + (tick ? '<i class="tk" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></i>' : '') + '</span>';
   }
   function renderGym() {
     if (!gym) return;
@@ -3149,7 +3237,7 @@ main > section.tab-in > *:nth-child(n+5) { animation-delay:100ms; }
         '<div class="gym-kg"><b>' + (cur.kg ? fmtN(cur.kg) : 'на выбор') + '</b>' + (cur.kg ? '<small>кг</small>' : '') + '</div>' +
         (!isWarm && cur.kg && pairDb(e.n) ? '<div class="gym-reps">' + dbNote(e.n, cur.kg) + '</div>' : '') +
         (isWarm ? '<div class="gym-reps">× ' + cur.reps + ' повт.</div>' : '<div class="gym-setrow">' + setRing(kn, cur.total) + '<div class="gym-reps">× ' + cur.reps + ' повт.' + (st.sets.length > 1 ? '<small>строка ' + (line + 1) + '/' + st.sets.length + '</small>' : '') + '</div></div>') +
-        (cur.bar ? '<div class="gym-bb">' + barbellHtml(cur.kg) + '</div><div class="gym-side">' + (cur.kg === BAR ? 'Пустой гриф' : 'На сторону: <b>' + platesText(cur.kg) + '</b> · гриф 20 кг') + '</div>' : cur.wave ? '<div class="gym-side">' + esc(cur.wave) + '</div>' : '') +
+        (cur.bar ? '<div class="gym-bb">' + barbellHtml(cur.kg, 'gym') + '</div><div class="gym-side">' + (cur.kg === BAR ? 'Пустой гриф' : 'На сторону: <b>' + platesText(cur.kg) + '</b> · гриф 20 кг') + '</div>' : cur.wave ? '<div class="gym-side">' + esc(cur.wave) + '</div>' : '') +
         (isWarm && line === 0 ? '<div class="gym-side">Перед этим — 5 минут суставной разминки: плечи, локти, кисти.</div>' : '') +
         (!isWarm && st.main && TYPES[gym.wk - 1] === 'test' ? '<div class="gym-side gym-tip">Проверка: не больше 3 тяжёлых попыток, без отказа. Техника поплыла — стоп. Только со страхующим.</div>' : !isWarm && st.main && TYPES[gym.wk - 1] === 'heavy' ? '<div class="gym-side gym-tip">Тяжёлая неделя — работай со страхующим.</div>' : '') +
         (!isWarm && kn >= 2 ? '<div class="gym-side gym-tip">Не идут повторы — отдохни на 1–2 минуты дольше (+30), вес не снижай.</div>' : '');
@@ -4282,7 +4370,7 @@ main > section.tab-in > *:nth-child(n+5) { animation-delay:100ms; }
     var mode = (title ? title.textContent : '') + '|' + !!question + '|' + body.classList.contains('gym-fin');
     var state = { mode: mode, weight: weight ? weight.textContent : '' };
     if (!lastGym || state.mode !== lastGym.mode) {
-      animate(body, [ { opacity: 0, transform: 'translate3d(' + direction * 22 + 'px,8px,0)' }, { opacity: 1, transform: 'none' } ], { duration: 360 });
+      animate(body, [ { opacity: 0, transform: 'translate3d(' + direction * 48 + 'px,0,0) scale(.98)' }, { opacity: 1, transform: 'none' } ], { duration: 420 });
     } else if (weight && state.weight !== lastGym.weight) {
       animate(weight, [ { opacity: .4, transform: 'translateY(9px)' }, { opacity: 1, transform: 'none' } ], { duration: 240 });
     }
