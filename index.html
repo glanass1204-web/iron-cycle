@@ -2,6 +2,7 @@
 <html lang="ru">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark light">
 <title>Железный цикл</title>
 <meta name="description" content="Программа жима лёжа на 13 недель в телефоне: подходы и веса на сегодня, раскладка блинов, таймер отдыха и расчёт 1ПМ. Работает без интернета.">
 <meta property="og:type" content="website">
@@ -1162,7 +1163,6 @@ main > section.tab-in > *:nth-child(n+5) { animation-delay:100ms; }
 .wv-v { margin:4px 0; font-size:15px; font-weight:600; }
 .gym-goal { font-size:15px; line-height:1.45; color:var(--fg); padding:8px 12px; border-radius:12px; background:color-mix(in srgb, var(--accent) 10%, var(--surface)); border:1px solid color-mix(in srgb, var(--accent) 30%, var(--line)); max-width:34ch; }
 
-body[data-tab="today"] #rail { display:none !important; }
 .cmap { margin-top:10px; }
 .fin-photo { margin:0 0 6px; width:100%; max-width:420px; }
 .fin-photo .fp-img { height:200px; border-radius:18px; background-size:cover; filter:grayscale(.6) contrast(1.05); box-shadow:inset 0 -60px 60px -20px var(--bg); }
@@ -1230,6 +1230,22 @@ body[data-tab="today"] #rail { display:none !important; }
 @media (min-width:601px) { .today-card .cover { height:clamp(150px, 24vh, 240px); } .today-card .tc-body { padding:16px 22px 20px; gap:12px; } }
 .today-card .cta { margin:0 !important; }
 .today-card .topset { margin:0; }
+
+/* week row */
+.rail .wk-row { display:flex !important; gap:6px; overflow-x:auto; scrollbar-width:none; padding:2px 0 2px; margin:0 !important; border:0 !important; background:none !important; animation:none !important; }
+.rail .wk-row::-webkit-scrollbar { display:none; }
+.rail .wk-row button { flex:0 0 auto; width:44px !important; height:44px !important; border-radius:12px !important; font:700 16px var(--mono) !important; }
+/* the map under it: lower, no repeated numbers */
+.cm-bars { height:40px !important; }
+.cm-b { padding-bottom:0 !important; }
+.cm-b span { display:none; }
+.cm-b.done::after { top:auto !important; bottom:-7px; }
+.cm-b.cur i { outline-offset:1px !important; }
+.cm-goal { margin-top:9px !important; }
+.cm-top { display:none !important; }
+.cmap { margin:0 0 4px !important; }
+.rail { padding-bottom:8px !important; }
+.today { padding-top:10px !important; }
 /* a done set: the ring shows a tick */
 .set-ring .tk { position:absolute; inset:0; display:grid; place-items:center; color:var(--good); pointer-events:none; animation:tkPop .9s var(--motion-ease, ease-out) both; }
 .set-ring .tk svg { width:26px; height:26px; }
@@ -3044,7 +3060,7 @@ body[data-tab="today"] #rail { display:none !important; }
     });
     $('week').innerHTML = h;
   }
-  // Week picker: «‹ Неделя 3 из 13 ›», tap the middle for the list of all weeks.
+  // The row of weeks 1–13: done weeks green, the current one highlighted.
   var railOpen = false;
   function renderRail() {
     var cells = '';
@@ -3052,13 +3068,10 @@ body[data-tab="today"] #rail { display:none !important; }
       var st = weekStats(i), dn = weekDone(i);
       cells += '<button type="button" data-w="' + i + '"' + (i === current ? ' aria-current="true"' : '') + (dn ? ' class="done"' : st.got ? ' class="part" style="--f:' + (st.got / st.n).toFixed(2) + '"' : '') + ' aria-label="Неделя ' + i + (dn ? ', завершена' : '') + '">' + i + '</button>';
     }
-    var ws = weekStats(current), pc = ws.n ? Math.round(ws.got / ws.n * 100) : 0, chev = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-    $('rail').innerHTML = '<div class="wpick">' +
-      '<button type="button" class="wp-arr"' + (current > 1 ? ' data-w="' + (current - 1) + '"' : ' disabled') + ' aria-label="Предыдущая неделя">' + chev + '</button>' +
-      '<button type="button" class="wp-cur" data-wopen aria-expanded="' + railOpen + '" aria-controls="wp-grid"><span>Неделя <b>' + current + '</b> из ' + NW + '</span><small>' + TYPE_INFO[TYPES[current - 1]][0] + (weekDone(current) ? ' · завершена' : pc ? ' · ' + pc + '%' : '') + '</small><svg class="wp-dd" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>' +
-      '<button type="button" class="wp-arr wp-next"' + (current < NW ? ' data-w="' + (current + 1) + '"' : ' disabled') + ' aria-label="Следующая неделя">' + chev + '</button></div>' +
-      '<div class="wp-grid" id="wp-grid"' + (railOpen ? '' : ' hidden') + '>' + cells + '</div>';
+    $('rail').innerHTML = '<div class="wp-grid wk-row">' + cells + '</div>';
     $('rail').querySelectorAll('[data-w]').forEach(function (b2) { if (locked(+b2.getAttribute('data-w'))) b2.classList.add('locked'); });
+    var row = $('rail').querySelector('.wk-row'), cur = row.querySelector('[aria-current]');
+    if (cur) row.scrollLeft = cur.offsetLeft - row.clientWidth / 2 + cur.clientWidth / 2;
   }
   // Planned tonnage of a workout: % lifts with their bar weight, «подбор» with the weight written down.
   function dayTonnage(wk, di) {
