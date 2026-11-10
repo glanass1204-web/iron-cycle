@@ -1,5 +1,5 @@
 // Offline support for «Железный цикл». Bump VERSION on every release so phones pick up the new page.
-var VERSION = 'iron-v48';
+var VERSION = 'iron-v49';
 var MUST = ['./', './index.html'];
 var CORE = ['./i18n/uk.js', './i18n/en.js', './about.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './icon-512-maskable.png', './icon-180.png', './fonts/Phosphor.woff2'];
 var PHOTOS = ['./img/arnold.jpg', './img/haney.jpg', './img/yates.png', './img/coleman.jpg', './img/cutler.jpg', './img/heath.jpg', './img/zane.jpg', './img/jackson.jpg', './img/rhoden.jpg', './img/levrone.jpg', './img/wheeler.jpg', './img/bigramy.jpg', './img/choopan.jpg', './img/lunsford.jpg', './img/bumstead.jpg', './img/ferrigno.jpg', './img/maddox.jpg', './img/kazmaier.jpg', './img/malanichev.jpg', './img/pudzianowski.jpg', './img/savickas.jpg', './img/shaw.jpg', './img/hall.jpg', './img/bjornsson.jpg', './img/vlasov.jpg', './img/alekseyev.jpg'];
@@ -24,12 +24,24 @@ self.addEventListener('fetch', function (e) {
   if (req.method !== 'GET') return;
   var url = new URL(req.url);
 
-  // The page itself: network first so updates arrive, cache when offline.
+  // The page itself: network first so updates arrive — but never wait long. With no network, or when the
+  // network hangs («Wi-Fi without internet»), the saved copy opens at once / after 2.5 s; the fresh page is
+  // still saved in the background and shows on the next start.
   if (req.mode === 'navigate') {
-    e.respondWith(fetch(req).then(function (res) {
-      var copy = res.clone(); caches.open(VERSION).then(function (c) { c.put('./index.html', copy); });
+    var net = fetch(req).then(function (res) {
+      if (res && res.ok) { var copy = res.clone(); caches.open(VERSION).then(function (c) { c.put('./index.html', copy); }); }
       return res;
-    }).catch(function () { return caches.match('./index.html'); }));
+    });
+    e.respondWith(caches.match('./index.html').then(function (hit) {
+      if (!hit) return net;
+      if (self.navigator && self.navigator.onLine === false) { net.catch(function () {}); return hit; }
+      return new Promise(function (resolve) {
+        var done = false, finish = function (r) { if (!done) { done = true; resolve(r); } };
+        var t = setTimeout(function () { finish(hit); }, 2500);
+        net.then(function (res) { clearTimeout(t); finish(res && res.ok ? res : hit); }, function () { clearTimeout(t); finish(hit); });
+      });
+    }));
+    e.waitUntil(net.catch(function () {}));
     return;
   }
 
