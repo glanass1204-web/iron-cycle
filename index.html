@@ -1304,6 +1304,12 @@ body[data-tab="stats"] #rail, body[data-tab="club"] #rail, body[data-tab="food"]
 @keyframes tkPop { 0% { opacity:0; transform:scale(.4); } 25% { opacity:1; transform:scale(1.1); } 60% { opacity:1; transform:scale(1); } 100% { opacity:0; transform:scale(.9); } }
 @keyframes tkNum { 0%, 55% { opacity:0; } 100% { opacity:1; } }
 @media (prefers-reduced-motion: reduce) { .set-ring .tk, .set-ring.tick b { animation:none !important; } .set-ring .tk { display:none; } }
+/* design pass: calmer settings, readable inputs, honest shapes */
+section.week .week-type { border-radius:14px !important; padding:12px 14px !important; }
+input::placeholder { font-family:var(--body) !important; font-size:15px !important; font-weight:400 !important; text-transform:none !important; letter-spacing:0 !important; color:var(--muted); opacity:.75; }
+body[data-tab="club"] main h2 { font-size:22px !important; line-height:1.15; margin-top:4px; }
+[data-theme-set] { white-space:nowrap; }
+.share-msg:empty { display:none; }
 </style>
 
 <body>
@@ -1379,7 +1385,7 @@ body[data-tab="stats"] #rail, body[data-tab="club"] #rail, body[data-tab="food"]
     <div class="theme-seg" role="group" aria-label="Тема">
       <button type="button" data-theme-set="dark" aria-pressed="true">Тёмная</button>
       <button type="button" data-theme-set="light" aria-pressed="false">Светлая</button>
-      <button type="button" data-theme-set="system" aria-pressed="false">Как в телефоне</button>
+      <button type="button" data-theme-set="system" aria-pressed="false">Авто</button>
     </div>
     <div class="simple-row"><div><b>Простой режим</b><small>Только вес, повторы и запись. Остальное — под «Подробнее».</small></div><button type="button" class="chip-btn" id="simple-toggle" aria-pressed="true">Вкл</button></div>
   </section>
@@ -1889,7 +1895,7 @@ body[data-tab="stats"] #rail, body[data-tab="club"] #rail, body[data-tab="food"]
   if (PROG === 'sr') HALL_GROUPS.unshift(HALL_GROUPS.splice(2, 1)[0]);
   // Week → champion on the main screen; weeks 4 and 5 match the quote's author.
   // Frame of each athlete on the wide Today cover: the face stays whole at 110–165 px of height.
-  var COVER = { arnold: 'center 0%', haney: 'center 16%', yates: 'center 0%', coleman: 'center 20%', cutler: 'center 8%', heath: 'center 57%', jackson: 'center 10%', rhoden: 'center 0%', levrone: 'center 0%', wheeler: 'center 32%' };
+  var COVER = { arnold: 'center 0%', haney: 'center 16%', yates: 'center 9%', coleman: 'center 20%', cutler: 'center 8%', heath: 'center 57%', jackson: 'center 10%', rhoden: 'center 0%', levrone: 'center 0%', wheeler: 'center 32%' };
   Object.keys(COVER).forEach(function (k) { if (CHAMPS[k]) CHAMPS[k].cover = COVER[k]; });
   var WEEK_CHAMP = PROG === 'sr'
     ? ['jackson', 'rhoden', 'levrone', 'wheeler', 'jackson', 'rhoden', 'levrone', 'wheeler', 'jackson', 'rhoden', 'levrone', 'wheeler']
@@ -2507,7 +2513,7 @@ body[data-tab="stats"] #rail, body[data-tab="club"] #rail, body[data-tab="food"]
     var nt = TYPES[wk - 1];
     var wd = Object.keys(dates).filter(function (k3) { return +k3.split('-')[0] === w; }).map(function (k3) { return dates[k3]; }).sort()[0], fw = wd && window.__fdWeek ? window.__fdWeek(wd) : null;
     var fdl = fw && fw.full ? '<p class="hint wv-food"><span>Питание за неделю: записано полностью</span> <b>' + fw.full + ' из 7</b> · <b>' + fw.k + ' ккал</b> · <b>' + fw.p + ' г белка</b></p>' : '';
-    return '<div class="wave-card"><div class="eyebrow">Итог волны</div><h3>' + TYPE_INFO[t][0] + ' завершена</h3><div class="wv-ex">Жим штанги лёжа, лучший записанный подход</div><div class="wv-rows">' + rows + '</div><p class="wv-v">' + verdict + '</p>' + fdl + '<p class="hint"><span>Дальше — ' + typeShort(nt) + ' неделя.</span> <span>' + weekGoal(wk) + '</span></p></div>';
+    return '<div class="wave-card"><div class="eyebrow">Итог волны</div><h3>' + TYPE_INFO[t][0].split(' · ')[0] + ' завершена</h3><div class="wv-ex">Жим штанги лёжа, лучший записанный подход</div><div class="wv-rows">' + rows + '</div><p class="wv-v">' + verdict + '</p>' + fdl + '<p class="hint"><span>Дальше — ' + typeShort(nt) + ' неделя.</span> <span>' + weekGoal(wk) + '</span></p></div>';
   }
   // One line at the bar: what this set is for.
   function setGoal(e, wk, isMain) {
